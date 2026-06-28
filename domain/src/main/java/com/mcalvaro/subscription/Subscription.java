@@ -1,0 +1,235 @@
+package com.mcalvaro.subscription;
+
+import com.mcalvaro.core.AggregateRoot;
+import com.mcalvaro.subscription.entity.BiweeklyEvaluation;
+import com.mcalvaro.subscription.entity.DeliveryCalendar;
+import com.mcalvaro.subscription.entity.DeliveryDay;
+import com.mcalvaro.subscription.entity.PauseRequest;
+import com.mcalvaro.subscription.enums.DeliveryDayStatus;
+import com.mcalvaro.subscription.enums.EvaluationStatus;
+import com.mcalvaro.subscription.enums.PlanDuration;
+import com.mcalvaro.subscription.enums.SubscriptionStatus;
+import com.mcalvaro.subscription.event.DeliveryDayModified;
+import com.mcalvaro.subscription.event.SubscriptionCancelled;
+import com.mcalvaro.subscription.event.SubscriptionCompleted;
+import com.mcalvaro.subscription.event.SubscriptionCreated;
+import com.mcalvaro.subscription.event.SubscriptionPaused;
+import com.mcalvaro.subscription.event.SubscriptionReactivated;
+import com.mcalvaro.subscription.vo.ContractCode;
+import com.mcalvaro.subscription.vo.DeliveryAddress;
+import com.mcalvaro.subscription.vo.DeliveryPreferences;
+import com.mcalvaro.subscription.vo.PauseRange;
+import com.mcalvaro.subscription.vo.ServiceContract;
+import com.mcalvaro.subscription.vo.TimeWindow;
+import com.mcalvaro.subscription.vo.ValidityPeriod;
+
+import java.time.LocalDate;
+import java.time.Year;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
+
+/**
+ * Aggregate Root — Subscription (Suscripcion).
+ * <p>
+ * Manages the full lifecycle of a catering subscription:
+ * creation, pause/reactivation, delivery-day modifications,
+ * completion and cancellation.
+ */
+public class Subscription extends AggregateRoot {
+
+    private final UUID patientId;
+    private final UUID dietPlanId;
+    private final ContractCode contractCode;
+    private final ServiceContract contract;
+    private final DeliveryPreferences preferences;
+    private final DeliveryCalendar deliveryCalendar;
+    private SubscriptionStatus status;
+    private final List<PauseRequest> pauseRequests = new ArrayList<>();
+    private final List<BiweeklyEvaluation> evaluations = new ArrayList<>();
+
+    private Subscription(UUID id, UUID patientId, UUID dietPlanId,
+            ContractCode contractCode, ServiceContract contract,
+            DeliveryPreferences preferences, DeliveryCalendar deliveryCalendar) {
+        super(id);
+        this.patientId = patientId;
+        this.dietPlanId = dietPlanId;
+        this.contractCode = contractCode;
+        this.contract = contract;
+        this.preferences = preferences;
+        this.deliveryCalendar = deliveryCalendar;
+        this.status = SubscriptionStatus.ACTIVE;
+    }
+
+    /**
+     * Creates a new active subscription.
+     * <ul>
+     * <li>Generates a {@link ContractCode} using {@code contractSequence} (must be
+     * unique within the year — the caller is responsible for providing it).</li>
+     * <li>Populates the {@link DeliveryCalendar} with one {@link DeliveryDay}
+     * per day in the validity period, using the patient's default preferences.</li>
+     * <li>Schedules biweekly evaluations at the end of each
+     * {@value #BIWEEKLY_PERIOD_DAYS}-day
+     * period: 1 evaluation for 15-day plans (on {@code endDate}),
+     * 2 evaluations for 30-day plans (on day 15 and on {@code endDate}).</li>
+     * <li>Emits {@link SubscriptionCreated}.</li>
+     * </ul>
+     *
+     * @param contractSequence unique sequence number for the contract code within
+     *                         the current year,
+     *                         provided by the application layer after querying the
+     *                         repository.
+     */
+    public static Subscription create(UUID id, UUID patientId, UUID dietPlanId,
+            ServiceContract contract,
+            DeliveryPreferences preferences,
+            int contractSequence) {
+        ContractCode code = ContractCode.generate(Year.now().getValue(), contractSequence);
+
+        ValidityPeriod period = contract.period();
+
+        DeliveryCalendar calendar = new DeliveryCalendar(UUID.randomUUID(), id, period);
+        for (LocalDate day : period.allDays()) {
+            calendar.addDay(new DeliveryDay(
+                    UUID.randomUUID(),
+                    day,
+                    preferences.primaryAddress(),
+                    preferences.timeWindow(),
+                    preferences.specialInstructions()));
+        }
+
+        Subscription subscription = new Subscription(
+                id, patientId, dietPlanId, code, contract, preferences, calendar);
+
+        int duration = period.durationDays();
+        if (duration == PlanDuration.BIWEEKLY.getDays()) {
+            // Single-period plan (15 days): one evaluation at the end of the period.
+            subscription.evaluations.add(new BiweeklyEvaluation(
+                    UUID.randomUUID(), patientId, 1,
+                    period.endDate()));
+        } else {
+            // Two-period plan (30 days): one evaluation at the end of each biweekly period.
+            subscription.evaluations.add(new BiweeklyEvaluation(
+                    UUID.randomUUID(), patientId, 1,
+                    period.startDate().plusDays(PlanDuration.BIWEEKLY.getDays() - 1)));
+            subscription.evaluations.add(new BiweeklyEvaluation(
+                    UUID.randomUUID(), patientId, 2,
+                    period.endDate()));
+        }
+
+        subscription.addDomainEvent(new SubscriptionCreated(id, patientId, code));
+        return subscription;
+    }
+
+    /**
+     * Pauses the subscription for the given range.
+     * Validates that the current status is {@code ACTIVE}.
+     */
+    public void pause(PauseRange range, String reason) {
+        if (status != SubscriptionStatus.ACTIVE) {
+            throw SubscriptionErrors.subscriptionNotActive();
+        }
+        deliveryCalendar.pauseRange(range);
+        pauseRequests.add(new PauseRequest(UUID.randomUUID(), range, reason));
+        status = SubscriptionStatus.PAUSED;
+        addDomainEvent(new SubscriptionPaused(getId(), range));
+    }
+
+    /**
+     * Reactivates the subscription early, ending the active pause request.
+     * Validates that the current status is {@code PAUSED}.
+     */
+    public void reactivate(LocalDate reactivationDate) {
+        if (status != SubscriptionStatus.PAUSED) {
+            throw SubscriptionErrors.subscriptionNotPaused();
+        }
+        PauseRequest active = pauseRequests.stream()
+                .filter(PauseRequest::isActive)
+                .findFirst()
+                .orElseThrow(SubscriptionErrors::noPauseRequestActive);
+
+        active.earlyReactivate(reactivationDate);
+        deliveryCalendar.reactivateRange(active.getRange());
+        status = SubscriptionStatus.ACTIVE;
+        addDomainEvent(new SubscriptionReactivated(getId(), reactivationDate));
+    }
+
+    /**
+     * Modifies a single delivery day's details.
+     * The 48-hour rule is enforced inside {@link DeliveryDay#modify}.
+     */
+    public void modifyDeliveryDay(UUID dayId, DeliveryAddress address,
+            TimeWindow timeWindow, String instructions) {
+        DeliveryDay day = deliveryCalendar.findDayById(dayId)
+                .orElseThrow(() -> SubscriptionErrors.deliveryDayNotFound(dayId));
+        day.modify(address, timeWindow, instructions);
+        addDomainEvent(new DeliveryDayModified(getId(), dayId, day.getDate()));
+    }
+
+    /**
+     * Completes the subscription. Only allowed after the contract period has ended.
+     */
+    public void complete() {
+        if (status != SubscriptionStatus.ACTIVE) {
+            throw SubscriptionErrors.subscriptionNotActive();
+        }
+        if (!LocalDate.now().isAfter(contract.period().endDate())) {
+            throw SubscriptionErrors.subscriptionPeriodNotEnded();
+        }
+        status = SubscriptionStatus.COMPLETED;
+        addDomainEvent(new SubscriptionCompleted(getId()));
+    }
+
+    /**
+     * Cancels the subscription and all its pending/scheduled deliveries and
+     * evaluations.
+     */
+    public void cancel(String reason) {
+        status = SubscriptionStatus.CANCELLED;
+        deliveryCalendar.getDeliveryDays().stream()
+                .filter(d -> d.getStatus() == DeliveryDayStatus.SCHEDULED
+                        || d.getStatus() == DeliveryDayStatus.PAUSED)
+                .forEach(DeliveryDay::cancel);
+        evaluations.stream()
+                .filter(e -> e.getStatus() == EvaluationStatus.PENDING)
+                .forEach(BiweeklyEvaluation::cancel);
+        addDomainEvent(new SubscriptionCancelled(getId(), reason));
+    }
+
+    public UUID getPatientId() {
+        return patientId;
+    }
+
+    public UUID getDietPlanId() {
+        return dietPlanId;
+    }
+
+    public ContractCode getContractCode() {
+        return contractCode;
+    }
+
+    public ServiceContract getContract() {
+        return contract;
+    }
+
+    public DeliveryPreferences getPreferences() {
+        return preferences;
+    }
+
+    public DeliveryCalendar getDeliveryCalendar() {
+        return deliveryCalendar;
+    }
+
+    public SubscriptionStatus getStatus() {
+        return status;
+    }
+
+    public List<PauseRequest> getPauseRequests() {
+        return Collections.unmodifiableList(pauseRequests);
+    }
+
+    public List<BiweeklyEvaluation> getEvaluations() {
+        return Collections.unmodifiableList(evaluations);
+    }
+}
