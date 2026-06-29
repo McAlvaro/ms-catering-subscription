@@ -2,6 +2,8 @@
 
 # Diseño Táctico DDD — BC3: Suscripción y Calendario de Catering
 
+**Estudiante:** Alvaro Molina
+
 Modelo de Dominio — Diagrama de Clases
 
 # **1\. Identificación del Modelo de Dominio**
