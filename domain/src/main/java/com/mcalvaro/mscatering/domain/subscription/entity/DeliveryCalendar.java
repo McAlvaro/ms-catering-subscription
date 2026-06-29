@@ -60,6 +60,20 @@ public class DeliveryCalendar extends Entity {
                 .findFirst();
     }
 
+    /**
+     * Valida si quedaría al menos un día activo en el calendario si se excluye
+     * el día indicado (por ej. si se marcara como NO_ENTREGA). Implementa la regla
+     * INV-05.
+     */
+    public boolean hasActiveDaysAfterExcluding(UUID dayId) {
+        return deliveryDays.stream()
+                .filter(d -> !d.getId().equals(dayId))
+                .anyMatch(d -> d.getStatus() == DeliveryDayStatus.SCHEDULED
+                        || d.getStatus() == DeliveryDayStatus.PAUSED
+                        || d.getStatus() == DeliveryDayStatus.CONSOLIDATED
+                        || d.getStatus() == DeliveryDayStatus.DELIVERED);
+    }
+
     public List<DeliveryDay> getDaysForDate(LocalDate date) {
         return deliveryDays.stream()
                 .filter(d -> d.getDate().equals(date))

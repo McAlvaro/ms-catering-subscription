@@ -1,16 +1,17 @@
 package com.mcalvaro.mscatering.domain.subscription.entity;
 
-import com.mcalvaro.mscatering.domain.core.DomainException;
-import com.mcalvaro.mscatering.domain.core.Entity;
-import com.mcalvaro.mscatering.domain.subscription.enums.DeliveryDayStatus;
-import com.mcalvaro.mscatering.domain.subscription.vo.DeliveryAddress;
-import com.mcalvaro.mscatering.domain.subscription.vo.TimeWindow;
-
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.UUID;
+
+import com.mcalvaro.mscatering.domain.core.DomainException;
+import com.mcalvaro.mscatering.domain.core.Entity;
+import com.mcalvaro.mscatering.domain.subscription.SubscriptionErrors;
+import com.mcalvaro.mscatering.domain.subscription.enums.DeliveryDayStatus;
+import com.mcalvaro.mscatering.domain.subscription.vo.DeliveryAddress;
+import com.mcalvaro.mscatering.domain.subscription.vo.TimeWindow;
 
 /**
  * Entity representing a single physical delivery on a given date
@@ -45,6 +46,10 @@ public class DeliveryDay extends Entity {
      * 48 hours away and the current status is {@code SCHEDULED}.
      */
     public void modify(DeliveryAddress newAddress, TimeWindow newTimeWindow, String newInstructions) {
+        if (status == DeliveryDayStatus.CONSOLIDATED || status == DeliveryDayStatus.DELIVERED
+                || status == DeliveryDayStatus.FAILED) {
+            throw SubscriptionErrors.deliveryDayBlocked();
+        }
         if (status != DeliveryDayStatus.SCHEDULED) {
             throw new DomainException("SUB-002",
                     "Delivery day cannot be modified: current status is " + status);
@@ -52,22 +57,25 @@ public class DeliveryDay extends Entity {
         LocalDateTime deliveryMidnight = date.atStartOfDay();
         LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
         if (!now.plusHours(48).isBefore(deliveryMidnight)) {
-            throw new DomainException("SUB-002",
-                    "Delivery day cannot be modified within 48 hours of delivery.");
+            throw SubscriptionErrors.cannotModifyDeliveryWithin48Hours();
         }
         this.address = newAddress;
         this.timeWindow = newTimeWindow;
         this.instructions = newInstructions;
     }
 
-    public void markDelivered() {
+    public void markAsDelivered() {
         this.status = DeliveryDayStatus.DELIVERED;
         this.deliveredAt = Instant.now();
     }
 
-    public void markNotDelivered(String reason) {
-        this.status = DeliveryDayStatus.NOT_DELIVERED;
+    public void markAsFailed(String reason) {
+        this.status = DeliveryDayStatus.FAILED;
         this.failureReason = reason;
+    }
+
+    public void markAsNoDelivery() {
+        this.status = DeliveryDayStatus.NOT_DELIVERED;
     }
 
     public void pause() {
@@ -82,7 +90,8 @@ public class DeliveryDay extends Entity {
         this.status = DeliveryDayStatus.CANCELLED;
     }
 
-    public void markConsolidated() {
+    public void markAsConsolidated() {
+        this.status = DeliveryDayStatus.CONSOLIDATED;
         this.consolidatedAt = Instant.now();
     }
 

@@ -1,16 +1,16 @@
 package com.mcalvaro.mscatering.domain.subscription.enums;
 
-import com.mcalvaro.mscatering.domain.core.DomainException;
-
 import java.util.Arrays;
+
+import com.mcalvaro.mscatering.domain.core.DomainException;
 
 /**
  * Enum representing the allowed subscription plan durations.
  * <p>
  * The business defines exactly two plan types:
  * <ul>
- *   <li>{@link #BIWEEKLY} — 15-day plan (quincenal): 1 biweekly evaluation.</li>
- *   <li>{@link #MONTHLY}  — 30-day plan (mensual):   2 biweekly evaluations.</li>
+ * <li>{@link #BIWEEKLY} — 15-day plan (quincenal): 1 biweekly evaluation.</li>
+ * <li>{@link #MONTHLY} — 30-day plan (mensual): 2 biweekly evaluations.</li>
  * </ul>
  * <p>
  * Encoding the allowed durations as an enum eliminates magic numbers

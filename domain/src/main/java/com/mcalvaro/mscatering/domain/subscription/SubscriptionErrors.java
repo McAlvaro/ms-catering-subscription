@@ -51,4 +51,14 @@ public final class SubscriptionErrors {
     public static DomainException noPauseRequestActive() {
         return new DomainException("SUB-010", "No active pause request found for this subscription.");
     }
+
+    public static DomainException deliveryDayBlocked() {
+        return new DomainException("SUB-011",
+                "Cannot modify delivery day: it has already been consolidated or processed.");
+    }
+
+    public static DomainException calendarNoActiveDays() {
+        return new DomainException("SUB-012",
+                "Cannot mark as NO_DELIVERY: the calendar would have no active delivery days left.");
+    }
 }
