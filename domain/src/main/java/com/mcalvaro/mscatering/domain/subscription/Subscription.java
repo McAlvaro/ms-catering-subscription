@@ -15,7 +15,11 @@ import com.mcalvaro.mscatering.domain.subscription.entity.PauseRequest;
 import com.mcalvaro.mscatering.domain.subscription.enums.DeliveryDayStatus;
 import com.mcalvaro.mscatering.domain.subscription.enums.EvaluationStatus;
 import com.mcalvaro.mscatering.domain.subscription.enums.SubscriptionStatus;
+import com.mcalvaro.mscatering.domain.subscription.event.BiweeklyEvaluationCompleted;
+import com.mcalvaro.mscatering.domain.subscription.event.DeliveryDayCancelled;
 import com.mcalvaro.mscatering.domain.subscription.event.DeliveryDayModified;
+import com.mcalvaro.mscatering.domain.subscription.event.DeliveryConfirmed;
+import com.mcalvaro.mscatering.domain.subscription.event.DeliveryFailed;
 import com.mcalvaro.mscatering.domain.subscription.event.SubscriptionCancelled;
 import com.mcalvaro.mscatering.domain.subscription.event.SubscriptionCompleted;
 import com.mcalvaro.mscatering.domain.subscription.event.SubscriptionCreated;
@@ -164,6 +168,7 @@ public class Subscription extends AggregateRoot {
         DeliveryDay day = deliveryCalendar.findDayById(dayId)
                 .orElseThrow(() -> SubscriptionErrors.deliveryDayNotFound(dayId));
         day.markAsNoDelivery();
+        addDomainEvent(new DeliveryDayCancelled(getId(), dayId));
     }
 
     public void updateDeliveryPreferences(DeliveryPreferences newPreferences) {
@@ -174,12 +179,14 @@ public class Subscription extends AggregateRoot {
         DeliveryDay day = deliveryCalendar.findDayById(dayId)
                 .orElseThrow(() -> SubscriptionErrors.deliveryDayNotFound(dayId));
         day.markAsDelivered();
+        addDomainEvent(new DeliveryConfirmed(getId(), dayId));
     }
 
     public void registerFailedDelivery(UUID dayId, String reason) {
         DeliveryDay day = deliveryCalendar.findDayById(dayId)
                 .orElseThrow(() -> SubscriptionErrors.deliveryDayNotFound(dayId));
         day.markAsFailed(reason);
+        addDomainEvent(new DeliveryFailed(getId(), dayId, reason));
     }
 
     public void markEvaluationCompleted(UUID evaluationId, LocalDate completedAt) {
@@ -188,6 +195,7 @@ public class Subscription extends AggregateRoot {
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Evaluation not found"));
         evaluation.markCompleted(completedAt);
+        addDomainEvent(new BiweeklyEvaluationCompleted(getId(), evaluationId, completedAt));
     }
 
     /**
