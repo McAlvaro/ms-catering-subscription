@@ -1,10 +1,10 @@
 package com.mcalvaro.mscatering.infrastructure.service;
 
 import com.mcalvaro.mscatering.domain.core.DomainException;
+import com.mcalvaro.mscatering.domain.patient.IPatientReferenceRepository;
+import com.mcalvaro.mscatering.domain.patient.PatientReference;
 import com.mcalvaro.mscatering.domain.subscription.enums.SubscriptionStatus;
 import com.mcalvaro.mscatering.domain.subscription.service.SubscriptionDuplicationValidator;
-import com.mcalvaro.mscatering.infrastructure.persistence.patient.entity.PatientReferenceJpaEntity;
-import com.mcalvaro.mscatering.infrastructure.persistence.patient.repository.SpringDataPatientReferenceRepository;
 import com.mcalvaro.mscatering.infrastructure.persistence.subscription.repository.SpringDataSubscriptionRepository;
 import org.springframework.stereotype.Component;
 
@@ -15,11 +15,11 @@ import java.util.UUID;
 public class DefaultSubscriptionDuplicationValidator implements SubscriptionDuplicationValidator {
 
     private final SpringDataSubscriptionRepository subscriptionRepository;
-    private final SpringDataPatientReferenceRepository patientRepository;
+    private final IPatientReferenceRepository patientRepository;
 
     public DefaultSubscriptionDuplicationValidator(
             SpringDataSubscriptionRepository subscriptionRepository,
-            SpringDataPatientReferenceRepository patientRepository) {
+            IPatientReferenceRepository patientRepository) {
         this.subscriptionRepository = subscriptionRepository;
         this.patientRepository = patientRepository;
     }
@@ -27,7 +27,7 @@ public class DefaultSubscriptionDuplicationValidator implements SubscriptionDupl
     @Override
     public void validate(UUID patientId) {
         // 1. Validar que el paciente exista y esté activo (Read Model local)
-        PatientReferenceJpaEntity patient = patientRepository.findById(patientId)
+        PatientReference patient = patientRepository.findById(patientId)
                 .orElseThrow(() -> new DomainException("SUB-014", "Patient not found."));
 
         if (!patient.isActive()) {
