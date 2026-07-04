@@ -25,7 +25,7 @@ public record ValidityPeriod(LocalDate startDate, LocalDate endDate) {
 
     /** Returns the number of days in the period (derived, not stored). */
     public int durationDays() {
-        return (int) ChronoUnit.DAYS.between(startDate, endDate);
+        return (int) ChronoUnit.DAYS.between(startDate, endDate) + 1;
     }
 
     /**

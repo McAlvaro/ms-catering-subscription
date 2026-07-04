@@ -40,6 +40,6 @@ public enum PlanDuration {
                 .filter(d -> d.days == days)
                 .findFirst()
                 .orElseThrow(() -> new DomainException(
-                        "SUB-005", "Plan duration must be 15 or 30 days, got: " + days));
+                        "SUB-005", "La duración del plan debe ser de 15 o 30 días, se obtuvo: " + days));
     }
 }

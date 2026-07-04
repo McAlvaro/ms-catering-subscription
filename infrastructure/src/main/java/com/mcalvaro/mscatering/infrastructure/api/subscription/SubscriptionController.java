@@ -25,6 +25,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -41,18 +42,17 @@ public class SubscriptionController {
     }
 
     @PostMapping
-    public ResponseEntity<UUID> create(@RequestBody CreateSubscriptionRequest request) {
+    public ResponseEntity<UUID> create(@Valid @RequestBody CreateSubscriptionRequest request) {
         UUID subscriptionId = UUID.randomUUID();
-        
+
         ValidityPeriod period = new ValidityPeriod(request.startDate(), request.endDate());
         ServiceContract contract = new ServiceContract(
                 request.dietPlanId(),
                 period,
-                ServiceType.valueOf(request.serviceType()),
+                request.serviceType(),
                 request.totalPrice(),
                 request.acceptedConditions(),
-                Instant.now()
-        );
+                Instant.now());
 
         DeliveryAddress address = new DeliveryAddress(
                 request.prefStreet(),
@@ -61,8 +61,7 @@ public class SubscriptionController {
                 request.prefReference(),
                 request.prefLatitude(),
                 request.prefLongitude(),
-                request.prefPhone()
-        );
+                request.prefPhone());
         TimeWindow window = new TimeWindow(request.prefTimeStart(), request.prefTimeEnd());
         DeliveryPreferences preferences = new DeliveryPreferences(address, window, request.prefSpecialInstructions());
 
@@ -71,8 +70,7 @@ public class SubscriptionController {
                 request.patientId(),
                 request.dietPlanId(),
                 contract,
-                preferences
-        );
+                preferences);
 
         UUID resultId = pipeline.send(command);
         return ResponseEntity.status(HttpStatus.CREATED).body(resultId);
@@ -107,7 +105,7 @@ public class SubscriptionController {
             @PathVariable UUID id,
             @PathVariable UUID dayId,
             @RequestBody ModifyDeliveryDayRequest request) {
-        
+
         DeliveryAddress address = new DeliveryAddress(
                 request.street(),
                 request.number(),
@@ -115,8 +113,7 @@ public class SubscriptionController {
                 request.reference(),
                 request.latitude(),
                 request.longitude(),
-                request.phone()
-        );
+                request.phone());
         TimeWindow window = new TimeWindow(request.startTime(), request.endTime());
 
         pipeline.send(new ModifyDeliveryDayCommand(id, dayId, address, window, request.instructions()));
@@ -169,7 +166,7 @@ public class SubscriptionController {
     public ResponseEntity<Void> updatePreferences(
             @PathVariable UUID id,
             @RequestBody UpdateDeliveryPreferencesRequest request) {
-        
+
         DeliveryAddress address = new DeliveryAddress(
                 request.street(),
                 request.number(),
@@ -177,8 +174,7 @@ public class SubscriptionController {
                 request.reference(),
                 request.latitude(),
                 request.longitude(),
-                request.phone()
-        );
+                request.phone());
         TimeWindow window = new TimeWindow(request.startTime(), request.endTime());
         DeliveryPreferences preferences = new DeliveryPreferences(address, window, request.specialInstructions());
 

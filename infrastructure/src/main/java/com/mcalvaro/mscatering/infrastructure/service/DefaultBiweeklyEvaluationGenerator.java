@@ -20,7 +20,7 @@ public class DefaultBiweeklyEvaluationGenerator implements BiweeklyEvaluationGen
 
         if (duration == PlanDuration.BIWEEKLY) {
             // 1 evaluación en el día 15 (endDate)
-            LocalDate evalDate = startDate.plusDays(15);
+            LocalDate evalDate = startDate.plusDays(14);
             evaluations.add(new BiweeklyEvaluation(
                     UUID.randomUUID(),
                     patientId,
@@ -28,8 +28,8 @@ public class DefaultBiweeklyEvaluationGenerator implements BiweeklyEvaluationGen
                     adjustToWorkingDay(evalDate)));
         } else if (duration == PlanDuration.MONTHLY) {
             // 2 evaluaciones: en el día 15 y en el día 30 (endDate)
-            LocalDate eval1Date = startDate.plusDays(15);
-            LocalDate eval2Date = startDate.plusDays(30);
+            LocalDate eval1Date = startDate.plusDays(14);
+            LocalDate eval2Date = startDate.plusDays(29);
 
             evaluations.add(new BiweeklyEvaluation(
                     UUID.randomUUID(),
