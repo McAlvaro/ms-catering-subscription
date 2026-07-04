@@ -1,0 +1,54 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1.0-create-pause-requests
+      author: alvaro
+      changes:
+        - createTable:
+            tableName: pause_requests
+            columns:
+              - column:
+                  name: id
+                  type: binary(16)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: subscription_id
+                  type: binary(16)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: range_start
+                  type: date
+                  constraints:
+                    nullable: false
+              - column:
+                  name: range_end
+                  type: date
+                  constraints:
+                    nullable: false
+              - column:
+                  name: reason
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: actual_end_date
+                  type: date
+              - column:
+                  name: created_at
+                  type: datetime
+                  constraints:
+                    nullable: false
+              - column:
+                  name: active
+                  type: boolean
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: pause_requests
+            baseColumnNames: subscription_id
+            referencedTableName: subscriptions
+            referencedColumnNames: id
+            constraintName: fk_pause_req_subscription
+            onDelete: CASCADE

@@ -21,12 +21,13 @@ public class GlobalExceptionHandler {
         String message = ex.getMessage();
         HttpStatus status = HttpStatus.BAD_REQUEST;
         String errorCode = "BAD_REQUEST";
-        
-        if (message != null && (message.toLowerCase().contains("not found") || message.toLowerCase().contains("no existe"))) {
+
+        if (message != null
+                && (message.toLowerCase().contains("not found") || message.toLowerCase().contains("no existe"))) {
             status = HttpStatus.NOT_FOUND;
             errorCode = "NOT_FOUND";
         }
-        
+
         ApiErrorResponse response = new ApiErrorResponse(errorCode, message);
         return ResponseEntity.status(status).body(response);
     }

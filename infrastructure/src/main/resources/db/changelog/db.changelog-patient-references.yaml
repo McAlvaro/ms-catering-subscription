@@ -1,0 +1,24 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1.0-create-patient-references
+      author: alvaro
+      changes:
+        - createTable:
+            tableName: patient_references
+            columns:
+              - column:
+                  name: patient_id
+                  type: binary(16)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: active
+                  type: boolean
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: datetime
+                  constraints:
+                    nullable: false

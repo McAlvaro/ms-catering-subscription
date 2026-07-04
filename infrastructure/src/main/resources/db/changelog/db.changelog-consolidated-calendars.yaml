@@ -1,0 +1,35 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1.0-create-consolidated-calendars
+      author: alvaro
+      changes:
+        - createTable:
+            tableName: consolidated_calendars
+            columns:
+              - column:
+                  name: id
+                  type: binary(16)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: date
+                  type: date
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: varchar(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: total_deliveries
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: closed_at
+                  type: datetime
+              - column:
+                  name: closed_by
+                  type: varchar(100)

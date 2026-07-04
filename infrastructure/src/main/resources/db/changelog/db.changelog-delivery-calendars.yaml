@@ -1,0 +1,37 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1.0-create-delivery-calendars
+      author: alvaro
+      changes:
+        - createTable:
+            tableName: delivery_calendars
+            columns:
+              - column:
+                  name: id
+                  type: binary(16)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: subscription_id
+                  type: binary(16)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: period_start
+                  type: date
+                  constraints:
+                    nullable: false
+              - column:
+                  name: period_end
+                  type: date
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: delivery_calendars
+            baseColumnNames: subscription_id
+            referencedTableName: subscriptions
+            referencedColumnNames: id
+            constraintName: fk_del_cal_subscription
+            onDelete: CASCADE

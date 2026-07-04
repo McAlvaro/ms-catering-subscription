@@ -1,0 +1,17 @@
+databaseChangeLog:
+  - include:
+      file: db/changelog/db.changelog-patient-references.yaml
+  - include:
+      file: db/changelog/db.changelog-subscriptions.yaml
+  - include:
+      file: db/changelog/db.changelog-delivery-calendars.yaml
+  - include:
+      file: db/changelog/db.changelog-delivery-days.yaml
+  - include:
+      file: db/changelog/db.changelog-pause-requests.yaml
+  - include:
+      file: db/changelog/db.changelog-biweekly-evaluations.yaml
+  - include:
+      file: db/changelog/db.changelog-consolidated-calendars.yaml
+  - include:
+      file: db/changelog/db.changelog-consolidated-lines.yaml

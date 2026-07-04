@@ -1,0 +1,108 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1.0-create-subscriptions
+      author: alvaro
+      changes:
+        - createTable:
+            tableName: subscriptions
+            columns:
+              - column:
+                  name: id
+                  type: binary(16)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: patient_id
+                  type: binary(16)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: diet_plan_id
+                  type: binary(16)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: contract_code
+                  type: varchar(20)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: status
+                  type: varchar(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: contract_start_date
+                  type: date
+                  constraints:
+                    nullable: false
+              - column:
+                  name: contract_end_date
+                  type: date
+                  constraints:
+                    nullable: false
+              - column:
+                  name: contract_duration_days
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: service_type
+                  type: varchar(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: total_price
+                  type: decimal(10,2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: accepted_conditions
+                  type: text
+                  constraints:
+                    nullable: false
+              - column:
+                  name: signed_at
+                  type: datetime
+                  constraints:
+                    nullable: false
+              - column:
+                  name: pref_street
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: pref_number
+                  type: varchar(50)
+              - column:
+                  name: pref_city
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: pref_reference
+                  type: varchar(255)
+              - column:
+                  name: pref_latitude
+                  type: double
+              - column:
+                  name: pref_longitude
+                  type: double
+              - column:
+                  name: pref_phone
+                  type: varchar(50)
+              - column:
+                  name: pref_time_start
+                  type: varchar(10)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: pref_time_end
+                  type: varchar(10)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: pref_special_instructions
+                  type: varchar(255)

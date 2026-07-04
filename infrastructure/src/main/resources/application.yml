@@ -7,9 +7,9 @@ spring:
 
   # ── MySQL ──────────────────────────────────────────────────────────
   datasource:
-    url: jdbc:mysql://localhost:3306/ms_catering_subscription?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-    username: root
-    password: root
+    url: jdbc:mysql://127.0.0.1:3325/ms_catering_subscription?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: admin_db
+    password: 123456
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   # ── JPA / Hibernate ────────────────────────────────────────────────
@@ -24,7 +24,7 @@ spring:
 
   # ── Liquibase ──────────────────────────────────────────────────────
   liquibase:
-    change-log: classpath:db/changelog/db.changelog-master.xml
+    change-log: classpath:db/changelog/db.changelog-master.yaml
     enabled: true
 
 # ── Swagger / SpringDoc ──────────────────────────────────────────────

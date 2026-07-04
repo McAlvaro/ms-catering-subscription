@@ -1,0 +1,49 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1.0-create-biweekly-evaluations
+      author: alvaro
+      changes:
+        - createTable:
+            tableName: biweekly_evaluations
+            columns:
+              - column:
+                  name: id
+                  type: binary(16)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: subscription_id
+                  type: binary(16)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: patient_id
+                  type: binary(16)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: evaluation_number
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: scheduled_date
+                  type: date
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: varchar(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: completed_date
+                  type: date
+        - addForeignKeyConstraint:
+            baseTableName: biweekly_evaluations
+            baseColumnNames: subscription_id
+            referencedTableName: subscriptions
+            referencedColumnNames: id
+            constraintName: fk_biweekly_eval_subscription
+            onDelete: CASCADE
