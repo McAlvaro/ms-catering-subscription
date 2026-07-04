@@ -29,8 +29,9 @@ public class PipelinrConfig {
      */
     @Bean
     @SuppressWarnings("rawtypes")
-    Pipeline pipeline(ObjectProvider<Command.Handler> handlers) {
+    Pipeline pipeline(ObjectProvider<Command.Handler> handlers, ObjectProvider<Command.Middleware> middlewares) {
         return new Pipelinr()
-                .with((CommandHandlers) handlers::stream);
+                .with(() -> handlers.stream())
+                .with(() -> middlewares.stream());
     }
 }
