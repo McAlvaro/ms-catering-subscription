@@ -1,6 +1,6 @@
 package com.mcalvaro.mscatering.infrastructure.config;
 
-import com.mcalvaro.mscatering.application.abstractions.UnitOfWork;
+import com.mcalvaro.mscatering.application.abstractions.DomainEventDispatcher;
 
 import com.mcalvaro.mscatering.application.consolidatedcalendar.CloseConsolidatedCalendar.CloseConsolidatedCalendarCommandHandler;
 import com.mcalvaro.mscatering.application.consolidatedcalendar.GetConsolidatedCalendarByDate.GetConsolidatedCalendarByDateQueryHandler;
@@ -54,8 +54,8 @@ public class ApplicationBeansConfig {
     @Bean
     SavePatientReferenceCommandHandler savePatientReferenceCommandHandler(
             IPatientReferenceRepository patientRepository,
-            UnitOfWork unitOfWork) {
-        return new SavePatientReferenceCommandHandler(patientRepository, unitOfWork);
+            DomainEventDispatcher domainEventDispatcher) {
+        return new SavePatientReferenceCommandHandler(patientRepository, domainEventDispatcher);
     }
 
     // ========================================================================
@@ -67,79 +67,79 @@ public class ApplicationBeansConfig {
             ISubscriptionRepository subscriptionRepository,
             SubscriptionDuplicationValidator duplicationValidator,
             BiweeklyEvaluationGenerator evaluationGenerator,
-            UnitOfWork unitOfWork) {
+            DomainEventDispatcher domainEventDispatcher) {
         return new CreateSubscriptionCommandHandler(
-                subscriptionRepository, duplicationValidator, evaluationGenerator, unitOfWork);
+                subscriptionRepository, duplicationValidator, evaluationGenerator, domainEventDispatcher);
     }
 
     @Bean
     PauseSubscriptionCommandHandler pauseSubscriptionCommandHandler(
             ISubscriptionRepository subscriptionRepository,
-            UnitOfWork unitOfWork) {
-        return new PauseSubscriptionCommandHandler(subscriptionRepository, unitOfWork);
+            DomainEventDispatcher domainEventDispatcher) {
+        return new PauseSubscriptionCommandHandler(subscriptionRepository, domainEventDispatcher);
     }
 
     @Bean
     ReactivateSubscriptionCommandHandler reactivateSubscriptionCommandHandler(
             ISubscriptionRepository subscriptionRepository,
-            UnitOfWork unitOfWork) {
-        return new ReactivateSubscriptionCommandHandler(subscriptionRepository, unitOfWork);
+            DomainEventDispatcher domainEventDispatcher) {
+        return new ReactivateSubscriptionCommandHandler(subscriptionRepository, domainEventDispatcher);
     }
 
     @Bean
     ModifyDeliveryDayCommandHandler modifyDeliveryDayCommandHandler(
             ISubscriptionRepository subscriptionRepository,
-            UnitOfWork unitOfWork) {
-        return new ModifyDeliveryDayCommandHandler(subscriptionRepository, unitOfWork);
+            DomainEventDispatcher domainEventDispatcher) {
+        return new ModifyDeliveryDayCommandHandler(subscriptionRepository, domainEventDispatcher);
     }
 
     @Bean
     MarkNoDeliveryCommandHandler markNoDeliveryCommandHandler(
             ISubscriptionRepository subscriptionRepository,
-            UnitOfWork unitOfWork) {
-        return new MarkNoDeliveryCommandHandler(subscriptionRepository, unitOfWork);
+            DomainEventDispatcher domainEventDispatcher) {
+        return new MarkNoDeliveryCommandHandler(subscriptionRepository, domainEventDispatcher);
     }
 
     @Bean
     CancelSubscriptionCommandHandler cancelSubscriptionCommandHandler(
             ISubscriptionRepository subscriptionRepository,
-            UnitOfWork unitOfWork) {
-        return new CancelSubscriptionCommandHandler(subscriptionRepository, unitOfWork);
+            DomainEventDispatcher domainEventDispatcher) {
+        return new CancelSubscriptionCommandHandler(subscriptionRepository, domainEventDispatcher);
     }
 
     @Bean
     CompleteSubscriptionCommandHandler completeSubscriptionCommandHandler(
             ISubscriptionRepository subscriptionRepository,
-            UnitOfWork unitOfWork) {
-        return new CompleteSubscriptionCommandHandler(subscriptionRepository, unitOfWork);
+            DomainEventDispatcher domainEventDispatcher) {
+        return new CompleteSubscriptionCommandHandler(subscriptionRepository, domainEventDispatcher);
     }
 
     @Bean
     ConfirmDeliveryCommandHandler confirmDeliveryCommandHandler(
             ISubscriptionRepository subscriptionRepository,
-            UnitOfWork unitOfWork) {
-        return new ConfirmDeliveryCommandHandler(subscriptionRepository, unitOfWork);
+            DomainEventDispatcher domainEventDispatcher) {
+        return new ConfirmDeliveryCommandHandler(subscriptionRepository, domainEventDispatcher);
     }
 
     @Bean
     RegisterFailedDeliveryCommandHandler registerFailedDeliveryCommandHandler(
             ISubscriptionRepository subscriptionRepository,
-            UnitOfWork unitOfWork) {
-        return new RegisterFailedDeliveryCommandHandler(subscriptionRepository, unitOfWork);
+            DomainEventDispatcher domainEventDispatcher) {
+        return new RegisterFailedDeliveryCommandHandler(subscriptionRepository, domainEventDispatcher);
     }
 
     @Bean
     MarkEvaluationCompletedCommandHandler markEvaluationCompletedCommandHandler(
             ISubscriptionRepository subscriptionRepository,
-            UnitOfWork unitOfWork) {
-        return new MarkEvaluationCompletedCommandHandler(subscriptionRepository, unitOfWork);
+            DomainEventDispatcher domainEventDispatcher) {
+        return new MarkEvaluationCompletedCommandHandler(subscriptionRepository, domainEventDispatcher);
     }
 
     @Bean
     UpdateDeliveryPreferencesCommandHandler updateDeliveryPreferencesCommandHandler(
             ISubscriptionRepository subscriptionRepository,
-            UnitOfWork unitOfWork) {
-        return new UpdateDeliveryPreferencesCommandHandler(subscriptionRepository, unitOfWork);
+            DomainEventDispatcher domainEventDispatcher) {
+        return new UpdateDeliveryPreferencesCommandHandler(subscriptionRepository, domainEventDispatcher);
     }
 
     // ========================================================================
@@ -160,9 +160,9 @@ public class ApplicationBeansConfig {
     CloseConsolidatedCalendarCommandHandler closeConsolidatedCalendarCommandHandler(
             DailyConsolidator dailyConsolidator,
             IConsolidatedCalendarRepository calendarRepository,
-            UnitOfWork unitOfWork) {
+            DomainEventDispatcher domainEventDispatcher) {
         return new CloseConsolidatedCalendarCommandHandler(
-                dailyConsolidator, calendarRepository, unitOfWork);
+                dailyConsolidator, calendarRepository, domainEventDispatcher);
     }
 
     // ========================================================================

@@ -222,9 +222,11 @@ public class Subscription extends AggregateRoot {
                 .filter(d -> d.getStatus() == DeliveryDayStatus.SCHEDULED
                         || d.getStatus() == DeliveryDayStatus.PAUSED)
                 .forEach(DeliveryDay::cancel);
+
         evaluations.stream()
                 .filter(e -> e.getStatus() == EvaluationStatus.PENDING)
                 .forEach(BiweeklyEvaluation::cancel);
+
         addDomainEvent(new SubscriptionCancelled(getId(), reason));
     }
 

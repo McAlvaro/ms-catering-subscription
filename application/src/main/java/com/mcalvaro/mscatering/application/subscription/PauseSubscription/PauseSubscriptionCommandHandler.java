@@ -2,7 +2,7 @@ package com.mcalvaro.mscatering.application.subscription.PauseSubscription;
 
 import an.awesome.pipelinr.Command;
 
-import com.mcalvaro.mscatering.application.abstractions.UnitOfWork;
+import com.mcalvaro.mscatering.application.abstractions.DomainEventDispatcher;
 import com.mcalvaro.mscatering.domain.subscription.ISubscriptionRepository;
 import com.mcalvaro.mscatering.domain.subscription.Subscription;
 
@@ -16,12 +16,12 @@ import com.mcalvaro.mscatering.domain.subscription.Subscription;
 public class PauseSubscriptionCommandHandler implements Command.Handler<PauseSubscriptionCommand, Void> {
 
     private final ISubscriptionRepository subscriptionRepository;
-    private final UnitOfWork unitOfWork;
+    private final DomainEventDispatcher domainEventDispatcher;
 
     public PauseSubscriptionCommandHandler(ISubscriptionRepository subscriptionRepository,
-            UnitOfWork unitOfWork) {
+            DomainEventDispatcher domainEventDispatcher) {
         this.subscriptionRepository = subscriptionRepository;
-        this.unitOfWork = unitOfWork;
+        this.domainEventDispatcher = domainEventDispatcher;
     }
 
     @Override
@@ -33,7 +33,7 @@ public class PauseSubscriptionCommandHandler implements Command.Handler<PauseSub
         subscription.pause(command.range(), command.reason());
 
         subscriptionRepository.save(subscription);
-        unitOfWork.commit();
+        domainEventDispatcher.dispatch();
         return null;
     }
 }

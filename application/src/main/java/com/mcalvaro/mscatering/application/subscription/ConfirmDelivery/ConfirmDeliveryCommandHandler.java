@@ -2,19 +2,19 @@ package com.mcalvaro.mscatering.application.subscription.ConfirmDelivery;
 
 import an.awesome.pipelinr.Command;
 
-import com.mcalvaro.mscatering.application.abstractions.UnitOfWork;
+import com.mcalvaro.mscatering.application.abstractions.DomainEventDispatcher;
 import com.mcalvaro.mscatering.domain.subscription.ISubscriptionRepository;
 import com.mcalvaro.mscatering.domain.subscription.Subscription;
 
 public class ConfirmDeliveryCommandHandler implements Command.Handler<ConfirmDeliveryCommand, Void> {
 
     private final ISubscriptionRepository subscriptionRepository;
-    private final UnitOfWork unitOfWork;
+    private final DomainEventDispatcher domainEventDispatcher;
 
     public ConfirmDeliveryCommandHandler(ISubscriptionRepository subscriptionRepository,
-            UnitOfWork unitOfWork) {
+            DomainEventDispatcher domainEventDispatcher) {
         this.subscriptionRepository = subscriptionRepository;
-        this.unitOfWork = unitOfWork;
+        this.domainEventDispatcher = domainEventDispatcher;
     }
 
     @Override
@@ -26,7 +26,7 @@ public class ConfirmDeliveryCommandHandler implements Command.Handler<ConfirmDel
         subscription.confirmDelivery(command.deliveryDayId());
 
         subscriptionRepository.save(subscription);
-        unitOfWork.commit();
+        domainEventDispatcher.dispatch();
         return null;
     }
 }

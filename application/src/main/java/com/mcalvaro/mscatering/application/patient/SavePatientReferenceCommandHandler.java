@@ -1,20 +1,20 @@
 package com.mcalvaro.mscatering.application.patient;
 
 import an.awesome.pipelinr.Command;
-import com.mcalvaro.mscatering.application.abstractions.UnitOfWork;
+import com.mcalvaro.mscatering.application.abstractions.DomainEventDispatcher;
 import com.mcalvaro.mscatering.domain.patient.IPatientReferenceRepository;
 import com.mcalvaro.mscatering.domain.patient.PatientReference;
 
 public class SavePatientReferenceCommandHandler implements Command.Handler<SavePatientReferenceCommand, Void> {
 
     private final IPatientReferenceRepository patientRepository;
-    private final UnitOfWork unitOfWork;
+    private final DomainEventDispatcher domainEventDispatcher;
 
     public SavePatientReferenceCommandHandler(
             IPatientReferenceRepository patientRepository,
-            UnitOfWork unitOfWork) {
+            DomainEventDispatcher domainEventDispatcher) {
         this.patientRepository = patientRepository;
-        this.unitOfWork = unitOfWork;
+        this.domainEventDispatcher = domainEventDispatcher;
     }
 
     @Override
@@ -24,7 +24,7 @@ public class SavePatientReferenceCommandHandler implements Command.Handler<SaveP
                 command.active(),
                 command.updatedAt() != null ? command.updatedAt() : java.time.Instant.now());
         patientRepository.save(patientReference);
-        unitOfWork.commit();
+        domainEventDispatcher.dispatch();
         return null;
     }
 }

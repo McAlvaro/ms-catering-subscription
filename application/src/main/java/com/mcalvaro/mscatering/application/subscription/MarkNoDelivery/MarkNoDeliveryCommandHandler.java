@@ -2,7 +2,7 @@ package com.mcalvaro.mscatering.application.subscription.MarkNoDelivery;
 
 import an.awesome.pipelinr.Command;
 
-import com.mcalvaro.mscatering.application.abstractions.UnitOfWork;
+import com.mcalvaro.mscatering.application.abstractions.DomainEventDispatcher;
 import com.mcalvaro.mscatering.domain.subscription.ISubscriptionRepository;
 import com.mcalvaro.mscatering.domain.subscription.Subscription;
 
@@ -15,12 +15,12 @@ import com.mcalvaro.mscatering.domain.subscription.Subscription;
 public class MarkNoDeliveryCommandHandler implements Command.Handler<MarkNoDeliveryCommand, Void> {
 
     private final ISubscriptionRepository subscriptionRepository;
-    private final UnitOfWork unitOfWork;
+    private final DomainEventDispatcher domainEventDispatcher;
 
     public MarkNoDeliveryCommandHandler(ISubscriptionRepository subscriptionRepository,
-            UnitOfWork unitOfWork) {
+            DomainEventDispatcher domainEventDispatcher) {
         this.subscriptionRepository = subscriptionRepository;
-        this.unitOfWork = unitOfWork;
+        this.domainEventDispatcher = domainEventDispatcher;
     }
 
     @Override
@@ -32,7 +32,7 @@ public class MarkNoDeliveryCommandHandler implements Command.Handler<MarkNoDeliv
         subscription.markNoDelivery(command.deliveryDayId());
 
         subscriptionRepository.save(subscription);
-        unitOfWork.commit();
+        domainEventDispatcher.dispatch();
         return null;
     }
 }

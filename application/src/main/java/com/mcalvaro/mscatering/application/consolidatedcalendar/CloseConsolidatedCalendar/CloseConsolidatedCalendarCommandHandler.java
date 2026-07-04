@@ -2,7 +2,7 @@ package com.mcalvaro.mscatering.application.consolidatedcalendar.CloseConsolidat
 
 import an.awesome.pipelinr.Command;
 
-import com.mcalvaro.mscatering.application.abstractions.UnitOfWork;
+import com.mcalvaro.mscatering.application.abstractions.DomainEventDispatcher;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.ConsolidatedCalendar;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.IConsolidatedCalendarRepository;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.service.DailyConsolidator;
@@ -28,14 +28,14 @@ public class CloseConsolidatedCalendarCommandHandler
 
     private final DailyConsolidator dailyConsolidator;
     private final IConsolidatedCalendarRepository calendarRepository;
-    private final UnitOfWork unitOfWork;
+    private final DomainEventDispatcher domainEventDispatcher;
 
     public CloseConsolidatedCalendarCommandHandler(DailyConsolidator dailyConsolidator,
             IConsolidatedCalendarRepository calendarRepository,
-            UnitOfWork unitOfWork) {
+            DomainEventDispatcher domainEventDispatcher) {
         this.dailyConsolidator = dailyConsolidator;
         this.calendarRepository = calendarRepository;
-        this.unitOfWork = unitOfWork;
+        this.domainEventDispatcher = domainEventDispatcher;
     }
 
     @Override
@@ -48,7 +48,7 @@ public class CloseConsolidatedCalendarCommandHandler
 
         // 3. Persist and commit atomically
         calendarRepository.save(calendar);
-        unitOfWork.commit();
+        domainEventDispatcher.dispatch();
 
         return calendar.getId();
     }

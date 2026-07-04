@@ -11,13 +11,20 @@ package com.mcalvaro.mscatering.application.abstractions;
  * </ul>
  * <p>
  * This interface lives in the application layer (not in domain) because
- * the concept of "committing a transaction" is an application-level concern,
+ * the concept of "dispatchting a transaction" is an application-level concern,
  * not a domain concern.
  */
-public interface UnitOfWork {
+import com.mcalvaro.mscatering.domain.core.AggregateRoot;
+
+public interface DomainEventDispatcher {
+
+    /**
+     * Registra un agregado modificado en el DomainEventDispatcher.
+     */
+    void register(AggregateRoot aggregate);
 
     /**
      * Commits all pending changes and publishes accumulated domain events.
      */
-    void commit();
+    void dispatch();
 }

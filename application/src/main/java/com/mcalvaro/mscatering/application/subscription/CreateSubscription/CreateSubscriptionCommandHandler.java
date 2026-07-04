@@ -2,7 +2,7 @@ package com.mcalvaro.mscatering.application.subscription.CreateSubscription;
 
 import an.awesome.pipelinr.Command;
 
-import com.mcalvaro.mscatering.application.abstractions.UnitOfWork;
+import com.mcalvaro.mscatering.application.abstractions.DomainEventDispatcher;
 import com.mcalvaro.mscatering.domain.subscription.ISubscriptionRepository;
 import com.mcalvaro.mscatering.domain.subscription.Subscription;
 import com.mcalvaro.mscatering.domain.subscription.entity.BiweeklyEvaluation;
@@ -33,16 +33,16 @@ public class CreateSubscriptionCommandHandler implements Command.Handler<CreateS
     private final ISubscriptionRepository subscriptionRepository;
     private final SubscriptionDuplicationValidator duplicationValidator;
     private final BiweeklyEvaluationGenerator evaluationGenerator;
-    private final UnitOfWork unitOfWork;
+    private final DomainEventDispatcher domainEventDispatcher;
 
     public CreateSubscriptionCommandHandler(ISubscriptionRepository subscriptionRepository,
             SubscriptionDuplicationValidator duplicationValidator,
             BiweeklyEvaluationGenerator evaluationGenerator,
-            UnitOfWork unitOfWork) {
+            DomainEventDispatcher domainEventDispatcher) {
         this.subscriptionRepository = subscriptionRepository;
         this.duplicationValidator = duplicationValidator;
         this.evaluationGenerator = evaluationGenerator;
-        this.unitOfWork = unitOfWork;
+        this.domainEventDispatcher = domainEventDispatcher;
     }
 
     @Override
@@ -67,7 +67,8 @@ public class CreateSubscriptionCommandHandler implements Command.Handler<CreateS
         subscription.scheduleEvaluations(evaluations);
 
         subscriptionRepository.save(subscription);
-        unitOfWork.commit();
+        domainEventDispatcher.register(subscription);
+        domainEventDispatcher.dispatch();
 
         return subscription.getId();
     }
