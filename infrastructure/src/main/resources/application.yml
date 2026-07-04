@@ -16,10 +16,10 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none # Liquibase controla el esquema, Hibernate no modifica nada
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
-        format_sql: true
+        format_sql: false
         dialect: org.hibernate.dialect.MySQLDialect
 
   # ── Liquibase ──────────────────────────────────────────────────────

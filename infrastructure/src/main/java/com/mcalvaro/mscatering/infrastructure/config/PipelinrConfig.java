@@ -4,6 +4,7 @@ import an.awesome.pipelinr.Command;
 import an.awesome.pipelinr.CommandHandlers;
 import an.awesome.pipelinr.Pipeline;
 import an.awesome.pipelinr.Pipelinr;
+import an.awesome.pipelinr.Notification;
 
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
@@ -29,9 +30,13 @@ public class PipelinrConfig {
      */
     @Bean
     @SuppressWarnings("rawtypes")
-    Pipeline pipeline(ObjectProvider<Command.Handler> handlers, ObjectProvider<Command.Middleware> middlewares) {
+    Pipeline pipeline(
+            ObjectProvider<Command.Handler> handlers, 
+            ObjectProvider<Command.Middleware> middlewares,
+            ObjectProvider<Notification.Handler> notificationHandlers) {
         return new Pipelinr()
                 .with(() -> handlers.stream())
-                .with(() -> middlewares.stream());
+                .with(() -> middlewares.stream())
+                .with(() -> notificationHandlers.stream());
     }
 }

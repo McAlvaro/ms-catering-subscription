@@ -3,6 +3,7 @@ package com.mcalvaro.mscatering.infrastructure.config;
 import an.awesome.pipelinr.Command;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.beans.factory.ObjectProvider;
 
 import com.mcalvaro.mscatering.application.abstractions.DomainEventDispatcher;
 
@@ -17,10 +18,10 @@ import com.mcalvaro.mscatering.application.abstractions.DomainEventDispatcher;
 @Component
 public class TransactionalMiddleware implements Command.Middleware {
 
-    private final DomainEventDispatcher dispatcher;
+    private final ObjectProvider<DomainEventDispatcher> dispatcherProvider;
 
-    public TransactionalMiddleware(DomainEventDispatcher dispatcher) {
-        this.dispatcher = dispatcher;
+    public TransactionalMiddleware(ObjectProvider<DomainEventDispatcher> dispatcherProvider) {
+        this.dispatcherProvider = dispatcherProvider;
     }
 
     @Override
@@ -29,7 +30,7 @@ public class TransactionalMiddleware implements Command.Middleware {
 
         R result = next.invoke();
 
-        dispatcher.dispatch();
+        dispatcherProvider.getObject().dispatch();
 
         return result;
     }

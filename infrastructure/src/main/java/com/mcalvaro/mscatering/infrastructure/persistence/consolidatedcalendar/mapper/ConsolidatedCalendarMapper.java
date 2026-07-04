@@ -45,6 +45,7 @@ public class ConsolidatedCalendarMapper {
 
         try {
             ConsolidatedCalendar calendar = (ConsolidatedCalendar) allocateInstance(ConsolidatedCalendar.class);
+            setField(ConsolidatedCalendar.class, calendar, "domainEvents", new java.util.ArrayList<>());
             setField(ConsolidatedCalendar.class, calendar, "id", jpa.getId());
             setField(ConsolidatedCalendar.class, calendar, "date", jpa.getDate());
             setField(ConsolidatedCalendar.class, calendar, "status", ConsolidateStatus.valueOf(jpa.getStatus()));

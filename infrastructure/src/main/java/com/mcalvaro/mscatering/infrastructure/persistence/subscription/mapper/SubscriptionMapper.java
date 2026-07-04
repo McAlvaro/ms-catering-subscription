@@ -123,6 +123,7 @@ public class SubscriptionMapper {
             }
 
             Subscription subscription = (Subscription) allocateInstance(Subscription.class);
+            setField(Subscription.class, subscription, "domainEvents", new java.util.ArrayList<>());
             setField(Subscription.class, subscription, "id", jpa.getId());
             setField(Subscription.class, subscription, "patientId", jpa.getPatientId());
             setField(Subscription.class, subscription, "dietPlanId", jpa.getDietPlanId());
