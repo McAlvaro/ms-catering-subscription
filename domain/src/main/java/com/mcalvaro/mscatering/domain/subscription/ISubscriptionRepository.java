@@ -23,4 +23,10 @@ public interface ISubscriptionRepository {
      *         returns 46).
      */
     int getNextContractSequenceOfYear();
+
+    /**
+     * Finds all active subscriptions in the system.
+     * Used by the consolidation process.
+     */
+    java.util.List<Subscription> findActiveSubscriptions();
 }

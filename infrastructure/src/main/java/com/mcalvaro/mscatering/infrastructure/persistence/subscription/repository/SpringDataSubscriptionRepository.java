@@ -17,4 +17,6 @@ public interface SpringDataSubscriptionRepository extends JpaRepository<Subscrip
     int countSubscriptionsByYear(@Param("year") int year);
 
     boolean existsByPatientIdAndStatusIn(UUID patientId, List<String> statuses);
+
+    List<SubscriptionJpaEntity> findByStatus(String status);
 }

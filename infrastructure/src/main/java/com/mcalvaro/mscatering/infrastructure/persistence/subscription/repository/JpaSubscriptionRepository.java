@@ -38,4 +38,12 @@ public class JpaSubscriptionRepository implements ISubscriptionRepository {
         int currentCount = springRepository.countSubscriptionsByYear(currentYear);
         return currentCount + 1;
     }
+
+    @Override
+    public java.util.List<Subscription> findActiveSubscriptions() {
+        return springRepository.findByStatus(com.mcalvaro.mscatering.domain.subscription.enums.SubscriptionStatus.ACTIVE.name())
+                .stream()
+                .map(mapper::toDomain)
+                .collect(java.util.stream.Collectors.toList());
+    }
 }
