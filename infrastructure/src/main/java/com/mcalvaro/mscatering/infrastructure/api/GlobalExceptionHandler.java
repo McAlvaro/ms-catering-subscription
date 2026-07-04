@@ -50,21 +50,20 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<Map<String, String>> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
-        Map<String, String> errores = new HashMap<>();
-        String message = "El cuerpo de la solicitud no es legible o contiene formatos de datos inválidos.";
-        String fieldName = "cuerpo";
+    public ResponseEntity<ApiErrorResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
+        String message = "El contenido de la petición es inválido o no se pudo leer correctamente.";
+        String fieldName = null;
 
         Throwable cause = ex.getCause();
         if (cause != null) {
             String causeClassName = cause.getClass().getName();
             if (causeClassName.endsWith(".InvalidFormatException") || causeClassName.endsWith(".MismatchedInputException")) {
                 try {
-                    // Utilizar reflexión para obtener el targetType de forma portable entre Jackson 2 y 3
+                    // Utilizar reflexión para obtener el targetType
                     java.lang.reflect.Method getTargetTypeMethod = cause.getClass().getMethod("getTargetType");
                     Class<?> targetType = (Class<?>) getTargetTypeMethod.invoke(cause);
                     
-                    // Utilizar reflexión para obtener el path de forma portable
+                    // Utilizar reflexión para obtener el path
                     java.lang.reflect.Method getPathMethod = cause.getClass().getMethod("getPath");
                     java.util.List<?> path = (java.util.List<?>) getPathMethod.invoke(cause);
                     
@@ -95,17 +94,18 @@ public class GlobalExceptionHandler {
                             rejectedValue = getValueMethod.invoke(cause);
                         } catch (Exception ignored) {}
                         
-                        message = String.format("El valor '%s' no es válido. Los valores permitidos son: %s",
-                                rejectedValue, enumValues);
+                        message = String.format("El valor '%s' no es válido para el campo '%s'. Los valores permitidos son: %s",
+                                rejectedValue, fieldName != null ? fieldName : "desconocido", enumValues);
+                    } else if (fieldName != null) {
+                        message = String.format("El formato del campo '%s' es inválido.", fieldName);
                     }
                 } catch (Exception ignored) {
-                    // En caso de fallo por reflexión, se mantiene el mensaje por defecto
                 }
             }
         }
 
-        errores.put(fieldName, message);
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errores);
+        ApiErrorResponse response = new ApiErrorResponse("INVALID_PAYLOAD", message);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
     @ExceptionHandler(Exception.class)
