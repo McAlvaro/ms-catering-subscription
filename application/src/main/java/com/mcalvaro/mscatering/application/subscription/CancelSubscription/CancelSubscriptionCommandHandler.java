@@ -2,7 +2,6 @@ package com.mcalvaro.mscatering.application.subscription.CancelSubscription;
 
 import an.awesome.pipelinr.Command;
 
-import com.mcalvaro.mscatering.application.abstractions.DomainEventDispatcher;
 import com.mcalvaro.mscatering.domain.subscription.ISubscriptionRepository;
 import com.mcalvaro.mscatering.domain.subscription.Subscription;
 
@@ -15,12 +14,9 @@ import com.mcalvaro.mscatering.domain.subscription.Subscription;
 public class CancelSubscriptionCommandHandler implements Command.Handler<CancelSubscriptionCommand, Void> {
 
     private final ISubscriptionRepository subscriptionRepository;
-    private final DomainEventDispatcher domainEventDispatcher;
 
-    public CancelSubscriptionCommandHandler(ISubscriptionRepository subscriptionRepository,
-            DomainEventDispatcher domainEventDispatcher) {
+    public CancelSubscriptionCommandHandler(ISubscriptionRepository subscriptionRepository) {
         this.subscriptionRepository = subscriptionRepository;
-        this.domainEventDispatcher = domainEventDispatcher;
     }
 
     @Override
@@ -32,7 +28,6 @@ public class CancelSubscriptionCommandHandler implements Command.Handler<CancelS
         subscription.cancel(command.reason());
 
         subscriptionRepository.save(subscription);
-        domainEventDispatcher.dispatch();
         return null;
     }
 }

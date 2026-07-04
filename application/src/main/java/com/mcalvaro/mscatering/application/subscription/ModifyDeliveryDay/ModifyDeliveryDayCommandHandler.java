@@ -2,7 +2,6 @@ package com.mcalvaro.mscatering.application.subscription.ModifyDeliveryDay;
 
 import an.awesome.pipelinr.Command;
 
-import com.mcalvaro.mscatering.application.abstractions.DomainEventDispatcher;
 import com.mcalvaro.mscatering.domain.subscription.ISubscriptionRepository;
 import com.mcalvaro.mscatering.domain.subscription.Subscription;
 
@@ -15,12 +14,9 @@ import com.mcalvaro.mscatering.domain.subscription.Subscription;
 public class ModifyDeliveryDayCommandHandler implements Command.Handler<ModifyDeliveryDayCommand, Void> {
 
     private final ISubscriptionRepository subscriptionRepository;
-    private final DomainEventDispatcher domainEventDispatcher;
 
-    public ModifyDeliveryDayCommandHandler(ISubscriptionRepository subscriptionRepository,
-            DomainEventDispatcher domainEventDispatcher) {
+    public ModifyDeliveryDayCommandHandler(ISubscriptionRepository subscriptionRepository) {
         this.subscriptionRepository = subscriptionRepository;
-        this.domainEventDispatcher = domainEventDispatcher;
     }
 
     @Override
@@ -36,7 +32,6 @@ public class ModifyDeliveryDayCommandHandler implements Command.Handler<ModifyDe
                 command.newInstructions());
 
         subscriptionRepository.save(subscription);
-        domainEventDispatcher.dispatch();
         return null;
     }
 }

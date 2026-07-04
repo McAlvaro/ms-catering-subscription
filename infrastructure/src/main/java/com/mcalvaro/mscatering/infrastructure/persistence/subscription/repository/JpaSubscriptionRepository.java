@@ -15,10 +15,12 @@ public class JpaSubscriptionRepository implements ISubscriptionRepository {
 
     private final SpringDataSubscriptionRepository springRepository;
     private final SubscriptionMapper mapper;
+    private final com.mcalvaro.mscatering.application.abstractions.DomainEventDispatcher dispatcher;
 
-    public JpaSubscriptionRepository(SpringDataSubscriptionRepository springRepository, SubscriptionMapper mapper) {
+    public JpaSubscriptionRepository(SpringDataSubscriptionRepository springRepository, SubscriptionMapper mapper, com.mcalvaro.mscatering.application.abstractions.DomainEventDispatcher dispatcher) {
         this.springRepository = springRepository;
         this.mapper = mapper;
+        this.dispatcher = dispatcher;
     }
 
     @Override
@@ -30,6 +32,7 @@ public class JpaSubscriptionRepository implements ISubscriptionRepository {
     public void save(Subscription subscription) {
         SubscriptionJpaEntity jpaEntity = mapper.toJpaEntity(subscription);
         springRepository.save(jpaEntity);
+        dispatcher.register(subscription);
     }
 
     @Override

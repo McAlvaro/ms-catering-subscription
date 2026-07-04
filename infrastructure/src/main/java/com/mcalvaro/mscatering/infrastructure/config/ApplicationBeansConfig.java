@@ -1,7 +1,5 @@
 package com.mcalvaro.mscatering.infrastructure.config;
 
-import com.mcalvaro.mscatering.application.abstractions.DomainEventDispatcher;
-
 import com.mcalvaro.mscatering.application.consolidatedcalendar.CloseConsolidatedCalendar.CloseConsolidatedCalendarCommandHandler;
 import com.mcalvaro.mscatering.application.consolidatedcalendar.GetConsolidatedCalendarByDate.GetConsolidatedCalendarByDateQueryHandler;
 import com.mcalvaro.mscatering.application.consolidatedcalendar.GetConsolidatedCalendarByDate.IConsolidatedCalendarQueryService;
@@ -53,9 +51,8 @@ public class ApplicationBeansConfig {
 
     @Bean
     SavePatientReferenceCommandHandler savePatientReferenceCommandHandler(
-            IPatientReferenceRepository patientRepository,
-            DomainEventDispatcher domainEventDispatcher) {
-        return new SavePatientReferenceCommandHandler(patientRepository, domainEventDispatcher);
+            IPatientReferenceRepository patientRepository) {
+        return new SavePatientReferenceCommandHandler(patientRepository);
     }
 
     // ========================================================================
@@ -66,80 +63,69 @@ public class ApplicationBeansConfig {
     CreateSubscriptionCommandHandler createSubscriptionCommandHandler(
             ISubscriptionRepository subscriptionRepository,
             SubscriptionDuplicationValidator duplicationValidator,
-            BiweeklyEvaluationGenerator evaluationGenerator,
-            DomainEventDispatcher domainEventDispatcher) {
+            BiweeklyEvaluationGenerator evaluationGenerator) {
         return new CreateSubscriptionCommandHandler(
-                subscriptionRepository, duplicationValidator, evaluationGenerator, domainEventDispatcher);
+                subscriptionRepository, duplicationValidator, evaluationGenerator);
     }
 
     @Bean
     PauseSubscriptionCommandHandler pauseSubscriptionCommandHandler(
-            ISubscriptionRepository subscriptionRepository,
-            DomainEventDispatcher domainEventDispatcher) {
-        return new PauseSubscriptionCommandHandler(subscriptionRepository, domainEventDispatcher);
+            ISubscriptionRepository subscriptionRepository) {
+        return new PauseSubscriptionCommandHandler(subscriptionRepository);
     }
 
     @Bean
     ReactivateSubscriptionCommandHandler reactivateSubscriptionCommandHandler(
-            ISubscriptionRepository subscriptionRepository,
-            DomainEventDispatcher domainEventDispatcher) {
-        return new ReactivateSubscriptionCommandHandler(subscriptionRepository, domainEventDispatcher);
+            ISubscriptionRepository subscriptionRepository) {
+        return new ReactivateSubscriptionCommandHandler(subscriptionRepository);
     }
 
     @Bean
     ModifyDeliveryDayCommandHandler modifyDeliveryDayCommandHandler(
-            ISubscriptionRepository subscriptionRepository,
-            DomainEventDispatcher domainEventDispatcher) {
-        return new ModifyDeliveryDayCommandHandler(subscriptionRepository, domainEventDispatcher);
+            ISubscriptionRepository subscriptionRepository) {
+        return new ModifyDeliveryDayCommandHandler(subscriptionRepository);
     }
 
     @Bean
     MarkNoDeliveryCommandHandler markNoDeliveryCommandHandler(
-            ISubscriptionRepository subscriptionRepository,
-            DomainEventDispatcher domainEventDispatcher) {
-        return new MarkNoDeliveryCommandHandler(subscriptionRepository, domainEventDispatcher);
+            ISubscriptionRepository subscriptionRepository) {
+        return new MarkNoDeliveryCommandHandler(subscriptionRepository);
     }
 
     @Bean
     CancelSubscriptionCommandHandler cancelSubscriptionCommandHandler(
-            ISubscriptionRepository subscriptionRepository,
-            DomainEventDispatcher domainEventDispatcher) {
-        return new CancelSubscriptionCommandHandler(subscriptionRepository, domainEventDispatcher);
+            ISubscriptionRepository subscriptionRepository) {
+        return new CancelSubscriptionCommandHandler(subscriptionRepository);
     }
 
     @Bean
     CompleteSubscriptionCommandHandler completeSubscriptionCommandHandler(
-            ISubscriptionRepository subscriptionRepository,
-            DomainEventDispatcher domainEventDispatcher) {
-        return new CompleteSubscriptionCommandHandler(subscriptionRepository, domainEventDispatcher);
+            ISubscriptionRepository subscriptionRepository) {
+        return new CompleteSubscriptionCommandHandler(subscriptionRepository);
     }
 
     @Bean
     ConfirmDeliveryCommandHandler confirmDeliveryCommandHandler(
-            ISubscriptionRepository subscriptionRepository,
-            DomainEventDispatcher domainEventDispatcher) {
-        return new ConfirmDeliveryCommandHandler(subscriptionRepository, domainEventDispatcher);
+            ISubscriptionRepository subscriptionRepository) {
+        return new ConfirmDeliveryCommandHandler(subscriptionRepository);
     }
 
     @Bean
     RegisterFailedDeliveryCommandHandler registerFailedDeliveryCommandHandler(
-            ISubscriptionRepository subscriptionRepository,
-            DomainEventDispatcher domainEventDispatcher) {
-        return new RegisterFailedDeliveryCommandHandler(subscriptionRepository, domainEventDispatcher);
+            ISubscriptionRepository subscriptionRepository) {
+        return new RegisterFailedDeliveryCommandHandler(subscriptionRepository);
     }
 
     @Bean
     MarkEvaluationCompletedCommandHandler markEvaluationCompletedCommandHandler(
-            ISubscriptionRepository subscriptionRepository,
-            DomainEventDispatcher domainEventDispatcher) {
-        return new MarkEvaluationCompletedCommandHandler(subscriptionRepository, domainEventDispatcher);
+            ISubscriptionRepository subscriptionRepository) {
+        return new MarkEvaluationCompletedCommandHandler(subscriptionRepository);
     }
 
     @Bean
     UpdateDeliveryPreferencesCommandHandler updateDeliveryPreferencesCommandHandler(
-            ISubscriptionRepository subscriptionRepository,
-            DomainEventDispatcher domainEventDispatcher) {
-        return new UpdateDeliveryPreferencesCommandHandler(subscriptionRepository, domainEventDispatcher);
+            ISubscriptionRepository subscriptionRepository) {
+        return new UpdateDeliveryPreferencesCommandHandler(subscriptionRepository);
     }
 
     // ========================================================================
@@ -159,10 +145,9 @@ public class ApplicationBeansConfig {
     @Bean
     CloseConsolidatedCalendarCommandHandler closeConsolidatedCalendarCommandHandler(
             DailyConsolidator dailyConsolidator,
-            IConsolidatedCalendarRepository calendarRepository,
-            DomainEventDispatcher domainEventDispatcher) {
+            IConsolidatedCalendarRepository calendarRepository) {
         return new CloseConsolidatedCalendarCommandHandler(
-                dailyConsolidator, calendarRepository, domainEventDispatcher);
+                dailyConsolidator, calendarRepository);
     }
 
     // ========================================================================

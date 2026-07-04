@@ -1,5 +1,6 @@
 package com.mcalvaro.mscatering.infrastructure.persistence.consolidatedcalendar.repository;
 
+import com.mcalvaro.mscatering.application.abstractions.DomainEventDispatcher;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.ConsolidatedCalendar;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.IConsolidatedCalendarRepository;
 import com.mcalvaro.mscatering.infrastructure.persistence.consolidatedcalendar.entity.ConsolidatedCalendarJpaEntity;
@@ -15,10 +16,14 @@ public class JpaConsolidatedCalendarRepository implements IConsolidatedCalendarR
 
     private final SpringDataConsolidatedCalendarRepository springRepository;
     private final ConsolidatedCalendarMapper mapper;
+    private final DomainEventDispatcher dispatcher;
 
-    public JpaConsolidatedCalendarRepository(SpringDataConsolidatedCalendarRepository springRepository, ConsolidatedCalendarMapper mapper) {
+    public JpaConsolidatedCalendarRepository(SpringDataConsolidatedCalendarRepository springRepository,
+            ConsolidatedCalendarMapper mapper,
+            DomainEventDispatcher dispatcher) {
         this.springRepository = springRepository;
         this.mapper = mapper;
+        this.dispatcher = dispatcher;
     }
 
     @Override
@@ -35,5 +40,6 @@ public class JpaConsolidatedCalendarRepository implements IConsolidatedCalendarR
     public void save(ConsolidatedCalendar calendar) {
         ConsolidatedCalendarJpaEntity jpaEntity = mapper.toJpaEntity(calendar);
         springRepository.save(jpaEntity);
+        dispatcher.register(calendar);
     }
 }

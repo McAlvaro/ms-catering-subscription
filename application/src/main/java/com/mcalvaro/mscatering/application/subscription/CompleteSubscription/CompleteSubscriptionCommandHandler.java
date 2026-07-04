@@ -2,19 +2,15 @@ package com.mcalvaro.mscatering.application.subscription.CompleteSubscription;
 
 import an.awesome.pipelinr.Command;
 
-import com.mcalvaro.mscatering.application.abstractions.DomainEventDispatcher;
 import com.mcalvaro.mscatering.domain.subscription.ISubscriptionRepository;
 import com.mcalvaro.mscatering.domain.subscription.Subscription;
 
 public class CompleteSubscriptionCommandHandler implements Command.Handler<CompleteSubscriptionCommand, Void> {
 
     private final ISubscriptionRepository subscriptionRepository;
-    private final DomainEventDispatcher domainEventDispatcher;
 
-    public CompleteSubscriptionCommandHandler(ISubscriptionRepository subscriptionRepository,
-            DomainEventDispatcher domainEventDispatcher) {
+    public CompleteSubscriptionCommandHandler(ISubscriptionRepository subscriptionRepository) {
         this.subscriptionRepository = subscriptionRepository;
-        this.domainEventDispatcher = domainEventDispatcher;
     }
 
     @Override
@@ -26,7 +22,6 @@ public class CompleteSubscriptionCommandHandler implements Command.Handler<Compl
         subscription.complete();
 
         subscriptionRepository.save(subscription);
-        domainEventDispatcher.dispatch();
         return null;
     }
 }

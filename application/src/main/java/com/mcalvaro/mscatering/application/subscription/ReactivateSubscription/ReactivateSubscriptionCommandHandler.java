@@ -2,7 +2,6 @@ package com.mcalvaro.mscatering.application.subscription.ReactivateSubscription;
 
 import an.awesome.pipelinr.Command;
 
-import com.mcalvaro.mscatering.application.abstractions.DomainEventDispatcher;
 import com.mcalvaro.mscatering.domain.subscription.ISubscriptionRepository;
 import com.mcalvaro.mscatering.domain.subscription.Subscription;
 
@@ -16,12 +15,9 @@ import com.mcalvaro.mscatering.domain.subscription.Subscription;
 public class ReactivateSubscriptionCommandHandler implements Command.Handler<ReactivateSubscriptionCommand, Void> {
 
     private final ISubscriptionRepository subscriptionRepository;
-    private final DomainEventDispatcher domainEventDispatcher;
 
-    public ReactivateSubscriptionCommandHandler(ISubscriptionRepository subscriptionRepository,
-            DomainEventDispatcher domainEventDispatcher) {
+    public ReactivateSubscriptionCommandHandler(ISubscriptionRepository subscriptionRepository) {
         this.subscriptionRepository = subscriptionRepository;
-        this.domainEventDispatcher = domainEventDispatcher;
     }
 
     @Override
@@ -33,7 +29,6 @@ public class ReactivateSubscriptionCommandHandler implements Command.Handler<Rea
         subscription.reactivate(command.reactivationDate());
 
         subscriptionRepository.save(subscription);
-        domainEventDispatcher.dispatch();
         return null;
     }
 }

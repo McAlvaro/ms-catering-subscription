@@ -2,7 +2,6 @@ package com.mcalvaro.mscatering.application.subscription.UpdateDeliveryPreferenc
 
 import an.awesome.pipelinr.Command;
 
-import com.mcalvaro.mscatering.application.abstractions.DomainEventDispatcher;
 import com.mcalvaro.mscatering.domain.subscription.ISubscriptionRepository;
 import com.mcalvaro.mscatering.domain.subscription.Subscription;
 
@@ -10,12 +9,9 @@ public class UpdateDeliveryPreferencesCommandHandler
         implements Command.Handler<UpdateDeliveryPreferencesCommand, Void> {
 
     private final ISubscriptionRepository subscriptionRepository;
-    private final DomainEventDispatcher domainEventDispatcher;
 
-    public UpdateDeliveryPreferencesCommandHandler(ISubscriptionRepository subscriptionRepository,
-            DomainEventDispatcher domainEventDispatcher) {
+    public UpdateDeliveryPreferencesCommandHandler(ISubscriptionRepository subscriptionRepository) {
         this.subscriptionRepository = subscriptionRepository;
-        this.domainEventDispatcher = domainEventDispatcher;
     }
 
     @Override
@@ -27,7 +23,6 @@ public class UpdateDeliveryPreferencesCommandHandler
         subscription.updateDeliveryPreferences(command.newPreferences());
 
         subscriptionRepository.save(subscription);
-        domainEventDispatcher.dispatch();
         return null;
     }
 }
