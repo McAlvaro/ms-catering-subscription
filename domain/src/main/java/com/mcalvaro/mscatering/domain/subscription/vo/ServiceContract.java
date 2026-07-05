@@ -32,10 +32,10 @@ public record ServiceContract(
         if (period == null) {
             throw new DomainException("VO-009", "ServiceContract: period must not be null.");
         }
-        // Delegates duration validation to PlanDuration — the single source of truth
-        // for allowed plan lengths. Throws DomainException SUB-005 if invalid.
-        PlanDuration.fromDays(period.durationDays());
-
+        // Se eliminó la validación estricta de PlanDuration aquí porque 
+        // cuando una suscripción se pausa, ValidityPeriod se extiende y ya no dura 
+        // exactamente 15 o 30 días, lo que provocaba un error al leer de la BD.
+        
         if (totalPrice == null || totalPrice.compareTo(BigDecimal.ZERO) <= 0) {
             throw new DomainException("SUB-006", "Contract price must be greater than zero.");
         }
