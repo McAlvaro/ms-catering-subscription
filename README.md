@@ -4,7 +4,21 @@
 
 **Estudiante:** Alvaro Molina
 
-Modelo de Dominio — Diagrama de Clases
+## Descripción del Microservicio
+
+**Propósito:**
+El propósito de este microservicio (BC3) es gestionar de extremo a extremo las **Suscripciones y el Calendario de Catering** de los pacientes. Actúa como el motor central del negocio, controlando las reglas de cuándo, dónde y cómo deben entregarse los planes nutricionales adquiridos, asegurando que se respeten los términos del contrato de servicio.
+
+**Funcionalidades Principales:**
+1. **Gestión de Suscripciones:** Creación, cancelación y finalización de contratos (de 15 o 30 días), validando que un paciente no tenga contratos duplicados activos.
+2. **Control de Calendario de Entregas:** Generación de un calendario personal por suscripción, donde el paciente puede modificar la dirección, el horario y las instrucciones de una entrega específica con al menos 48 horas de anticipación.
+3. **Pausas y Reactivaciones:** Capacidad de suspender temporalmente el servicio (con 48 horas de aviso) y reactivarlo, desplazando automáticamente la fecha de fin del contrato original.
+4. **Programación de Evaluaciones:** Cálculo y agendamiento automático de citas de control corporal según el plan (evitando fines de semana y días no laborables).
+5. **Consolidación Diaria para Operaciones:** Cierre diario que cruza todas las suscripciones activas del sistema para generar el **Calendario Consolidado**, un artefacto inmutable que contiene las "líneas de entrega" del día y sirve como la orden oficial que detona la producción en Cocina (BC4) y el despacho en Logística (BC5).
+
+## Diagrama de Clases de la Capa de Dominio
+
+A continuación se presentan los diagramas de clases del modelo de dominio. Dichos diagramas son **exclusivos de este microservicio (BC3)** y reflejan la implementación de la arquitectura limpia en la capa de dominio.
 
 # **1\. Identificación del Modelo de Dominio**
 
