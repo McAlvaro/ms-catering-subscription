@@ -1,24 +1,20 @@
-package com.mcalvaro.mscatering.infrastructure.service;
+package com.mcalvaro.mscatering.application.subscription.service;
 
 import com.mcalvaro.mscatering.domain.core.DomainException;
 import com.mcalvaro.mscatering.domain.patient.IPatientReferenceRepository;
 import com.mcalvaro.mscatering.domain.patient.PatientReference;
-import com.mcalvaro.mscatering.domain.subscription.enums.SubscriptionStatus;
+import com.mcalvaro.mscatering.domain.subscription.ISubscriptionRepository;
 import com.mcalvaro.mscatering.domain.subscription.service.SubscriptionDuplicationValidator;
-import com.mcalvaro.mscatering.infrastructure.persistence.subscription.repository.SpringDataSubscriptionRepository;
-import org.springframework.stereotype.Component;
 
-import java.util.List;
 import java.util.UUID;
 
-@Component
 public class DefaultSubscriptionDuplicationValidator implements SubscriptionDuplicationValidator {
 
-    private final SpringDataSubscriptionRepository subscriptionRepository;
+    private final ISubscriptionRepository subscriptionRepository;
     private final IPatientReferenceRepository patientRepository;
 
     public DefaultSubscriptionDuplicationValidator(
-            SpringDataSubscriptionRepository subscriptionRepository,
+            ISubscriptionRepository subscriptionRepository,
             IPatientReferenceRepository patientRepository) {
         this.subscriptionRepository = subscriptionRepository;
         this.patientRepository = patientRepository;
@@ -35,9 +31,7 @@ public class DefaultSubscriptionDuplicationValidator implements SubscriptionDupl
         }
 
         // 2. Validar que el paciente no tenga una suscripción activa o pausada
-        boolean hasDuplicate = subscriptionRepository.existsByPatientIdAndStatusIn(
-                patientId,
-                List.of(SubscriptionStatus.ACTIVE.name(), SubscriptionStatus.PAUSED.name()));
+        boolean hasDuplicate = subscriptionRepository.hasActiveOrPausedSubscription(patientId);
 
         if (hasDuplicate) {
             throw new DomainException("SUB-013", "Patient already has an ACTIVE or PAUSED subscription.");

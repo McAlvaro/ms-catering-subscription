@@ -1,9 +1,7 @@
-package com.mcalvaro.mscatering.infrastructure.service;
+package com.mcalvaro.mscatering.domain.subscription.service;
 
 import com.mcalvaro.mscatering.domain.subscription.entity.BiweeklyEvaluation;
 import com.mcalvaro.mscatering.domain.subscription.enums.PlanDuration;
-import com.mcalvaro.mscatering.domain.subscription.service.BiweeklyEvaluationGenerator;
-import org.springframework.stereotype.Component;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -11,7 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-@Component
 public class DefaultBiweeklyEvaluationGenerator implements BiweeklyEvaluationGenerator {
 
     @Override

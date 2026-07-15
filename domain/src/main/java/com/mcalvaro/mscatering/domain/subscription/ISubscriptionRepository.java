@@ -29,4 +29,9 @@ public interface ISubscriptionRepository {
      * Used by the consolidation process.
      */
     java.util.List<Subscription> findActiveSubscriptions();
+
+    /**
+     * Checks if a patient has an ACTIVE or PAUSED subscription.
+     */
+    boolean hasActiveOrPausedSubscription(UUID patientId);
 }

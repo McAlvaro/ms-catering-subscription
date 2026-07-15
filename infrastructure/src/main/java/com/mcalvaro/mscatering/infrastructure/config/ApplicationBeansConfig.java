@@ -21,10 +21,13 @@ import com.mcalvaro.mscatering.application.patient.SavePatientReferenceCommandHa
 
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.IConsolidatedCalendarRepository;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.service.DailyConsolidator;
+import com.mcalvaro.mscatering.application.consolidatedcalendar.service.DefaultDailyConsolidator;
 import com.mcalvaro.mscatering.domain.patient.IPatientReferenceRepository;
 import com.mcalvaro.mscatering.domain.subscription.ISubscriptionRepository;
 import com.mcalvaro.mscatering.domain.subscription.service.BiweeklyEvaluationGenerator;
+import com.mcalvaro.mscatering.domain.subscription.service.DefaultBiweeklyEvaluationGenerator;
 import com.mcalvaro.mscatering.domain.subscription.service.SubscriptionDuplicationValidator;
+import com.mcalvaro.mscatering.application.subscription.service.DefaultSubscriptionDuplicationValidator;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -158,5 +161,26 @@ public class ApplicationBeansConfig {
     GetConsolidatedCalendarByDateQueryHandler getConsolidatedCalendarByDateQueryHandler(
             IConsolidatedCalendarQueryService queryService) {
         return new GetConsolidatedCalendarByDateQueryHandler(queryService);
+    }
+
+    // ========================================================================
+    // Domain & Application Services
+    // ========================================================================
+
+    @Bean
+    BiweeklyEvaluationGenerator biweeklyEvaluationGenerator() {
+        return new DefaultBiweeklyEvaluationGenerator();
+    }
+
+    @Bean
+    SubscriptionDuplicationValidator subscriptionDuplicationValidator(
+            ISubscriptionRepository subscriptionRepository,
+            IPatientReferenceRepository patientRepository) {
+        return new DefaultSubscriptionDuplicationValidator(subscriptionRepository, patientRepository);
+    }
+
+    @Bean
+    DailyConsolidator dailyConsolidator(ISubscriptionRepository subscriptionRepository) {
+        return new DefaultDailyConsolidator(subscriptionRepository);
     }
 }

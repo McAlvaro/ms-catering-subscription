@@ -2,11 +2,13 @@ package com.mcalvaro.mscatering.infrastructure.persistence.subscription.reposito
 
 import com.mcalvaro.mscatering.domain.subscription.ISubscriptionRepository;
 import com.mcalvaro.mscatering.domain.subscription.Subscription;
+import com.mcalvaro.mscatering.domain.subscription.enums.SubscriptionStatus;
 import com.mcalvaro.mscatering.infrastructure.persistence.subscription.entity.SubscriptionJpaEntity;
 import com.mcalvaro.mscatering.infrastructure.persistence.subscription.mapper.SubscriptionMapper;
 import org.springframework.stereotype.Repository;
 
 import java.time.Year;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -17,7 +19,8 @@ public class JpaSubscriptionRepository implements ISubscriptionRepository {
     private final SubscriptionMapper mapper;
     private final com.mcalvaro.mscatering.application.abstractions.DomainEventDispatcher dispatcher;
 
-    public JpaSubscriptionRepository(SpringDataSubscriptionRepository springRepository, SubscriptionMapper mapper, com.mcalvaro.mscatering.application.abstractions.DomainEventDispatcher dispatcher) {
+    public JpaSubscriptionRepository(SpringDataSubscriptionRepository springRepository, SubscriptionMapper mapper,
+            com.mcalvaro.mscatering.application.abstractions.DomainEventDispatcher dispatcher) {
         this.springRepository = springRepository;
         this.mapper = mapper;
         this.dispatcher = dispatcher;
@@ -44,9 +47,19 @@ public class JpaSubscriptionRepository implements ISubscriptionRepository {
 
     @Override
     public java.util.List<Subscription> findActiveSubscriptions() {
-        return springRepository.findByStatus(com.mcalvaro.mscatering.domain.subscription.enums.SubscriptionStatus.ACTIVE.name())
+        return springRepository
+                .findByStatus(com.mcalvaro.mscatering.domain.subscription.enums.SubscriptionStatus.ACTIVE.name())
                 .stream()
                 .map(mapper::toDomain)
                 .collect(java.util.stream.Collectors.toList());
+    }
+
+    @Override
+    public boolean hasActiveOrPausedSubscription(UUID patientId) {
+        return springRepository.existsByPatientIdAndStatusIn(
+                patientId,
+                List.of(
+                        SubscriptionStatus.ACTIVE.name(),
+                        SubscriptionStatus.PAUSED.name()));
     }
 }
