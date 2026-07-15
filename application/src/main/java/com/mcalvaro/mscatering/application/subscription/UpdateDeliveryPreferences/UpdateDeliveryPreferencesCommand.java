@@ -2,17 +2,23 @@ package com.mcalvaro.mscatering.application.subscription.UpdateDeliveryPreferenc
 
 import an.awesome.pipelinr.Command;
 
-import com.mcalvaro.mscatering.domain.subscription.vo.DeliveryPreferences;
-
+import java.time.LocalTime;
 import java.util.UUID;
 
 /**
  * Command to update the default delivery preferences of a subscription.
- * Note: this only updates future generated days, not currently scheduled days,
- * unless specifically requested (business logic). Currently updates the root
- * VO.
+ * Contains only primitive types — the Handler builds DeliveryPreferences VO.
  */
 public record UpdateDeliveryPreferencesCommand(
         UUID subscriptionId,
-        DeliveryPreferences newPreferences) implements Command<Void> {
+        String street,
+        String number,
+        String city,
+        String reference,
+        double latitude,
+        double longitude,
+        String phone,
+        LocalTime startTime,
+        LocalTime endTime,
+        String specialInstructions) implements Command<Void> {
 }

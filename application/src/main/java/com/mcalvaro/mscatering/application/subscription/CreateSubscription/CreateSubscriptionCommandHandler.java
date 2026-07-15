@@ -6,9 +6,16 @@ import com.mcalvaro.mscatering.domain.subscription.ISubscriptionRepository;
 import com.mcalvaro.mscatering.domain.subscription.Subscription;
 import com.mcalvaro.mscatering.domain.subscription.entity.BiweeklyEvaluation;
 import com.mcalvaro.mscatering.domain.subscription.enums.PlanDuration;
+import com.mcalvaro.mscatering.domain.subscription.enums.ServiceType;
 import com.mcalvaro.mscatering.domain.subscription.service.BiweeklyEvaluationGenerator;
 import com.mcalvaro.mscatering.domain.subscription.service.SubscriptionDuplicationValidator;
+import com.mcalvaro.mscatering.domain.subscription.vo.DeliveryAddress;
+import com.mcalvaro.mscatering.domain.subscription.vo.DeliveryPreferences;
+import com.mcalvaro.mscatering.domain.subscription.vo.ServiceContract;
+import com.mcalvaro.mscatering.domain.subscription.vo.TimeWindow;
+import com.mcalvaro.mscatering.domain.subscription.vo.ValidityPeriod;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -45,20 +52,42 @@ public class CreateSubscriptionCommandHandler implements Command.Handler<CreateS
     public UUID handle(CreateSubscriptionCommand command) {
         duplicationValidator.validate(command.patientId());
 
+        // Build domain Value Objects from primitive command fields
+        ValidityPeriod period = new ValidityPeriod(command.startDate(), command.endDate());
+        ServiceContract contract = new ServiceContract(
+                command.dietPlanId(),
+                period,
+                ServiceType.valueOf(command.serviceType()),
+                command.totalPrice(),
+                command.acceptedConditions(),
+                Instant.now());
+
+        DeliveryAddress address = new DeliveryAddress(
+                command.prefStreet(),
+                command.prefNumber(),
+                command.prefCity(),
+                command.prefReference(),
+                command.prefLatitude(),
+                command.prefLongitude(),
+                command.prefPhone());
+        TimeWindow window = new TimeWindow(command.prefTimeStart(), command.prefTimeEnd());
+        DeliveryPreferences preferences = new DeliveryPreferences(address, window, command.prefSpecialInstructions());
+
+        UUID subscriptionId = UUID.randomUUID();
         int nextSequence = subscriptionRepository.getNextContractSequenceOfYear();
 
         Subscription subscription = Subscription.create(
-                command.id(),
+                subscriptionId,
                 command.patientId(),
                 command.dietPlanId(),
-                command.contract(),
-                command.preferences(),
+                contract,
+                preferences,
                 nextSequence);
 
-        PlanDuration duration = PlanDuration.fromDays(command.contract().period().durationDays());
+        PlanDuration duration = PlanDuration.fromDays(period.durationDays());
         List<BiweeklyEvaluation> evaluations = evaluationGenerator.generate(
                 command.patientId(),
-                command.contract().period().startDate(),
+                period.startDate(),
                 duration);
         subscription.scheduleEvaluations(evaluations);
 
