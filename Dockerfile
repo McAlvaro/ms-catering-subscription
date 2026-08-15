@@ -42,10 +42,9 @@ RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 WORKDIR /app
 
 COPY --from=builder \
+    --chown=appuser:appgroup \
     /build/infrastructure/target/infrastructure-1.0-SNAPSHOT.jar \
     app.jar
-
-RUN chown appuser:appgroup app.jar
 
 USER appuser
 
