@@ -10,6 +10,7 @@
 El propósito de este microservicio (BC3) es gestionar de extremo a extremo las **Suscripciones y el Calendario de Catering** de los pacientes. Actúa como el motor central del negocio, controlando las reglas de cuándo, dónde y cómo deben entregarse los planes nutricionales adquiridos, asegurando que se respeten los términos del contrato de servicio.
 
 **Funcionalidades Principales:**
+
 1. **Gestión de Suscripciones:** Creación, cancelación y finalización de contratos (de 15 o 30 días), validando que un paciente no tenga contratos duplicados activos.
 2. **Control de Calendario de Entregas:** Generación de un calendario personal por suscripción, donde el paciente puede modificar la dirección, el horario y las instrucciones de una entrega específica con al menos 48 horas de anticipación.
 3. **Pausas y Reactivaciones:** Capacidad de suspender temporalmente el servicio (con 48 horas de aviso) y reactivarlo, desplazando automáticamente la fecha de fin del contrato original.
@@ -105,9 +106,9 @@ A continuación se presentan los diagramas de clases del modelo de dominio. Dich
 
 ### 2.1 Imagen publicada en Docker Hub
 
-| Tag | URL |
-| :-- | :-- |
-| `1.0.0` | https://hub.docker.com/r/alv641/ms-catering-subscription |
+| Tag      | URL                                                      |
+| :------- | :------------------------------------------------------- |
+| `1.0.2`  | https://hub.docker.com/r/alv641/ms-catering-subscription |
 | `latest` | https://hub.docker.com/r/alv641/ms-catering-subscription |
 
 ```bash
@@ -129,15 +130,15 @@ cp .env.example .env
 
 Variables disponibles en `.env`:
 
-| Variable | Descripción | Valor por defecto |
-| :--- | :--- | :--- |
-| `MYSQL_ROOT_PASSWORD` | Password del usuario root de MySQL | `root_secret` |
-| `MYSQL_DATABASE` | Nombre de la base de datos | `ms_catering_subscription` |
-| `MYSQL_USER` | Usuario de la aplicación | `admin_db` |
-| `MYSQL_PASSWORD` | Password del usuario de la app | `123456` |
-| `MYSQL_HOST_PORT` | Puerto del host para MySQL | `3325` |
-| `APP_HOST_PORT` | Puerto del host para la app | `8080` |
-| `APP_IMAGE` | Imagen Docker de la app | `alv641/ms-catering-subscription:1.0.0` |
+| Variable              | Descripción                        | Valor por defecto                       |
+| :-------------------- | :--------------------------------- | :-------------------------------------- |
+| `MYSQL_ROOT_PASSWORD` | Password del usuario root de MySQL | `root_secret`                           |
+| `MYSQL_DATABASE`      | Nombre de la base de datos         | `ms_catering_subscription`              |
+| `MYSQL_USER`          | Usuario de la aplicación           | `admin_db`                              |
+| `MYSQL_PASSWORD`      | Password del usuario de la app     | `123456`                                |
+| `MYSQL_HOST_PORT`     | Puerto del host para MySQL         | `3325`                                  |
+| `APP_HOST_PORT`       | Puerto del host para la app        | `8080`                                  |
+| `APP_IMAGE`           | Imagen Docker de la app            | `alv641/ms-catering-subscription:1.0.2` |
 
 ### 2.4 Levantar el entorno
 
@@ -150,6 +151,7 @@ docker compose logs -f app
 ```
 
 La aplicación estará disponible en:
+
 - **API:** http://localhost:8080
 - **Swagger UI:** http://localhost:8080/swagger-ui.html
 - **Health check:** http://localhost:8080/actuator/health
