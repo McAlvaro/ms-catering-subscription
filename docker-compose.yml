@@ -1,6 +1,23 @@
 # =============================================================================
-# Uso:
-#   1. cp .env.example .env        # crear archivo de variables de entorno
+# ms-catering-subscription — Docker Compose
+#
+# PRE-REQUISITOS:
+#   - Docker Engine >= 24 y Docker Compose V2 instalados
+#   - Imagen de la app disponible (local o en Docker Hub):
+#       alv641/ms-catering-subscription:1.0.2
+#
+# USO:
+#   1. Copiar el archivo de variables de entorno:
+#        cp .env.example .env
+#
+#   2. (Opcional) Ajustar los valores en .env según tu entorno local.
+#
+#   3. Levantar todos los servicios en segundo plano:
+#        docker compose up -d
+#
+#   4. Ver los logs de la aplicación en tiempo real:
+#        docker compose logs -f app
+#
 # =============================================================================
 
 name: ms-catering-subscription
@@ -43,7 +60,7 @@ services:
       start_period: 30s
 
   app:
-    image: ${APP_IMAGE:-alv641/ms-catering-subscription:1.0.0}
+    image: ${APP_IMAGE:-alv641/ms-catering-subscription:1.0.2}
     container_name: ms-catering-app
     restart: unless-stopped
 

@@ -98,3 +98,68 @@ A continuación se presentan los diagramas de clases del modelo de dominio. Dich
 [image1]: https://public-resources-mc.s3.us-east-1.amazonaws.com/v2/Diagrama+Clases+-+Agregates-v2.png
 [image2]: https://public-resources-mc.s3.us-east-1.amazonaws.com/v2/CatalogoValueObjects-v2.png
 [image3]: https://public-resources-mc.s3.us-east-1.amazonaws.com/v2/ms-catering-subscription-v2.png
+
+---
+
+## 2\. Ejecución con Docker
+
+### 2.1 Imagen publicada en Docker Hub
+
+| Tag | URL |
+| :-- | :-- |
+| `1.0.0` | https://hub.docker.com/r/alv641/ms-catering-subscription |
+| `latest` | https://hub.docker.com/r/alv641/ms-catering-subscription |
+
+```bash
+docker pull alv641/ms-catering-subscription:latest
+```
+
+### 2.2 Pre-requisitos
+
+- Docker Engine ≥ 24
+- Docker Compose V2 (`docker compose` sin guion)
+
+### 2.3 Configuración del entorno
+
+Copiar el archivo de variables de entorno y ajustar si es necesario:
+
+```bash
+cp .env.example .env
+```
+
+Variables disponibles en `.env`:
+
+| Variable | Descripción | Valor por defecto |
+| :--- | :--- | :--- |
+| `MYSQL_ROOT_PASSWORD` | Password del usuario root de MySQL | `root_secret` |
+| `MYSQL_DATABASE` | Nombre de la base de datos | `ms_catering_subscription` |
+| `MYSQL_USER` | Usuario de la aplicación | `admin_db` |
+| `MYSQL_PASSWORD` | Password del usuario de la app | `123456` |
+| `MYSQL_HOST_PORT` | Puerto del host para MySQL | `3325` |
+| `APP_HOST_PORT` | Puerto del host para la app | `8080` |
+| `APP_IMAGE` | Imagen Docker de la app | `alv641/ms-catering-subscription:1.0.0` |
+
+### 2.4 Levantar el entorno
+
+```bash
+# Levantar todos los servicios en segundo plano
+docker compose up -d
+
+# Ver los logs de la aplicación en tiempo real
+docker compose logs -f app
+```
+
+La aplicación estará disponible en:
+- **API:** http://localhost:8080
+- **Swagger UI:** http://localhost:8080/swagger-ui.html
+- **Health check:** http://localhost:8080/actuator/health
+
+### 2.5 Detener el entorno
+
+```bash
+# Detener servicios (conserva los datos de la BD)
+docker compose down
+
+# Detener y eliminar todos los datos (volumen MySQL)
+docker compose down -v
+```
