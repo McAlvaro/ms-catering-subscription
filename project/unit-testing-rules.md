@@ -1,212 +1,212 @@
 # Unit Testing Rules — ms-catering-subscription
 
-> **Harness de Pruebas Unitarias** para el microservicio de Suscripción y Calendario de Catering.
-> Basado en Clean Architecture + DDD. Aplica a todos los módulos: `domain`, `application` e `infrastructure`.
+> Unit testing harness for the Catering Subscription microservice.
+> Based on Clean Architecture + DDD. Applies to all modules: `domain`, `application`, and `infrastructure`.
 
 ---
 
-## 1. Stack de Testing
+## 1. Testing Stack
 
-| Herramienta | Versión | Propósito |
+| Tool | Version | Purpose |
 |---|---|---|
-| **JUnit Jupiter** | 5.x (via Spring Boot parent) | Motor de ejecución de tests |
-| **AssertJ** | 3.x (via Spring Boot parent) | Aserciones fluidas y expresivas |
-| **Mockito** | 5.x (via `mockito-junit-jupiter`) | Creación de mocks y verificación de interacciones |
-| **JaCoCo** | 0.8.12 | Medición y reporte de Code Coverage |
-| **Maven Surefire** | 3.2.5 | Ejecución de tests en el ciclo de vida de Maven |
-| **H2** | Runtime (via Spring Boot parent) | Base de datos en memoria para tests de infraestructura |
-| **Spring Boot Test** | 4.x | Context y MockMvc para tests de integración en `infrastructure` |
+| **JUnit Jupiter** | 5.x (via Spring Boot parent) | Test execution engine |
+| **AssertJ** | 3.x (via Spring Boot parent) | Fluent and expressive assertions |
+| **Mockito** | 5.x (via `mockito-junit-jupiter`) | Mock creation and interaction verification |
+| **JaCoCo** | 0.8.12 | Code coverage measurement and HTML report |
+| **Maven Surefire** | 3.2.5 | Test execution within the Maven lifecycle |
+| **H2** | Runtime (via Spring Boot parent) | In-memory database for infrastructure tests |
+| **Spring Boot Test** | 4.x | Context and MockMvc for integration tests in `infrastructure` |
 
 ---
 
-## 2. Estructura de Archivos
+## 2. File Structure
 
-Los tests **espejean** la estructura del código fuente. La carpeta de prueba debe replicar exactamente el mismo paquete que la clase que testea.
+Tests **mirror** the source code structure. The test folder must replicate the exact same package as the class being tested.
 
 ```
 src/
 ├── main/java/com/mcalvaro/mscatering/
 │   └── domain/subscription/vo/ValidityPeriod.java
 └── test/java/com/mcalvaro/mscatering/
-    └── domain/subscription/vo/ValidityPeriodTest.java   ← mismo paquete
+    └── domain/subscription/vo/ValidityPeriodTest.java   <- same package
 ```
 
-**Convención de nombre:** `<NombreDeClase>Test.java`
+**Naming convention:** `<ClassName>Test.java`
 
 ---
 
-## 3. Reglas por Capa
+## 3. Rules by Layer
 
-### 3.1 Capa `domain/`
+### 3.1 `domain/` Layer
 
-> Lógica de negocio pura. **Sin Spring, sin Mockito** (salvo fixtures). Solo JUnit 5 + AssertJ.
+> Pure business logic. **No Spring, no Mockito** (except fixtures). JUnit 5 + AssertJ only.
 
-| Regla | Descripción |
+| Rule | Description |
 |---|---|
-| **R-D01** | Los tests de Value Objects (VOs) deben verificar cada invariante de negocio con un test dedicado. |
-| **R-D02** | Usar `@ParameterizedTest` con `@NullAndEmptySource` + `@ValueSource` para cubrir valores nulos, vacíos y en blanco en una sola prueba. |
-| **R-D03** | Verificar el código de error (`code`) de `DomainException` con `.hasFieldOrPropertyWithValue("code", "XX-000")`. |
-| **R-D04** | Verificar la igualdad por valor de Records con `.isEqualTo()` — no usar `==`. |
-| **R-D05** | Los tests de Aggregate Roots deben cubrir: creación (`create`), transiciones de estado, y excepciones de invariantes de dominio. |
-| **R-D06** | Prohibido usar `mock()` sobre clases del dominio en esta capa. Los objetos de dominio deben usarse reales. |
+| **R-D01** | Value Object tests must verify each business invariant with a dedicated test. |
+| **R-D02** | Use `@ParameterizedTest` with `@NullAndEmptySource` + `@ValueSource` to cover null, empty, and blank values in a single test. |
+| **R-D03** | Verify the error code (`code`) of `DomainException` with `.hasFieldOrPropertyWithValue("code", "XX-000")`. |
+| **R-D04** | Verify value equality of Records with `.isEqualTo()` — never use `==`. |
+| **R-D05** | Aggregate Root tests must cover: creation (`create`), state transitions, and domain invariant exceptions. |
+| **R-D06** | Using `mock()` on domain classes in this layer is forbidden. Domain objects must be used as real instances. |
 
-**Ejemplo de referencia:** `domain/src/test/java/.../subscription/vo/ValidityPeriodTest.java`
+**Reference example:** `domain/src/test/java/.../subscription/vo/ValidityPeriodTest.java`
 
 ---
 
-### 3.2 Capa `application/`
+### 3.2 `application/` Layer
 
-> Casos de uso / Command Handlers. Toda dependencia externa se **mockea**. Nunca se levanta Spring.
+> Use cases / Command Handlers. Every external dependency is **mocked**. Spring context is never started.
 
-| Regla | Descripción |
+| Rule | Description |
 |---|---|
-| **R-A01** | Toda clase de test debe anotarse con `@ExtendWith(MockitoExtension.class)`. |
-| **R-A02** | Las interfaces de repositorio y servicios de dominio se declaran con `@Mock`. |
-| **R-A03** | La clase bajo prueba se declara con `@InjectMocks` (Mockito inyecta el constructor). |
-| **R-A04** | Usar `when(...).thenReturn(...)` (stubbing) para simular respuestas de colaboradores. |
-| **R-A05** | Usar `verify(mock, times(N)).metodo(arg)` para confirmar que el handler llamó a sus colaboradores. |
-| **R-A06** | Usar `verify(mock, never()).metodo(any())` para confirmar que **no** se persiste en caso de error. |
-| **R-A07** | No llamar a `new` sobre implementaciones de repositorios ni servicios de infraestructura. |
-| **R-A08** | El helper de fixture (`buildXxx()`) se declara como `private` al final de la clase. |
-| **R-A09** | Se permite `mock()` en fixtures solo si el test no verifica el estado interno de ese objeto. |
+| **R-A01** | Every test class must be annotated with `@ExtendWith(MockitoExtension.class)`. |
+| **R-A02** | Repository interfaces and domain services are declared with `@Mock`. |
+| **R-A03** | The class under test is declared with `@InjectMocks` (Mockito injects the constructor). |
+| **R-A04** | Use `when(...).thenReturn(...)` (stubbing) to simulate collaborator responses. |
+| **R-A05** | Use `verify(mock, times(N)).method(arg)` to confirm the handler called its collaborators. |
+| **R-A06** | Use `verify(mock, never()).method(any())` to confirm nothing is persisted on error. |
+| **R-A07** | Do not call `new` on repository or infrastructure service implementations. |
+| **R-A08** | Fixture helpers (`buildXxx()`) are declared `private` at the bottom of the class. |
+| **R-A09** | `mock()` is allowed in fixtures only if the test does not verify the internal state of that object. |
 
-**Escenarios mínimos a cubrir en un Command Handler:**
+**Minimum scenarios to cover in a Command Handler:**
 
-1. ✅ **Happy Path** — el comando se ejecuta correctamente y retorna el resultado esperado.
-2. 🔍 **Verificación de contrato** — los argumentos correctos se pasan a los colaboradores.
-3. ❌ **Propagación de error** — si el dominio lanza una excepción, el repositorio nunca es llamado.
+1. ✅ **Happy Path** — the command executes successfully and returns the expected result.
+2. 🔍 **Contract verification** — the correct arguments are passed to the collaborators.
+3. ❌ **Error propagation** — if the domain throws an exception, the repository is never called.
 
-**Ejemplo de referencia:** `application/src/test/java/.../CloseConsolidatedCalendarCommandHandlerTest.java`
+**Reference example:** `application/src/test/java/.../CloseConsolidatedCalendarCommandHandlerTest.java`
 
 ---
 
-### 3.3 Capa `infrastructure/`
+### 3.3 `infrastructure/` Layer
 
-> Controladores REST, mappers, repositorios JPA. Se usa Spring Boot Test + H2 cuando se requiere contexto.
+> REST controllers, mappers, JPA repositories. Spring Boot Test + H2 are used when context is required.
 
-| Regla | Descripción |
+| Rule | Description |
 |---|---|
-| **R-I01** | Los tests de controllers REST usan `@WebMvcTest(XController.class)` + `MockMvc`. Nunca `@SpringBootTest` completo. |
-| **R-I02** | Los casos de uso de `application` se mockean con `@MockBean` en los tests de controller. |
-| **R-I03** | Los tests de repositorios JPA usan `@DataJpaTest` con H2 en memoria. Nunca requieren MySQL activo. |
-| **R-I04** | Los tests de Mapper/Converter son tests unitarios puros: sin Spring, sin Mockito. |
-| **R-I05** | La base de datos de test debe usar `spring.jpa.hibernate.ddl-auto=create-drop` o Liquibase separado. |
+| **R-I01** | REST controller tests use `@WebMvcTest(XController.class)` + `MockMvc`. Full `@SpringBootTest` is never used. |
+| **R-I02** | Application use cases are mocked with `@MockBean` in controller tests. |
+| **R-I03** | JPA repository tests use `@DataJpaTest` with H2 in memory. An active MySQL instance is never required. |
+| **R-I04** | Mapper/Converter tests are pure unit tests: no Spring, no Mockito. |
+| **R-I05** | The test database must use `spring.jpa.hibernate.ddl-auto=create-drop` or a separate Liquibase script. |
 
 ---
 
-## 4. Convenciones de Código
+## 4. Code Conventions
 
-### 4.1 Nomenclatura de métodos
+### 4.1 Method naming
 
 ```
-should[ResultadoEsperado]When[Condicion]
+should[ExpectedResult]When[Condition]
 
-Ejemplos:
+Examples:
   shouldCreateValidityPeriodSuccessfullyWhenDatesAreValid()
   shouldThrowDomainExceptionWhenStreetIsBlank()
   shouldPropagateExceptionWhenCalendarHasNoLines()
 ```
 
-### 4.2 Anotacion @DisplayName
+### 4.2 @DisplayName annotation
 
-- **Obligatoria** en todo método de test.
-- **Idioma:** inglés.
-- **Formato:** oración completa que describe el comportamiento esperado.
+- **Required** on every test method.
+- **Language:** English.
+- **Format:** a complete sentence describing the expected behavior.
 
 ```java
 @DisplayName("Should throw DomainException VO-003 when street is null, empty or blank")
 ```
 
-### 4.3 Aserciones significativas
+### 4.3 Meaningful assertions
 
-Toda aserción debe verificar un comportamiento real del sistema. Las aserciones triviales o tautológicas no aportan valor y dan una falsa sensación de cobertura.
+Every assertion must verify real system behavior. Trivial or tautological assertions add no value and give a false sense of coverage.
 
 ```java
-// Prohibido — siempre pasa, no verifica nada
+// Forbidden — always passes, verifies nothing
 assertThat(true).isTrue();
 assertTrue(true);
 
-// Correcto — verifica el estado real del objeto bajo prueba
+// Correct — verifies the actual state of the object under test
 assertThat(calendar.getStatus()).isEqualTo(ConsolidateStatus.CLOSED);
 assertThat(returnedId).isEqualTo(calendar.getId());
 ```
 
-### 4.4 Estructura interna: AAA (Arrange-Act-Assert)
+### 4.4 Internal structure: AAA (Arrange-Act-Assert)
 
-Todo test debe separar visualmente sus tres fases con comentarios:
+Every test must visually separate its three phases with comments:
 
 ```java
-// Arrange  <- preparar datos y stubs
-// Act      <- ejecutar la acción bajo prueba
-// Assert   <- verificar el resultado
+// Arrange  <- prepare data and stubs
+// Act      <- execute the action under test
+// Assert   <- verify the result
 
-// Nota: si Act y Assert ocurren juntos, usar:
+// Note: if Act and Assert happen together, use:
 // Act & Assert
 ```
 
-Queda **prohibido** capturar excepciones con `try/catch` vacío o sin aserción. Si se espera una excepción, usar `assertThatThrownBy()`:
+Capturing exceptions with an empty or assertionless `try/catch` is **forbidden**. If an exception is expected, use `assertThatThrownBy()`:
 
 ```java
-// Prohibido — el test siempre pasa aunque se lance la excepción equivocada
+// Forbidden — the test always passes even if the wrong exception is thrown
 try {
     handler.handle(command);
 } catch (Exception e) { }
 
-// Correcto — verifica tipo y mensaje de la excepción
+// Correct — verifies exception type and message
 assertThatThrownBy(() -> handler.handle(command))
         .isInstanceOf(DomainException.class)
         .hasFieldOrPropertyWithValue("code", "CAL-002");
 ```
 
-### 4.5 Visibilidad de la clase de test
+### 4.5 Test class visibility
 
-Las clases de test se declaran **sin modificador de acceso** (package-private), no `public`.
+Test classes are declared **without an access modifier** (package-private), not `public`.
 
 ```java
-// Correcto
+// Correct
 class ValidityPeriodTest { ... }
 
-// Incorrecto (innecesario en JUnit 5)
+// Incorrect (unnecessary in JUnit 5)
 public class ValidityPeriodTest { ... }
 ```
 
 ---
 
-## 5. Code Coverage — Objetivos
+## 5. Code Coverage — Targets
 
-| Módulo | Líneas | Ramas |
+| Module | Lines | Branches |
 |---|---|---|
 | `domain` | >= 80% | >= 75% |
 | `application` | >= 70% | >= 60% |
 | `infrastructure` | >= 50% | >= 40% |
 
-### Comandos Maven
+### Maven commands
 
 ```bash
-# Ejecutar todos los tests y generar reportes JaCoCo
+# Run all tests and generate JaCoCo reports
 mvn test
 
-# Ejecutar solo el módulo domain
+# Run only the domain module
 mvn -pl domain test
 
-# Ejecutar solo el módulo application
+# Run only the application module
 mvn -pl application test -am
 
-# Ver reporte de cobertura (abrir en navegador)
-xdg-open domain/target/site/jacoco/index.html
-xdg-open application/target/site/jacoco/index.html
+# Open coverage report (in your browser)
+# domain/target/site/jacoco/index.html
+# application/target/site/jacoco/index.html
 ```
 
 ---
 
-## 6. Prohibiciones Globales
+## 6. Global Prohibitions
 
-| Prohibido | Alternativa |
+| Forbidden | Alternative |
 |---|---|
-| `@SpringBootTest` en tests de `domain` o `application` | Tests unitarios puros sin contexto |
-| Conexión real a MySQL en tests | H2 en memoria con `@DataJpaTest` |
-| `Thread.sleep()` en tests | Inyectar un `Clock` mockeado |
-| `@Disabled` sin comentario explicativo | Dejar un TODO con la razón y fecha |
-| `System.out.println` en tests | Usar el reporte de Surefire / JaCoCo |
-| `assertTrue(true)` o `assertThat(true).isTrue()` | Aserción sobre el estado real del objeto bajo prueba |
-| `try/catch` vacío o sin aserción para capturar excepciones | `assertThatThrownBy(() -> ...).isInstanceOf(...)`|
+| `@SpringBootTest` in `domain` or `application` tests | Pure unit tests without context |
+| Live MySQL connection in tests | H2 in memory with `@DataJpaTest` |
+| `Thread.sleep()` in tests | Inject a mocked `Clock` |
+| `@Disabled` without an explanatory comment | Leave a TODO with the reason and date |
+| `System.out.println` in tests | Use the Surefire / JaCoCo report |
+| `assertTrue(true)` or `assertThat(true).isTrue()` | Assertion on the real state of the object under test |
+| Empty or assertionless `try/catch` to capture exceptions | `assertThatThrownBy(() -> ...).isInstanceOf(...)` |
