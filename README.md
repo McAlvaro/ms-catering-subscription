@@ -165,3 +165,31 @@ docker compose down
 # Detener y eliminar todos los datos (volumen MySQL)
 docker compose down -v
 ```
+
+---
+
+## 3\. Unit Testing
+
+El proyecto aplica pruebas unitarias por capa siguiendo Clean Architecture + DDD.
+Las reglas completas se encuentran en [`project/unit-testing-rules.md`](project/unit-testing-rules.md).
+
+### 3.1 Stack
+
+| Herramienta | Rol |
+| :---------- | :-- |
+| JUnit 5 | Motor de ejecución |
+| AssertJ | Aserciones fluidas |
+| Mockito | Mocks e interacciones |
+| JaCoCo 0.8.12 | Code Coverage HTML |
+
+### 3.2 Ejecutar tests y ver cobertura
+
+```bash
+# Correr todos los tests y generar reportes JaCoCo
+mvn test
+```
+
+Una vez ejecutados, abrir en el navegador los siguientes archivos para ver el reporte visual de cobertura por módulo:
+
+- `domain/target/site/jacoco/index.html`
+- `application/target/site/jacoco/index.html`
