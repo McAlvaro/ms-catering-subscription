@@ -171,6 +171,7 @@ docker compose down -v
 ## 3\. Unit Testing
 
 El proyecto aplica pruebas unitarias por capa siguiendo Clean Architecture + DDD.
+Los tests se encuentran organizados dentro de cada módulo en su directorio correspondiente (`<modulo>/src/test/java/...`), espejeando la estructura de paquetes del código fuente.
 Las reglas completas se encuentran en [`project/unit-testing-rules.md`](project/unit-testing-rules.md).
 
 ### 3.1 Stack
