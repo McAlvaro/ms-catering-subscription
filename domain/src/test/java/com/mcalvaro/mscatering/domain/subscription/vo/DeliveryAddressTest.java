@@ -11,12 +11,20 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import com.mcalvaro.mscatering.domain.core.DomainException;
 
-public class DeliveryAddressTest {
+class DeliveryAddressTest {
 
     @Test
-    @DisplayName("Should create delivery addrees successfully when all required fields are provided")
-    void shouldCreateDeliveryAddressSuccessfully() {
+    @DisplayName("Should create a delivery address when all required fields are valid")
+    void shouldCreateDeliveryAddressWhenRequiredFieldsAreValid() {
         // Arrange
+        DeliveryAddress expected = new DeliveryAddress(
+                "street 123",
+                "123",
+                "Madrid",
+                "Door color: blue",
+                123.456,
+                234.567,
+                "678-90091");
 
         // Act
         DeliveryAddress address = new DeliveryAddress(
@@ -36,20 +44,23 @@ public class DeliveryAddressTest {
         assertThat(address.latitude()).isEqualTo(123.456);
         assertThat(address.longitude()).isEqualTo(234.567);
         assertThat(address.phone()).isEqualTo("678-90091");
+        assertThat(address).isEqualTo(expected);
     }
 
     @ParameterizedTest
     @NullAndEmptySource
     @ValueSource(strings = { "   ", "\t", "\n" })
-    @DisplayName("Should throw DomainException V0-003 when street is null, empty or blank")
-    void shouldThrowExceptionWhenStreetIsBlank(String invalidStreet) {
+    @DisplayName("Should throw DomainException VO-003 when street is null, empty or blank")
+    void shouldThrowDomainExceptionWhenStreetIsNullEmptyOrBlank(String invalidStreet) {
+        // Arrange
+        String city = "Madrid";
 
         // Act & Assert
         assertThatThrownBy(
                 () -> new DeliveryAddress(
                         invalidStreet,
                         "123",
-                        "Madrid",
+                        city,
                         "Door color: blue",
                         123.456,
                         234.567,
@@ -57,5 +68,28 @@ public class DeliveryAddressTest {
                 .isInstanceOf(DomainException.class)
                 .hasFieldOrPropertyWithValue("code", "VO-003")
                 .hasMessageContaining("street must not be blank");
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = { "   ", "\t", "\n" })
+    @DisplayName("Should throw DomainException VO-004 when city is null, empty or blank")
+    void shouldThrowDomainExceptionWhenCityIsNullEmptyOrBlank(String invalidCity) {
+        // Arrange
+        String street = "street 123";
+
+        // Act & Assert
+        assertThatThrownBy(
+                () -> new DeliveryAddress(
+                        street,
+                        "123",
+                        invalidCity,
+                        "Door color: blue",
+                        123.456,
+                        234.567,
+                        "678-90091"))
+                .isInstanceOf(DomainException.class)
+                .hasFieldOrPropertyWithValue("code", "VO-004")
+                .hasMessageContaining("city must not be blank");
     }
 }
