@@ -18,8 +18,11 @@ import java.time.LocalTime;
 import java.util.UUID;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.hamcrest.Matchers.isEmptyOrNullString;
+import static org.hamcrest.Matchers.not;
 
 /**
  * Integration tests for POST /api/subscriptions.
@@ -69,7 +72,8 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
             mockMvc.perform(post(URL)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(body))
-                    .andExpect(status().isCreated());
+                    .andExpect(status().isCreated())
+                    .andExpect(content().string(not(isEmptyOrNullString())));
         }
 
         @Test
@@ -82,7 +86,8 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
             mockMvc.perform(post(URL)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(body))
-                    .andExpect(status().isCreated());
+                    .andExpect(status().isCreated())
+                    .andExpect(content().string(not(isEmptyOrNullString())));
         }
     }
 
@@ -258,6 +263,23 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
         }
 
         @Test
+        @DisplayName("Should return 400 VO-007 when a validity-period date is missing")
+        void shouldReturn400WhenValidityPeriodDateIsMissing() throws Exception {
+            // Arrange
+            String body = objectMapper.writeValueAsString(buildCommand(
+                    activePatientId, null, LocalDate.now().plusDays(15),
+                    "Acepto términos y condiciones del servicio de catering.",
+                    LocalTime.of(12, 0), LocalTime.of(14, 0)));
+
+            // Act & Assert
+            mockMvc.perform(post(URL)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(body))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("VO-007"));
+        }
+
+        @Test
         @DisplayName("Should return 400 VO-002 when prefTimeStart is not before prefTimeEnd")
         void shouldReturn400WhenTimeWindowIsInvalid() throws Exception {
             // Arrange — endTime == startTime
@@ -287,6 +309,23 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
                     .content(body))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("VO-002"));
+        }
+
+        @Test
+        @DisplayName("Should return 400 VO-001 when a preferred delivery time is missing")
+        void shouldReturn400WhenPreferredDeliveryTimeIsMissing() throws Exception {
+            // Arrange
+            String body = objectMapper.writeValueAsString(buildCommand(
+                    activePatientId, LocalDate.now().plusDays(1), LocalDate.now().plusDays(15),
+                    "Acepto términos y condiciones del servicio de catering.",
+                    null, LocalTime.of(14, 0)));
+
+            // Act & Assert
+            mockMvc.perform(post(URL)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(body))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("VO-001"));
         }
 
         @Test
@@ -352,6 +391,22 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("VO-004"));
         }
+
+        @Test
+        @DisplayName("Should return 400 VO-010 when accepted conditions are blank")
+        void shouldReturn400WhenAcceptedConditionsAreBlank() throws Exception {
+            // Arrange
+            String body = objectMapper.writeValueAsString(buildCommand(
+                    activePatientId, LocalDate.now().plusDays(1), LocalDate.now().plusDays(15),
+                    "   ", LocalTime.of(12, 0), LocalTime.of(14, 0)));
+
+            // Act & Assert
+            mockMvc.perform(post(URL)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(body))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("VO-010"));
+        }
     }
 
     @Nested
@@ -399,13 +454,23 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
             mockMvc.perform(post(URL)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{}"))
-                    .andExpect(status().isBadRequest());
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("INVALID_PAYLOAD"));
         }
     }
 
     private CreateSubscriptionCommand buildValidCommand(UUID patientId, int planDays) {
         LocalDate start = LocalDate.now().plusDays(1);
         LocalDate end = start.plusDays(planDays - 1);
+        return buildCommand(
+                patientId, start, end,
+                "Acepto términos y condiciones del servicio de catering.",
+                LocalTime.of(12, 0), LocalTime.of(14, 0));
+    }
+
+    private CreateSubscriptionCommand buildCommand(
+            UUID patientId, LocalDate start, LocalDate end, String acceptedConditions,
+            LocalTime prefTimeStart, LocalTime prefTimeEnd) {
         return new CreateSubscriptionCommand(
                 patientId,
                 UUID.randomUUID(),
@@ -413,7 +478,7 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
                 end,
                 "LUNCH",
                 new BigDecimal("250.00"),
-                "Acepto términos y condiciones del servicio de catering.",
+                acceptedConditions,
                 "Av. Siempre Viva",
                 "742",
                 "Lima",
@@ -421,8 +486,8 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
                 -12.046374,
                 -77.042793,
                 "+51 999 888 777",
-                LocalTime.of(12, 0),
-                LocalTime.of(14, 0),
+                prefTimeStart,
+                prefTimeEnd,
                 "Sin picante");
     }
 
