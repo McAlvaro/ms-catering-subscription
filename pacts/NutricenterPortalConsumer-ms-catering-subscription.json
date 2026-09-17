@@ -1,0 +1,370 @@
+{
+  "consumer": {
+    "name": "NutricenterPortalConsumer"
+  },
+  "interactions": [
+    {
+      "description": "una solicitud para crear una nueva suscripcion de catering de 15 dias",
+      "providerStates": [
+        {
+          "name": "a patient with ID 550e8400-e29b-41d4-a716-446655440000 exists and is eligible"
+        }
+      ],
+      "request": {
+        "body": {
+          "acceptedConditions": "Acepto los terminos y condiciones del servicio de catering.",
+          "dietPlanId": "660e8400-e29b-41d4-a716-446655440001",
+          "endDate": "2026-10-15",
+          "patientId": "550e8400-e29b-41d4-a716-446655440000",
+          "prefCity": "Lima",
+          "prefLatitude": -12.046374,
+          "prefLongitude": -77.042793,
+          "prefNumber": "742",
+          "prefPhone": "+51 999 888 777",
+          "prefReference": "Frente al parque",
+          "prefSpecialInstructions": "Sin picante",
+          "prefStreet": "Av. Siempre Viva",
+          "prefTimeEnd": "14:00:00",
+          "prefTimeStart": "12:00:00",
+          "serviceType": "LUNCH",
+          "startDate": "2026-10-01",
+          "totalPrice": 250.0
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$.dietPlanId": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "regex",
+                  "regex": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+                }
+              ]
+            },
+            "$.patientId": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "regex",
+                  "regex": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+                }
+              ]
+            },
+            "$.prefLatitude": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "number"
+                }
+              ]
+            },
+            "$.prefLongitude": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "number"
+                }
+              ]
+            },
+            "$.totalPrice": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "decimal"
+                }
+              ]
+            }
+          }
+        },
+        "method": "POST",
+        "path": "/api/subscriptions"
+      },
+      "response": {
+        "body": "\"550e8400-e29b-41d4-a716-446655440099\"",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "regex",
+                  "regex": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+                }
+              ]
+            }
+          }
+        },
+        "status": 201
+      }
+    },
+    {
+      "description": "una solicitud para consultar los detalles de una suscripcion existente",
+      "providerStates": [
+        {
+          "name": "a subscription with ID 770e8400-e29b-41d4-a716-446655440002 exists"
+        }
+      ],
+      "request": {
+        "headers": {
+          "Accept": "application/json"
+        },
+        "method": "GET",
+        "path": "/api/subscriptions/770e8400-e29b-41d4-a716-446655440002"
+      },
+      "response": {
+        "body": {
+          "contractCode": "string",
+          "deliveryDays": [
+            {
+              "date": "string",
+              "id": "e2490de5-5bd3-43d5-b7c4-526e33f71304",
+              "status": "string"
+            }
+          ],
+          "dietPlanId": "e2490de5-5bd3-43d5-b7c4-526e33f71304",
+          "endDate": "string",
+          "evaluations": [
+            {
+              "id": "e2490de5-5bd3-43d5-b7c4-526e33f71304",
+              "scheduledDate": "string",
+              "status": "string"
+            }
+          ],
+          "id": "e2490de5-5bd3-43d5-b7c4-526e33f71304",
+          "patientId": "e2490de5-5bd3-43d5-b7c4-526e33f71304",
+          "serviceType": "string",
+          "startDate": "string",
+          "status": "string",
+          "totalPrice": 100.0
+        },
+        "generators": {
+          "body": {
+            "$.contractCode": {
+              "size": 20,
+              "type": "RandomString"
+            },
+            "$.deliveryDays[*].date": {
+              "size": 20,
+              "type": "RandomString"
+            },
+            "$.deliveryDays[*].id": {
+              "type": "Uuid"
+            },
+            "$.deliveryDays[*].status": {
+              "size": 20,
+              "type": "RandomString"
+            },
+            "$.dietPlanId": {
+              "type": "Uuid"
+            },
+            "$.endDate": {
+              "size": 20,
+              "type": "RandomString"
+            },
+            "$.evaluations[*].id": {
+              "type": "Uuid"
+            },
+            "$.evaluations[*].scheduledDate": {
+              "size": 20,
+              "type": "RandomString"
+            },
+            "$.evaluations[*].status": {
+              "size": 20,
+              "type": "RandomString"
+            },
+            "$.id": {
+              "type": "Uuid"
+            },
+            "$.patientId": {
+              "type": "Uuid"
+            },
+            "$.serviceType": {
+              "size": 20,
+              "type": "RandomString"
+            },
+            "$.startDate": {
+              "size": 20,
+              "type": "RandomString"
+            },
+            "$.status": {
+              "size": 20,
+              "type": "RandomString"
+            },
+            "$.totalPrice": {
+              "digits": 10,
+              "type": "RandomDecimal"
+            }
+          }
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$.contractCode": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.deliveryDays": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type",
+                  "min": 1
+                }
+              ]
+            },
+            "$.deliveryDays[*].date": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.deliveryDays[*].id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "regex",
+                  "regex": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+                }
+              ]
+            },
+            "$.deliveryDays[*].status": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.dietPlanId": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "regex",
+                  "regex": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+                }
+              ]
+            },
+            "$.endDate": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.evaluations": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type",
+                  "min": 1
+                }
+              ]
+            },
+            "$.evaluations[*].id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "regex",
+                  "regex": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+                }
+              ]
+            },
+            "$.evaluations[*].scheduledDate": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.evaluations[*].status": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "regex",
+                  "regex": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+                }
+              ]
+            },
+            "$.patientId": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "regex",
+                  "regex": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+                }
+              ]
+            },
+            "$.serviceType": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.startDate": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.status": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.totalPrice": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "decimal"
+                }
+              ]
+            }
+          }
+        },
+        "status": 200
+      }
+    }
+  ],
+  "metadata": {
+    "pact-jvm": {
+      "version": "4.6.15"
+    },
+    "pactSpecification": {
+      "version": "3.0.0"
+    }
+  },
+  "provider": {
+    "name": "ms-catering-subscription"
+  }
+}

@@ -27,6 +27,7 @@
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jacoco.version>0.8.12</jacoco.version>
+        <pact.version>4.6.15</pact.version>
     </properties>
     <build>
         <plugins>
