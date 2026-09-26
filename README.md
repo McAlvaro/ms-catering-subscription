@@ -168,29 +168,201 @@ docker compose down -v
 
 ---
 
-## 3\. Unit Testing
+## 3. Estrategia Integral de Testing
 
-El proyecto aplica pruebas unitarias por capa siguiendo Clean Architecture + DDD.
-Los tests se encuentran organizados dentro de cada módulo en su directorio correspondiente (`<modulo>/src/test/java/...`), espejeando la estructura de paquetes del código fuente.
-Las reglas completas se encuentran en [`project/unit-testing-rules.md`](project/unit-testing-rules.md).
+El microservicio cuenta con una suite completa de pruebas estructurada bajo la pirámide de testing y los lineamientos de Clean Architecture + DDD:
 
-### 3.1 Stack
-
-| Herramienta | Rol |
-| :---------- | :-- |
-| JUnit 5 | Motor de ejecución |
-| AssertJ | Aserciones fluidas |
-| Mockito | Mocks e interacciones |
-| JaCoCo 0.8.12 | Code Coverage HTML |
-
-### 3.2 Ejecutar tests y ver cobertura
-
-```bash
-# Correr todos los tests y generar reportes JaCoCo
-mvn test
+```
+                  ▲
+                 / \
+                /   \     Contract Tests (Pact JVM)
+               /-----\    Consumer & Provider Verification
+              /       \
+             /---------\  Integration Tests (*IT.java)
+            /           \ Full Vertical Slice (Controller → Pipelinr → H2)
+           /-------------\
+          /               \ Unit Tests (*Test.java)
+         /-----------------\ Pure Java (Domain, Application, Mappers)
 ```
 
-Una vez ejecutados, abrir en el navegador los siguientes archivos para ver el reporte visual de cobertura por módulo:
+---
 
-- `domain/target/site/jacoco/index.html`
-- `application/target/site/jacoco/index.html`
+### 3.1 Stack de Testing
+
+| Herramienta | Versión | Rol / Propósito |
+| :--- | :--- | :--- |
+| **JUnit 5 (Jupiter)** | 5.x | Motor de ejecución de pruebas |
+| **AssertJ** | 3.x | Aserciones fluidas y legibles |
+| **Mockito** | 5.x | Creación de dobles de prueba y verificación de interacciones |
+| **JaCoCo** | 0.8.12 | Generación de métricas y reportes visuales de cobertura de código |
+| **Spring Boot Test + MockMvc** | 4.x | Arnés de integración con contexto completo y base de datos H2 en memoria |
+| **Pact JVM Consumer & Provider** | 4.6.15 | Consumer-Driven Contract Testing (CDCT) para APIs REST |
+
+---
+
+### 3.2 Pruebas Unitarias (Unit Tests)
+
+Las pruebas unitarias validan la lógica de negocio y aplicación en estricto aislamiento, sin levantar contextos pesados ni bases de datos.
+
+- **`domain`**: Entidades, Agregados (`Suscripcion`, `CalendarioConsolidado`), Value Objects (`PeriodoDeVigencia`, `PreferenciasDeEntrega`, `DireccionDeEntrega`, etc.) y Domain Services puros.
+- **`application`**: Command Handlers, Query Handlers y validadores de negocio orquestados mediante Pipelinr, utilizando mocks para los puertos de persistencia y eventos.
+- **`infrastructure`**: Mappers de persistencia (`SubscriptionMapperTest`, `ConsolidatedCalendarMapperTest`, `PatientReferenceMapperTest`).
+
+#### Comandos de ejecución
+
+```bash
+# Ejecutar todas las pruebas unitarias de todos los módulos
+mvn test
+
+# Ejecutar pruebas unitarias de un módulo específico
+mvn -pl domain test
+mvn -pl application test
+mvn -pl infrastructure test -Dtest="*MapperTest"
+```
+
+---
+
+### 3.3 Cobertura de Código (Code Coverage con JaCoCo)
+
+El proyecto tiene integrado el plugin `jacoco-maven-plugin` (0.8.12) configurado para recolectar datos de ejecución y generar reportes HTML automáticamente durante la fase de prueba.
+
+#### Umbral de cumplimiento
+> **Requisito mínimo exigido:** 80% de cobertura.
+>
+> **Métricas actuales obtenidas en el proyecto:**
+> - **Módulo `domain`:** **95%** de cobertura
+> - **Módulo `application`:** **90%** de cobertura
+> - **Módulo `infrastructure`:** **87%** de cobertura
+
+#### Dónde encontrar los reportes generados
+Al ejecutar `mvn test` o `mvn verify`, se generan los reportes navegables en:
+
+| Módulo | Ruta del Reporte HTML |
+| :--- | :--- |
+| **Domain** | `domain/target/site/jacoco/index.html` |
+| **Application** | `application/target/site/jacoco/index.html` |
+| **Infrastructure** | `infrastructure/target/site/jacoco/index.html` |
+
+#### Cómo visualizar los reportes
+
+**Opción 1: Abrir desde la terminal (Linux / macOS)**
+```bash
+# Abrir el reporte del dominio
+xdg-open domain/target/site/jacoco/index.html
+
+# Abrir el reporte de aplicación
+xdg-open application/target/site/jacoco/index.html
+
+# Abrir el reporte de infraestructura
+xdg-open infrastructure/target/site/jacoco/index.html
+```
+
+**Opción 2: Abrir con un navegador web específico**
+```bash
+google-chrome domain/target/site/jacoco/index.html
+# o
+firefox application/target/site/jacoco/index.html
+```
+
+**Opción 3: Explorador de archivos / IDE**
+Hacer clic derecho sobre cualquier archivo `index.html` dentro de la carpeta `target/site/jacoco/` del módulo deseado y seleccionar **Open with Browser** (o *Show in System Explorer*).
+
+---
+
+### 3.4 Pruebas de Integración (Integration Tests)
+
+Las pruebas de integración (`*IT.java`) prueban el **slice vertical completo** de la aplicación:
+`MockMvc HTTP Request` ➔ `Controller` ➔ `Pipelinr Pipeline` ➔ `TransactionalMiddleware` ➔ `Handler` ➔ `Repository / JPA` ➔ `Base de Datos H2 en memoria (con migraciones reales de Liquibase)`.
+
+#### Flujos de Negocio Cubiertos
+
+Las pruebas están agrupadas bajo `infrastructure/src/test/java/.../api/` y cubren dos flujos completos de la aplicación:
+
+1. **Flujo 1: Ciclo de Vida Completo de la Suscripción y Preferencias**
+   - **Creación**: Registro de una nueva suscripción validando duplicidad (`CreateSubscriptionApiIT`).
+   - **Consulta**: Obtención del detalle completo de la suscripción y sus días de entrega (`GetSubscriptionDetailsApiIT`).
+   - **Modificación**: Cambio de preferencias de entrega (`UpdateDeliveryPreferencesApiIT`) y ajuste específico de un día de entrega (`ModifyDeliveryDayApiIT`).
+   - **Pausa y Reactivación**: Solicitud de pausa temporal con recálculo de vigencia (`PauseSubscriptionApiIT`) y reactivación anticipada (`ReactivateSubscriptionApiIT`).
+   - **Cierre**: Cancelación formal (`CancelSubscriptionApiIT`) y finalización de contrato (`CompleteSubscriptionApiIT`).
+
+2. **Flujo 2: Operaciones Diarias de Catering, Evaluaciones y Sincronización**
+   - **Gestión de Entregas**: Confirmación de entrega exitosa (`ConfirmDeliveryApiIT`), registro de entrega fallida por ausencia (`RegisterFailedDeliveryApiIT`) y marcado de día sin entrega programada (`MarkNoDeliveryApiIT`).
+   - **Evaluaciones Quincenales**: Registro y completitud de controles corporales del paciente (`MarkEvaluationCompletedApiIT`).
+   - **Sincronización Read Model**: Sincronización de pacientes desde eventos de BC1 (`PatientApiIT`).
+
+#### Comandos de ejecución
+
+```bash
+# Ejecutar todas las pruebas de integración (vía Maven Failsafe)
+mvn -pl infrastructure verify
+
+# Ejecutar una prueba de integración específica
+mvn -pl infrastructure verify -Dit.test=CreateSubscriptionApiIT
+
+# Ejecutar todos los ITs excluyendo las pruebas unitarias
+mvn -pl infrastructure failsafe:integration-test failsafe:verify
+```
+
+---
+
+### 3.5 Pruebas de Contrato con Pact (Contract Testing)
+
+El proyecto implementa **Consumer-Driven Contract Testing (CDCT)** mediante **Pact JVM 4.6.15**. Permite garantizar que el microservicio proveedor cumple con los contratos acordados con sus consumidores sin requerir entornos distribuidos activos.
+
+```
+[Consumer Test] ➔ Pact Mock Server ➔ Genera Contrato JSON en /pacts
+                                                    ↓
+[Provider Test] ➔ Verifica Contrato ➔ Spring Boot Real (RANDOM_PORT + H2)
+```
+
+- **Consumidor (Consumer):** `NutricenterPortalConsumer` (Portal Web / App cliente de BC3).
+- **Proveedor (Provider):** `ms-catering-subscription` (API REST de BC3).
+- **Archivo de Contrato Generado:** [`pacts/NutricenterPortalConsumer-ms-catering-subscription.json`](pacts/NutricenterPortalConsumer-ms-catering-subscription.json).
+
+#### Flujos acordados en el Contrato
+1. `POST /api/v1/subscriptions`: Solicitud para crear una nueva suscripción de 15 días (espera `201 Created` y payload validado).
+2. `GET /api/v1/subscriptions/{id}`: Solicitud para consultar detalles de una suscripción existente (espera `200 OK` con contrato validado).
+
+#### Orden y Comandos de Ejecución
+
+> **Importante:** El test del consumidor debe ejecutarse **antes** que el test del proveedor para asegurar que el contrato JSON esté generado en `pacts/`.
+
+```bash
+# Paso 1: Ejecutar el test del Consumidor para generar el contrato JSON
+mvn -pl infrastructure test -Dtest=SubscriptionConsumerPactTest
+
+# Paso 2: Ejecutar el test del Proveedor para verificar el contrato contra Spring Boot
+mvn -pl infrastructure test -Dtest=SubscriptionProviderPactTest
+
+# Ejecutar ambos secuencialmente en un solo comando
+mvn -pl infrastructure test -Dtest="SubscriptionConsumerPactTest,SubscriptionProviderPactTest"
+```
+
+---
+
+### 3.6 Ejecución Completa de Toda la Suite
+
+Para compilar, ejecutar todos los unit tests, contract tests, integration tests y verificar cobertura en todo el proyecto:
+
+```bash
+mvn clean verify
+```
+
+---
+
+### 3.7 Reglas de Proyecto y Skills de Agentes (Trazabilidad)
+
+En cumplimiento de las buenas prácticas de ingeniería y la transparencia en el uso de IA y asistentes de código, se incluyen todas las directrices, arneses y skills utilizados:
+
+#### Reglas de Proyecto (`project/`)
+- [`project/unit-testing-rules.md`](project/unit-testing-rules.md): Reglas de arquitectura, aislamiento, nomenclatura y aserciones para Unit Testing.
+- [`project/integration-test-rules.md`](project/integration-test-rules.md): Estándares del arnés de integración con Spring Boot, MockMvc y Pipelinr.
+- [`project/contract-testing-rules.md`](project/contract-testing-rules.md): Especificaciones de Pact JVM, definición de estados (`@State`) y reglas de CDCT.
+
+#### Skills de Agentes (`.agents/skills/`)
+- [`.agents/skills/unit-test-writer/`](.agents/skills/unit-test-writer/): Skill para generación de pruebas unitarias por capa.
+- [`.agents/skills/unit-test-verifier/`](.agents/skills/unit-test-verifier/): Skill auditor de conformidad de pruebas unitarias.
+- [`.agents/skills/integration-test-writer/`](.agents/skills/integration-test-writer/): Skill para generación de pruebas de integración de endpoints.
+- [`.agents/skills/integration-test-verifier/`](.agents/skills/integration-test-verifier/): Skill auditor de reglas de pruebas de integración.
+- [`.agents/skills/pact-writer/`](.agents/skills/pact-writer/): Skill para creación de pruebas de consumidor y proveedor Pact.
+- [`.agents/skills/pact-verifier/`](.agents/skills/pact-verifier/): Skill auditor de contratos Pact.
