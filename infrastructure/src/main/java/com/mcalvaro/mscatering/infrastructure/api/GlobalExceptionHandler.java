@@ -110,7 +110,6 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiErrorResponse> handleException(Exception ex) {
-        ex.printStackTrace();
         ApiErrorResponse response = new ApiErrorResponse("INTERNAL_SERVER_ERROR",
                 "Ocurrió un error inesperado en el servidor. Por favor, intente más tarde.");
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);

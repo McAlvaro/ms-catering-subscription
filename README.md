@@ -293,14 +293,11 @@ Las pruebas están agrupadas bajo `infrastructure/src/test/java/.../api/` y cubr
 #### Comandos de ejecución
 
 ```bash
-# Ejecutar todas las pruebas de integración (vía Maven Failsafe)
-mvn -pl infrastructure verify
+# Ejecutar únicamente las pruebas de integración (*IT.java aisladas de unit y pact)
+mvn -pl infrastructure test-compile failsafe:integration-test
 
 # Ejecutar una prueba de integración específica
 mvn -pl infrastructure verify -Dit.test=CreateSubscriptionApiIT
-
-# Ejecutar todos los ITs excluyendo las pruebas unitarias
-mvn -pl infrastructure failsafe:integration-test failsafe:verify
 ```
 
 ---
