@@ -20,3 +20,25 @@ spring:
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
     enabled: true
+
+  cloud:
+    consul:
+      enabled: false
+      discovery:
+        enabled: false
+        register: false
+        register-health-check: false
+      service-registry:
+        enabled: false
+        auto-registration:
+          enabled: false
+    discovery:
+      enabled: false
+    service-registry:
+      auto-registration:
+        enabled: false
+
+management:
+  health:
+    consul:
+      enabled: false
