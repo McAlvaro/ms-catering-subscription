@@ -23,3 +23,9 @@ management:
   health:
     consul:
       enabled: false
+
+springdoc:
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    operations-sorter: method

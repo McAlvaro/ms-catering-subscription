@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.ecwid.consul.v1.ConsulClient;
@@ -55,5 +56,12 @@ class LocalProfileConfigurationTest {
         mockMvc.perform(get("/actuator/health"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("UP"));
+    }
+
+    @Test
+    void localProfileServesSwaggerUiWithoutMySqlOrConsul() throws Exception {
+        mockMvc.perform(get("/swagger-ui.html"))
+                .andExpect(status().isFound())
+                .andExpect(redirectedUrl("/swagger-ui/index.html"));
     }
 }

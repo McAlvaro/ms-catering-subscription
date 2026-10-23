@@ -49,8 +49,16 @@ springdoc:
   api-docs:
     path: /api-docs
   swagger-ui:
-    path: /swagger-ui.html
-    operations-sorter: method
+    enabled: false
+  paths-to-match:
+    - /api/subscriptions
+    - /api/subscriptions/**
+    - /api/consolidated-calendars
+    - /api/consolidated-calendars/close
+  paths-to-exclude:
+    - /api/patients
+    - /actuator/**
+  show-actuator: false
 
 management:
   endpoints:
