@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ms-catering-subscription.example/schemas/outbox/v1/suscripcion-pausada.schema.json",
+  "title": "bc3.SuscripcionPausada v1",
+  "allOf": [
+    { "$ref": "integration-event-envelope.schema.json" },
+    {
+      "type": "object",
+      "properties": {
+        "eventName": { "const": "bc3.SuscripcionPausada" },
+        "data": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["idSuscripcion", "idPaciente", "fechaDesde", "fechaHasta", "motivo", "nuevaFechaFin", "fechaSolicitud"],
+          "properties": {
+            "idSuscripcion": { "type": "string", "format": "uuid" },
+            "idPaciente": { "type": "string", "format": "uuid" },
+            "fechaDesde": { "type": "string", "format": "date" },
+            "fechaHasta": { "type": "string", "format": "date" },
+            "motivo": { "type": "string", "minLength": 1 },
+            "nuevaFechaFin": { "type": "string", "format": "date" },
+            "fechaSolicitud": { "type": "string", "format": "date" }
+          }
+        }
+      }
+    }
+  ]
+}

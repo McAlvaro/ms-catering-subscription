@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ms-catering-subscription.example/schemas/outbox/v1/integration-event-envelope.schema.json",
+  "title": "Envelope comun de eventos de integracion de BC3 v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId",
+    "eventName",
+    "eventVersion",
+    "occurredOn",
+    "source",
+    "correlationId",
+    "data"
+  ],
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "eventName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "eventVersion": {
+      "const": "1.0"
+    },
+    "occurredOn": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "Z$"
+    },
+    "source": {
+      "const": "MsCateringSubscription"
+    },
+    "correlationId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "data": {
+      "type": "object"
+    }
+  }
+}
