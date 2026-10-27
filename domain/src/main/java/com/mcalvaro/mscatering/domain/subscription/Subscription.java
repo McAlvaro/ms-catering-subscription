@@ -45,7 +45,7 @@ public class Subscription extends AggregateRoot {
     private final UUID patientId;
     private final UUID dietPlanId;
     private final ContractCode contractCode;
-    private final ServiceContract contract;
+    private ServiceContract contract;
     private DeliveryPreferences preferences;
     private final DeliveryCalendar deliveryCalendar;
     private SubscriptionStatus status;
@@ -121,13 +121,28 @@ public class Subscription extends AggregateRoot {
      * Validates that the current status is {@code ACTIVE}.
      */
     public void pause(PauseRange range, String reason) {
+        pause(range, reason, UUID.randomUUID().toString());
+    }
+
+    public void pause(PauseRange range, String reason, String correlationId) {
         if (status != SubscriptionStatus.ACTIVE) {
             throw SubscriptionErrors.subscriptionNotActive();
         }
+        requireCorrelationId(correlationId);
+        if (!contract.period().contains(range.startDate()) || !contract.period().contains(range.endDate())) {
+            throw SubscriptionErrors.pauseRangeOutsideValidity();
+        }
+        if (deliveryCalendar.hasProcessedDays(range)) {
+            throw SubscriptionErrors.deliveryDayBlocked();
+        }
+        int extensionDays = range.durationDays();
+        LocalDate newEndDate = contract.period().endDate().plusDays(extensionDays);
+        extendEffectiveValidity(newEndDate);
         deliveryCalendar.pauseRange(range);
-        pauseRequests.add(new PauseRequest(UUID.randomUUID(), range, reason));
+        PauseRequest request = new PauseRequest(UUID.randomUUID(), range, reason, correlationId, extensionDays);
+        pauseRequests.add(request);
         status = SubscriptionStatus.PAUSED;
-        addDomainEvent(new SubscriptionPaused(getId(), range));
+        addDomainEvent(new SubscriptionPaused(getId(), patientId, range, reason, LocalDate.now(), newEndDate, correlationId));
     }
 
     /**
@@ -143,10 +158,25 @@ public class Subscription extends AggregateRoot {
                 .findFirst()
                 .orElseThrow(SubscriptionErrors::noPauseRequestActive);
 
+        ensureAtLeast48Hours(reactivationDate);
+        if (reactivationDate.isBefore(active.getRange().startDate())
+                || reactivationDate.isAfter(active.getRange().endDate())) {
+            throw SubscriptionErrors.reactivationOutsidePauseRange();
+        }
+        int restoredDays = (int) java.time.temporal.ChronoUnit.DAYS
+                .between(reactivationDate, active.getRange().endDate()) + 1;
+        LocalDate newEndDate = contract.period().endDate().minusDays(restoredDays);
+        if (deliveryCalendar.hasProcessedDaysAfter(newEndDate)) {
+            throw SubscriptionErrors.deliveryDayBlocked();
+        }
         active.earlyReactivate(reactivationDate);
-        deliveryCalendar.reactivateRange(active.getRange());
+        active.reduceExtensionDays(restoredDays);
+        deliveryCalendar.reactivateRange(new PauseRange(reactivationDate, active.getRange().endDate()));
+        contract = withPeriod(new ValidityPeriod(contract.period().startDate(), newEndDate));
+        deliveryCalendar.removeDaysAfter(newEndDate);
         status = SubscriptionStatus.ACTIVE;
-        addDomainEvent(new SubscriptionReactivated(getId(), reactivationDate));
+        addDomainEvent(new SubscriptionReactivated(getId(), patientId, reactivationDate, newEndDate,
+                active.getCorrelationId()));
     }
 
     /**
@@ -202,14 +232,23 @@ public class Subscription extends AggregateRoot {
      * Completes the subscription. Only allowed after the contract period has ended.
      */
     public void complete() {
+        complete(UUID.randomUUID().toString());
+    }
+
+    public void complete(String correlationId) {
         if (status != SubscriptionStatus.ACTIVE) {
             throw SubscriptionErrors.subscriptionNotActive();
         }
         if (!LocalDate.now().isAfter(contract.period().endDate())) {
             throw SubscriptionErrors.subscriptionPeriodNotEnded();
         }
+        requireCorrelationId(correlationId);
+        LocalDate today = LocalDate.now();
+        int cancelledPendingDeliveries = Math.toIntExact(deliveryCalendar.countFuturePendingDeliveries(today));
+        deliveryCalendar.cancelFuturePendingDeliveries(today);
         status = SubscriptionStatus.COMPLETED;
-        addDomainEvent(new SubscriptionCompleted(getId()));
+        addDomainEvent(new SubscriptionCompleted(getId(), patientId, dietPlanId, contract.period().endDate(),
+                cancelledPendingDeliveries, correlationId));
     }
 
     /**
@@ -217,17 +256,49 @@ public class Subscription extends AggregateRoot {
      * evaluations.
      */
     public void cancel(String reason) {
+        cancel(reason, UUID.randomUUID().toString());
+    }
+
+    public void cancel(String reason, String correlationId) {
+        if (reason == null || reason.isBlank()) {
+            throw SubscriptionErrors.blankCancellationReason();
+        }
+        requireCorrelationId(correlationId);
+        LocalDate today = LocalDate.now();
+        int cancelledPendingDeliveries = Math.toIntExact(deliveryCalendar.countFuturePendingDeliveries(today));
         status = SubscriptionStatus.CANCELLED;
-        deliveryCalendar.getDeliveryDays().stream()
-                .filter(d -> d.getStatus() == DeliveryDayStatus.SCHEDULED
-                        || d.getStatus() == DeliveryDayStatus.PAUSED)
-                .forEach(DeliveryDay::cancel);
+        deliveryCalendar.cancelFuturePendingDeliveries(today);
 
         evaluations.stream()
                 .filter(e -> e.getStatus() == EvaluationStatus.PENDING)
                 .forEach(BiweeklyEvaluation::cancel);
 
-        addDomainEvent(new SubscriptionCancelled(getId(), reason));
+        addDomainEvent(new SubscriptionCancelled(getId(), patientId, dietPlanId, reason, today,
+                cancelledPendingDeliveries, correlationId));
+    }
+
+    private void extendEffectiveValidity(LocalDate newEndDate) {
+        ValidityPeriod extendedPeriod = new ValidityPeriod(contract.period().startDate(), newEndDate);
+        contract = withPeriod(extendedPeriod);
+        deliveryCalendar.extendTo(extendedPeriod, preferences.primaryAddress(), preferences.timeWindow(),
+                preferences.specialInstructions());
+    }
+
+    private ServiceContract withPeriod(ValidityPeriod period) {
+        return new ServiceContract(contract.dietPlanId(), period, contract.serviceType(), contract.totalPrice(),
+                contract.acceptedConditions(), contract.signedAt());
+    }
+
+    private void ensureAtLeast48Hours(LocalDate date) {
+        if (!date.isAfter(LocalDate.now().plusDays(1))) {
+            throw SubscriptionErrors.pauseRequires48HoursAnticipation();
+        }
+    }
+
+    private void requireCorrelationId(String correlationId) {
+        if (correlationId == null || correlationId.isBlank()) {
+            throw SubscriptionErrors.correlationIdBlank();
+        }
     }
 
     public UUID getPatientId() {

@@ -52,3 +52,16 @@ databaseChangeLog:
             referencedColumnNames: id
             constraintName: fk_pause_req_subscription
             onDelete: CASCADE
+  - changeSet:
+      id: 1.1-add-pause-correlation-and-extension-state
+      author: alvaro
+      changes:
+        - addColumn:
+            tableName: pause_requests
+            columns:
+              - column:
+                  name: correlation_id
+                  type: varchar(255)
+              - column:
+                  name: extension_days
+                  type: int

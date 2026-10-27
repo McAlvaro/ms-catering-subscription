@@ -61,4 +61,20 @@ public final class SubscriptionErrors {
         return new DomainException("SUB-012",
                 "Cannot mark as NO_DELIVERY: the calendar would have no active delivery days left.");
     }
+
+    public static DomainException pauseRangeOutsideValidity() {
+        return new DomainException("SUB-013", "Pause range must be inside the current effective validity.");
+    }
+
+    public static DomainException blankCancellationReason() {
+        return new DomainException("SUB-014", "Cancellation reason must not be blank.");
+    }
+
+    public static DomainException reactivationOutsidePauseRange() {
+        return new DomainException("SUB-015", "Reactivation date must be inside the active pause range.");
+    }
+
+    public static DomainException correlationIdBlank() {
+        return new DomainException("SUB-016", "Correlation ID must not be blank.");
+    }
 }

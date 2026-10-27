@@ -64,9 +64,9 @@ los eventos del ciclo de vida de la suscripcion.
 | `duracionDias` | integer >= 1 | Si | Contrato de servicio |
 | `fechaInicio`, `fechaFin` | date | Si | Vigencia del contrato |
 | `evaluacionesIncluidas` | integer >= 0 | Si | Contrato de servicio |
-| `montoFacturado` | number >= 0 | Si | Facturacion al alta |
+| `montoFacturado` | number >= 0 | Si | `ServiceContract.totalPrice`; BC3 no emite facturas |
 | `moneda` | string `BOB` | Si | Contrato congelado |
-| `nroFactura` | string no vacio | Si | Facturacion al alta |
+| `nroFactura` | string no vacio o `null` | Si | Siempre requerido; `null` mientras BC3 no emite facturas |
 
 ### `bc3.SuscripcionPausada`
 
@@ -133,7 +133,7 @@ los eventos del ciclo de vida de la suscripcion.
 
 | DomainEvent | IntegrationEvent | Regla de traduccion | Datos disponibles hoy | Brecha para OUT-002 |
 | --- | --- | --- | --- | --- |
-| `SubscriptionCreated` | `bc3.SuscripcionCreada` | Traduccion uno a uno | `eventId`, `occurredAt`, suscripcion, paciente | Plan, vigencia, evaluaciones, importe, factura, correlacion y snapshot completo |
+| `SubscriptionCreated` | `bc3.SuscripcionCreada` | Traduccion uno a uno | `eventId`, `occurredAt`, suscripcion, paciente | Plan, vigencia, evaluaciones y correlacion; `montoFacturado` deriva de `ServiceContract.totalPrice` y `nroFactura` es `null` porque BC3 no factura |
 | `SubscriptionPaused` | `bc3.SuscripcionPausada` | Traduccion uno a uno | `eventId`, `occurredAt`, suscripcion, rango | Paciente, motivo, nueva fecha fin, fecha solicitud y correlacion; corregir extension de vigencia |
 | `SubscriptionReactivated` | `bc3.SuscripcionReactivada` | Traduccion uno a uno | `eventId`, `occurredAt`, suscripcion, fecha | Paciente, fecha fin resultante y correlacion |
 | `SubscriptionCancelled` | `bc3.SuscripcionCancelada` | `tipoBaja=MANUAL` | `eventId`, `occurredAt`, suscripcion, motivo | Paciente, plan, fecha efectiva, entregas anuladas y correlacion |
@@ -189,7 +189,7 @@ los eventos del ciclo de vida de la suscripcion.
     "evaluacionesIncluidas": 2,
     "montoFacturado": 2850.00,
     "moneda": "BOB",
-    "nroFactura": "F-2026-004512"
+    "nroFactura": null
   }
 }
 ```

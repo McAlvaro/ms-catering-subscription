@@ -22,7 +22,7 @@ class ReactivateSubscriptionApiIT extends BaseIntegrationTest {
     void setUp() {
         subscriptionId = UUID.randomUUID();
         Subscription subscription = buildValidCommand();
-        subscription.pause(new PauseRange(LocalDate.now().plusDays(3), LocalDate.now().plusDays(5)), "Holiday");
+        subscription.pause(new PauseRange(LocalDate.now().plusDays(12), LocalDate.now().plusDays(14)), "Holiday");
         subscriptionRepository.save(subscription);
     }
 
@@ -33,7 +33,7 @@ class ReactivateSubscriptionApiIT extends BaseIntegrationTest {
         @DisplayName("Should return 200 OK when a paused subscription is reactivated")
         void shouldReturn200WhenSubscriptionIsPaused() throws Exception {
             // Arrange
-            LocalDate date = LocalDate.now().plusDays(3);
+            LocalDate date = LocalDate.now().plusDays(12);
             // Act & Assert
             mockMvc.perform(post(URL, subscriptionId).param("reactivationDate", date.toString()))
                     .andExpect(status().isOk());

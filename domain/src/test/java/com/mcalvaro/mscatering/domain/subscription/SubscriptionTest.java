@@ -92,6 +92,8 @@ class SubscriptionTest {
             assertThat(request.getActualEndDate()).isEqualTo(reactivationDate);
         });
         assertThat(subscription.getDeliveryCalendar().getDaysForDate(LocalDate.of(2099, 1, 4)))
+                .singleElement().extracting(DeliveryDay::getStatus).isEqualTo(DeliveryDayStatus.PAUSED);
+        assertThat(subscription.getDeliveryCalendar().getDaysForDate(reactivationDate))
                 .singleElement().extracting(DeliveryDay::getStatus).isEqualTo(DeliveryDayStatus.SCHEDULED);
         assertThat(subscription.getDomainEvents()).hasSize(2);
         assertThat(subscription.getDomainEvents().get(0)).isInstanceOfSatisfying(SubscriptionPaused.class, event -> {

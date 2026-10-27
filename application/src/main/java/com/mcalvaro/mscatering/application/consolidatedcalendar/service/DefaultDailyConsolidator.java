@@ -24,7 +24,7 @@ public class DefaultDailyConsolidator implements DailyConsolidator {
     public ConsolidatedCalendar consolidateForDate(LocalDate deliveryDate) {
         ConsolidatedCalendar calendar = ConsolidatedCalendar.create(UUID.randomUUID(), deliveryDate);
 
-        List<Subscription> activeSubscriptions = subscriptionRepository.findActiveSubscriptions();
+        List<Subscription> activeSubscriptions = subscriptionRepository.findConsolidatableSubscriptions();
 
         for (Subscription subscription : activeSubscriptions) {
             List<DeliveryDay> days = subscription.getDeliveryCalendar().getDaysForDate(deliveryDate);

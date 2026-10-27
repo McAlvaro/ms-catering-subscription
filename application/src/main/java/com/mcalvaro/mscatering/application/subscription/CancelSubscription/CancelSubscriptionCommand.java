@@ -12,5 +12,10 @@ import java.util.UUID;
  */
 public record CancelSubscriptionCommand(
         UUID subscriptionId,
-        String reason) implements Command<Void> {
+        String reason,
+        String correlationId) implements Command<Void> {
+
+    public CancelSubscriptionCommand(UUID subscriptionId, String reason) {
+        this(subscriptionId, reason, UUID.randomUUID().toString());
+    }
 }

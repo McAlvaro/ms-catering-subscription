@@ -3,6 +3,8 @@ package com.mcalvaro.mscatering.domain.subscription.entity;
 import com.mcalvaro.mscatering.domain.core.Entity;
 import com.mcalvaro.mscatering.domain.subscription.enums.DeliveryDayStatus;
 import com.mcalvaro.mscatering.domain.subscription.vo.PauseRange;
+import com.mcalvaro.mscatering.domain.subscription.vo.DeliveryAddress;
+import com.mcalvaro.mscatering.domain.subscription.vo.TimeWindow;
 import com.mcalvaro.mscatering.domain.subscription.vo.ValidityPeriod;
 
 import java.time.LocalDate;
@@ -19,7 +21,7 @@ import java.util.UUID;
 public class DeliveryCalendar extends Entity {
 
     private final UUID subscriptionId;
-    private final ValidityPeriod period;
+    private ValidityPeriod period;
     private final List<DeliveryDay> deliveryDays = new ArrayList<>();
 
     public DeliveryCalendar(UUID id, UUID subscriptionId, ValidityPeriod period) {
@@ -52,6 +54,53 @@ public class DeliveryCalendar extends Entity {
                 .filter(d -> !d.getDate().isBefore(range.startDate())
                         && !d.getDate().isAfter(range.endDate()))
                 .forEach(DeliveryDay::reactivate);
+    }
+
+    public boolean hasProcessedDays(PauseRange range) {
+        return deliveryDays.stream()
+                .filter(d -> !d.getDate().isBefore(range.startDate()) && !d.getDate().isAfter(range.endDate()))
+                .anyMatch(this::isProcessed);
+    }
+
+    public boolean hasProcessedDaysAfter(LocalDate date) {
+        return deliveryDays.stream()
+                .filter(d -> d.getDate().isAfter(date))
+                .anyMatch(this::isProcessed);
+    }
+
+    public void extendTo(ValidityPeriod newPeriod, DeliveryAddress address, TimeWindow timeWindow, String instructions) {
+        LocalDate previousEnd = period.endDate();
+        for (LocalDate day : previousEnd.plusDays(1).datesUntil(newPeriod.endDate().plusDays(1)).toList()) {
+            deliveryDays.add(new DeliveryDay(UUID.randomUUID(), day, address, timeWindow, instructions));
+        }
+        period = newPeriod;
+    }
+
+    public void removeDaysAfter(LocalDate endDate) {
+        deliveryDays.removeIf(day -> day.getDate().isAfter(endDate));
+        period = new ValidityPeriod(period.startDate(), endDate);
+    }
+
+    public long countFuturePendingDeliveries(LocalDate effectiveDate) {
+        return deliveryDays.stream()
+                .filter(day -> day.getDate().isAfter(effectiveDate))
+                .filter(day -> day.getStatus() == DeliveryDayStatus.SCHEDULED
+                        || day.getStatus() == DeliveryDayStatus.PAUSED)
+                .count();
+    }
+
+    public void cancelFuturePendingDeliveries(LocalDate effectiveDate) {
+        deliveryDays.stream()
+                .filter(day -> day.getDate().isAfter(effectiveDate))
+                .filter(day -> day.getStatus() == DeliveryDayStatus.SCHEDULED
+                        || day.getStatus() == DeliveryDayStatus.PAUSED)
+                .forEach(DeliveryDay::cancel);
+    }
+
+    private boolean isProcessed(DeliveryDay day) {
+        return day.getStatus() == DeliveryDayStatus.CONSOLIDATED
+                || day.getStatus() == DeliveryDayStatus.DELIVERED
+                || day.getStatus() == DeliveryDayStatus.FAILED;
     }
 
     public Optional<DeliveryDay> findDayById(UUID dayId) {

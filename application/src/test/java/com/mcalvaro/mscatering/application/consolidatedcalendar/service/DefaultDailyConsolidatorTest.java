@@ -50,7 +50,7 @@ class DefaultDailyConsolidatorTest {
         LocalDate deliveryDate = LocalDate.of(2026, 9, 7);
         Subscription subscription = buildSubscription(deliveryDate);
         DeliveryDay deliveryDay = subscription.getDeliveryCalendar().getDaysForDate(deliveryDate).get(0);
-        when(subscriptionRepository.findActiveSubscriptions()).thenReturn(List.of(subscription));
+        when(subscriptionRepository.findConsolidatableSubscriptions()).thenReturn(List.of(subscription));
 
         // Act
         ConsolidatedCalendar calendar = consolidator.consolidateForDate(deliveryDate);
@@ -73,7 +73,7 @@ class DefaultDailyConsolidatorTest {
         assertThat(line.getTimeWindow()).isEqualTo(deliveryDay.getTimeWindow());
         assertThat(line.getInstructions()).isEqualTo(deliveryDay.getInstructions());
 
-        verify(subscriptionRepository, times(1)).findActiveSubscriptions();
+        verify(subscriptionRepository, times(1)).findConsolidatableSubscriptions();
         verify(subscriptionRepository, times(1)).save(subscription);
     }
 
@@ -85,7 +85,7 @@ class DefaultDailyConsolidatorTest {
         Subscription subscription = buildSubscription(deliveryDate);
         DeliveryDay deliveryDay = subscription.getDeliveryCalendar().getDaysForDate(deliveryDate).get(0);
         deliveryDay.pause();
-        when(subscriptionRepository.findActiveSubscriptions()).thenReturn(List.of(subscription));
+        when(subscriptionRepository.findConsolidatableSubscriptions()).thenReturn(List.of(subscription));
 
         // Act
         ConsolidatedCalendar calendar = consolidator.consolidateForDate(deliveryDate);
@@ -97,7 +97,7 @@ class DefaultDailyConsolidatorTest {
         assertThat(deliveryDay.getStatus()).isEqualTo(DeliveryDayStatus.PAUSED);
         assertThat(deliveryDay.getConsolidatedAt()).isNull();
 
-        verify(subscriptionRepository, times(1)).findActiveSubscriptions();
+        verify(subscriptionRepository, times(1)).findConsolidatableSubscriptions();
         verify(subscriptionRepository, never()).save(subscription);
     }
 
@@ -106,7 +106,7 @@ class DefaultDailyConsolidatorTest {
     void shouldReturnOpenCalendarWithoutLinesOrSavesWhenThereAreNoActiveSubscriptions() {
         // Arrange
         LocalDate deliveryDate = LocalDate.of(2026, 9, 7);
-        when(subscriptionRepository.findActiveSubscriptions()).thenReturn(List.of());
+        when(subscriptionRepository.findConsolidatableSubscriptions()).thenReturn(List.of());
 
         // Act
         ConsolidatedCalendar calendar = consolidator.consolidateForDate(deliveryDate);
@@ -117,7 +117,7 @@ class DefaultDailyConsolidatorTest {
         assertThat(calendar.getLines()).isEmpty();
         assertThat(calendar.getTotalDeliveries()).isZero();
 
-        verify(subscriptionRepository, times(1)).findActiveSubscriptions();
+        verify(subscriptionRepository, times(1)).findConsolidatableSubscriptions();
         verify(subscriptionRepository, never()).save(any(Subscription.class));
     }
 
@@ -127,7 +127,7 @@ class DefaultDailyConsolidatorTest {
         // Arrange
         LocalDate deliveryDate = LocalDate.of(2026, 9, 7);
         Subscription subscription = buildSubscription(deliveryDate.plusDays(1));
-        when(subscriptionRepository.findActiveSubscriptions()).thenReturn(List.of(subscription));
+        when(subscriptionRepository.findConsolidatableSubscriptions()).thenReturn(List.of(subscription));
 
         // Act
         ConsolidatedCalendar calendar = consolidator.consolidateForDate(deliveryDate);
@@ -138,8 +138,32 @@ class DefaultDailyConsolidatorTest {
         assertThat(calendar.getLines()).isEmpty();
         assertThat(calendar.getTotalDeliveries()).isZero();
 
-        verify(subscriptionRepository, times(1)).findActiveSubscriptions();
+        verify(subscriptionRepository, times(1)).findConsolidatableSubscriptions();
         verify(subscriptionRepository, never()).save(subscription);
+    }
+
+    @Test
+    @DisplayName("Should consolidate a scheduled day outside the pause range while its subscription is paused")
+    void shouldConsolidateScheduledDayOutsidePauseRangeWhenSubscriptionIsPaused() {
+        // Arrange
+        LocalDate startDate = LocalDate.now().plusDays(10);
+        LocalDate deliveryDate = startDate.plusDays(5);
+        Subscription subscription = buildSubscription(startDate);
+        subscription.pause(new com.mcalvaro.mscatering.domain.subscription.vo.PauseRange(
+                startDate.plusDays(2), startDate.plusDays(3)), "Travel", "pause-correlation");
+        DeliveryDay scheduledDay = subscription.getDeliveryCalendar().getDaysForDate(deliveryDate).get(0);
+        when(subscriptionRepository.findConsolidatableSubscriptions()).thenReturn(List.of(subscription));
+
+        // Act
+        ConsolidatedCalendar calendar = consolidator.consolidateForDate(deliveryDate);
+
+        // Assert
+        assertThat(subscription.getStatus()).isEqualTo(com.mcalvaro.mscatering.domain.subscription.enums.SubscriptionStatus.PAUSED);
+        assertThat(scheduledDay.getStatus()).isEqualTo(DeliveryDayStatus.CONSOLIDATED);
+        assertThat(calendar.getLines()).singleElement().extracting(ConsolidatedLine::getSubscriptionId)
+                .isEqualTo(subscription.getId());
+        verify(subscriptionRepository, times(1)).findConsolidatableSubscriptions();
+        verify(subscriptionRepository, times(1)).save(subscription);
     }
 
     private Subscription buildSubscription(LocalDate startDate) {

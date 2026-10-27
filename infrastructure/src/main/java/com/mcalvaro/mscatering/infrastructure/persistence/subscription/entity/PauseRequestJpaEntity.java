@@ -42,6 +42,12 @@ public class PauseRequestJpaEntity {
     @Column(name = "active", nullable = false)
     private boolean active;
 
+    @Column(name = "correlation_id")
+    private String correlationId;
+
+    @Column(name = "extension_days")
+    private Integer extensionDays;
+
     public PauseRequestJpaEntity() {
     }
 
@@ -107,5 +113,21 @@ public class PauseRequestJpaEntity {
 
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    public String getCorrelationId() {
+        return correlationId;
+    }
+
+    public void setCorrelationId(String correlationId) {
+        this.correlationId = correlationId;
+    }
+
+    public Integer getExtensionDays() {
+        return extensionDays;
+    }
+
+    public void setExtensionDays(Integer extensionDays) {
+        this.extensionDays = extensionDays;
     }
 }

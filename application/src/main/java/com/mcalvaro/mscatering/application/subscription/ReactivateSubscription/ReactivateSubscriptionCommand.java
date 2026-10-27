@@ -12,5 +12,10 @@ import java.util.UUID;
  */
 public record ReactivateSubscriptionCommand(
         UUID subscriptionId,
-        LocalDate reactivationDate) implements Command<Void> {
+        LocalDate reactivationDate,
+        String correlationId) implements Command<Void> {
+
+    public ReactivateSubscriptionCommand(UUID subscriptionId, LocalDate reactivationDate) {
+        this(subscriptionId, reactivationDate, UUID.randomUUID().toString());
+    }
 }

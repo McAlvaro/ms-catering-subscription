@@ -25,7 +25,7 @@ public class CancelSubscriptionCommandHandler implements Command.Handler<CancelS
                 .orElseThrow(() -> new IllegalArgumentException(
                         "Subscription not found: " + command.subscriptionId()));
 
-        subscription.cancel(command.reason());
+        subscription.cancel(command.reason(), command.correlationId());
 
         subscriptionRepository.save(subscription);
         return null;

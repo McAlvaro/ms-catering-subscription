@@ -5,6 +5,7 @@ import com.mcalvaro.mscatering.domain.subscription.ISubscriptionRepository;
 import com.mcalvaro.mscatering.domain.subscription.Subscription;
 import com.mcalvaro.mscatering.domain.subscription.enums.ServiceType;
 import com.mcalvaro.mscatering.domain.subscription.enums.SubscriptionStatus;
+import com.mcalvaro.mscatering.domain.subscription.event.SubscriptionPaused;
 import com.mcalvaro.mscatering.domain.subscription.vo.DeliveryAddress;
 import com.mcalvaro.mscatering.domain.subscription.vo.DeliveryPreferences;
 import com.mcalvaro.mscatering.domain.subscription.vo.ServiceContract;
@@ -58,7 +59,11 @@ class PauseSubscriptionCommandHandlerTest {
             assertThat(request.getRange().startDate()).isEqualTo(command.startDate());
             assertThat(request.getRange().endDate()).isEqualTo(command.endDate());
             assertThat(request.getReason()).isEqualTo(command.reason());
+            assertThat(request.getCorrelationId()).isEqualTo(command.correlationId());
         });
+        assertThat(subscription.getDomainEvents()).filteredOn(SubscriptionPaused.class::isInstance).singleElement()
+                .isInstanceOfSatisfying(SubscriptionPaused.class,
+                        event -> assertThat(event.correlationId()).isEqualTo(command.correlationId()));
         verify(subscriptionRepository, times(1)).findById(command.subscriptionId());
         verify(subscriptionRepository, times(1)).save(subscription);
     }
@@ -85,7 +90,7 @@ class PauseSubscriptionCommandHandlerTest {
         // Arrange
         Subscription subscription = buildSubscription(LocalDate.now().plusDays(10));
         subscription.pause(new com.mcalvaro.mscatering.domain.subscription.vo.PauseRange(
-                LocalDate.now().plusDays(3), LocalDate.now().plusDays(5)), "Travel");
+                LocalDate.now().plusDays(12), LocalDate.now().plusDays(14)), "Travel");
         PauseSubscriptionCommand command = buildValidCommand(subscription.getId());
         when(subscriptionRepository.findById(command.subscriptionId())).thenReturn(Optional.of(subscription));
 
@@ -100,7 +105,8 @@ class PauseSubscriptionCommandHandlerTest {
     }
 
     private PauseSubscriptionCommand buildValidCommand(UUID subscriptionId) {
-        return new PauseSubscriptionCommand(subscriptionId, LocalDate.now().plusDays(3), LocalDate.now().plusDays(5), "Travel");
+        return new PauseSubscriptionCommand(subscriptionId, LocalDate.now().plusDays(12), LocalDate.now().plusDays(14),
+                "Travel", "application-pause-correlation");
     }
 
     private Subscription buildSubscription(LocalDate startDate) {

@@ -46,9 +46,9 @@ public class JpaSubscriptionRepository implements ISubscriptionRepository {
     }
 
     @Override
-    public java.util.List<Subscription> findActiveSubscriptions() {
+    public java.util.List<Subscription> findConsolidatableSubscriptions() {
         return springRepository
-                .findByStatus(com.mcalvaro.mscatering.domain.subscription.enums.SubscriptionStatus.ACTIVE.name())
+                .findByStatusIn(List.of(SubscriptionStatus.ACTIVE.name(), SubscriptionStatus.PAUSED.name()))
                 .stream()
                 .map(mapper::toDomain)
                 .collect(java.util.stream.Collectors.toList());

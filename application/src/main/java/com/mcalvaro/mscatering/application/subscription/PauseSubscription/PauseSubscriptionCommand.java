@@ -15,5 +15,10 @@ public record PauseSubscriptionCommand(
         UUID subscriptionId,
         LocalDate startDate,
         LocalDate endDate,
-        String reason) implements Command<Void> {
+        String reason,
+        String correlationId) implements Command<Void> {
+
+    public PauseSubscriptionCommand(UUID subscriptionId, LocalDate startDate, LocalDate endDate, String reason) {
+        this(subscriptionId, startDate, endDate, reason, UUID.randomUUID().toString());
+    }
 }

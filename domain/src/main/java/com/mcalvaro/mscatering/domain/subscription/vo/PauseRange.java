@@ -10,7 +10,7 @@ import java.time.LocalDate;
  * Validates:
  * <ul>
  * <li>{@code startDate} is at least 48 hours (2 days) in the future.</li>
- * <li>{@code startDate} is strictly before {@code endDate}.</li>
+ * <li>{@code startDate} is before or equal to {@code endDate}.</li>
  * </ul>
  */
 public record PauseRange(LocalDate startDate, LocalDate endDate) {
@@ -23,8 +23,13 @@ public record PauseRange(LocalDate startDate, LocalDate endDate) {
             throw new DomainException("SUB-001",
                     "Pause must be requested at least 48 hours in advance.");
         }
-        if (!startDate.isBefore(endDate)) {
-            throw new DomainException("VO-014", "PauseRange: startDate must be strictly before endDate.");
+        if (startDate.isAfter(endDate)) {
+            throw new DomainException("VO-014", "PauseRange: startDate must be before or equal to endDate.");
         }
+    }
+
+    /** Returns the inclusive number of calendar days in this pause. */
+    public int durationDays() {
+        return (int) java.time.temporal.ChronoUnit.DAYS.between(startDate, endDate) + 1;
     }
 }

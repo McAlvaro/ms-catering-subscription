@@ -25,10 +25,11 @@ public interface ISubscriptionRepository {
     int getNextContractSequenceOfYear();
 
     /**
-     * Finds all active subscriptions in the system.
-     * Used by the consolidation process.
+     * Finds subscriptions whose scheduled delivery days can be consolidated.
+     * ACTIVE and PAUSED subscriptions are both included; paused delivery days are
+     * excluded by their own status.
      */
-    java.util.List<Subscription> findActiveSubscriptions();
+    java.util.List<Subscription> findConsolidatableSubscriptions();
 
     /**
      * Checks if a patient has an ACTIVE or PAUSED subscription.

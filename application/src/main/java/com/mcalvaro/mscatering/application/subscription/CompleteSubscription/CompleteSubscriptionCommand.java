@@ -8,5 +8,10 @@ import java.util.UUID;
  * Command to complete a subscription whose contract period has ended.
  */
 public record CompleteSubscriptionCommand(
-        UUID subscriptionId) implements Command<Void> {
+        UUID subscriptionId,
+        String correlationId) implements Command<Void> {
+
+    public CompleteSubscriptionCommand(UUID subscriptionId) {
+        this(subscriptionId, UUID.randomUUID().toString());
+    }
 }

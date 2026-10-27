@@ -14,6 +14,7 @@ import com.mcalvaro.mscatering.application.subscription.PauseSubscription.PauseS
 import com.mcalvaro.mscatering.application.subscription.ReactivateSubscription.ReactivateSubscriptionCommand;
 import com.mcalvaro.mscatering.application.subscription.RegisterFailedDelivery.RegisterFailedDeliveryCommand;
 import com.mcalvaro.mscatering.application.subscription.UpdateDeliveryPreferences.UpdateDeliveryPreferencesCommand;
+import com.mcalvaro.mscatering.infrastructure.api.CorrelationIdFilter;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -48,16 +49,18 @@ public class SubscriptionController {
     }
 
     @PostMapping("/{id}/pause")
-    public ResponseEntity<Void> pause(@PathVariable UUID id, @RequestBody PauseSubscriptionCommand body) {
-        pipeline.send(new PauseSubscriptionCommand(id, body.startDate(), body.endDate(), body.reason()));
+    public ResponseEntity<Void> pause(@PathVariable UUID id, @RequestBody PauseSubscriptionCommand body,
+            @RequestAttribute(CorrelationIdFilter.REQUEST_ATTRIBUTE) String correlationId) {
+        pipeline.send(new PauseSubscriptionCommand(id, body.startDate(), body.endDate(), body.reason(), correlationId));
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/{id}/reactivate")
     public ResponseEntity<Void> reactivate(
             @PathVariable UUID id,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate reactivationDate) {
-        pipeline.send(new ReactivateSubscriptionCommand(id, reactivationDate));
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate reactivationDate,
+            @RequestAttribute(CorrelationIdFilter.REQUEST_ATTRIBUTE) String correlationId) {
+        pipeline.send(new ReactivateSubscriptionCommand(id, reactivationDate, correlationId));
         return ResponseEntity.ok().build();
     }
 
@@ -105,14 +108,16 @@ public class SubscriptionController {
     }
 
     @PostMapping("/{id}/complete")
-    public ResponseEntity<Void> complete(@PathVariable UUID id) {
-        pipeline.send(new CompleteSubscriptionCommand(id));
+    public ResponseEntity<Void> complete(@PathVariable UUID id,
+            @RequestAttribute(CorrelationIdFilter.REQUEST_ATTRIBUTE) String correlationId) {
+        pipeline.send(new CompleteSubscriptionCommand(id, correlationId));
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> cancel(@PathVariable UUID id, @RequestParam String reason) {
-        pipeline.send(new CancelSubscriptionCommand(id, reason));
+    public ResponseEntity<Void> cancel(@PathVariable UUID id, @RequestParam String reason,
+            @RequestAttribute(CorrelationIdFilter.REQUEST_ATTRIBUTE) String correlationId) {
+        pipeline.send(new CancelSubscriptionCommand(id, reason, correlationId));
         return ResponseEntity.ok().build();
     }
 

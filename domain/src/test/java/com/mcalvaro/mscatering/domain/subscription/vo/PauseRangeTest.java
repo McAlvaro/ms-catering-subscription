@@ -15,8 +15,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class PauseRangeTest {
 
     @Test
-    @DisplayName("Should create a pause range when it starts at least two days ahead and ends later")
-    void shouldCreatePauseRangeWhenStartHasRequiredNoticeAndEndIsLater() {
+    @DisplayName("Should create a pause range when it starts at least two days ahead and ends on or later")
+    void shouldCreatePauseRangeWhenStartHasRequiredNoticeAndEndIsOnOrLater() {
         // Arrange
         LocalDate start = LocalDate.now().plusDays(2);
         LocalDate end = start.plusDays(3);
@@ -28,6 +28,19 @@ class PauseRangeTest {
         assertThat(range.startDate()).isEqualTo(start);
         assertThat(range.endDate()).isEqualTo(end);
         assertThat(range).isEqualTo(new PauseRange(start, end));
+    }
+
+    @Test
+    @DisplayName("Should create a one-day inclusive pause range when it has the required notice")
+    void shouldCreateOneDayPauseRangeWhenStartAndEndAreEqual() {
+        // Arrange
+        LocalDate date = LocalDate.now().plusDays(2);
+
+        // Act
+        PauseRange range = new PauseRange(date, date);
+
+        // Assert
+        assertThat(range.durationDays()).isEqualTo(1);
     }
 
     @ParameterizedTest
@@ -60,8 +73,8 @@ class PauseRangeTest {
 
     @ParameterizedTest
     @MethodSource("rangesNotInAscendingOrder")
-    @DisplayName("Should throw DomainException VO-014 when pause start is not before end")
-    void shouldThrowDomainExceptionWhenPauseStartIsNotBeforeEnd(LocalDate start, LocalDate end) {
+    @DisplayName("Should throw DomainException VO-014 when pause start is after end")
+    void shouldThrowDomainExceptionWhenPauseStartIsAfterEnd(LocalDate start, LocalDate end) {
         // Arrange
         // Dates are provided by the method source.
 
@@ -69,7 +82,7 @@ class PauseRangeTest {
         assertThatThrownBy(() -> new PauseRange(start, end))
                 .isInstanceOf(DomainException.class)
                 .hasFieldOrPropertyWithValue("code", "VO-014")
-                .hasMessageContaining("startDate must be strictly before endDate");
+                .hasMessageContaining("startDate must be before or equal to endDate");
     }
 
     private static Stream<LocalDate[]> rangesWithNullDate() {
@@ -82,8 +95,7 @@ class PauseRangeTest {
 
     private static Stream<LocalDate[]> rangesNotInAscendingOrder() {
         LocalDate start = LocalDate.now().plusDays(3);
-        return Stream.of(
-                new LocalDate[] { start, start },
+        return Stream.<LocalDate[]>of(
                 new LocalDate[] { start, start.minusDays(1) });
     }
 }

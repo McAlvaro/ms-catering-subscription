@@ -47,7 +47,7 @@ class ReactivateSubscriptionCommandHandlerTest {
     void shouldReactivateSubscriptionAndSaveItWhenCommandIsValid() {
         // Arrange
         Subscription subscription = buildPausedSubscription();
-        ReactivateSubscriptionCommand command = new ReactivateSubscriptionCommand(subscription.getId(), LocalDate.now().plusDays(4));
+        ReactivateSubscriptionCommand command = new ReactivateSubscriptionCommand(subscription.getId(), LocalDate.now().plusDays(13));
         when(subscriptionRepository.findById(command.subscriptionId())).thenReturn(Optional.of(subscription));
 
         // Act
@@ -99,7 +99,7 @@ class ReactivateSubscriptionCommandHandlerTest {
 
     private Subscription buildPausedSubscription() {
         Subscription subscription = buildSubscription(LocalDate.now().plusDays(10));
-        subscription.pause(new PauseRange(LocalDate.now().plusDays(3), LocalDate.now().plusDays(5)), "Travel");
+        subscription.pause(new PauseRange(LocalDate.now().plusDays(12), LocalDate.now().plusDays(14)), "Travel");
         return subscription;
     }
 

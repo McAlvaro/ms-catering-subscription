@@ -52,8 +52,8 @@ class CompleteSubscriptionApiIT extends BaseIntegrationTest {
         @DisplayName("Should return 400 SUB-003 when subscription is paused")
         void shouldReturn400WhenSubscriptionIsPaused() throws Exception {// Arrange
             UUID pausedId = UUID.randomUUID();
-            Subscription s = buildValidCommand(pausedId);
-            s.pause(new PauseRange(LocalDate.now().plusDays(3), LocalDate.now().plusDays(5)), "Holiday");
+            Subscription s = buildFutureSubscription(pausedId);
+            s.pause(new PauseRange(LocalDate.now().plusDays(12), LocalDate.now().plusDays(14)), "Holiday");
             subscriptionRepository.save(s);
             // Act & Assert
             mockMvc.perform(post(URL, pausedId)).andExpect(status().isBadRequest())

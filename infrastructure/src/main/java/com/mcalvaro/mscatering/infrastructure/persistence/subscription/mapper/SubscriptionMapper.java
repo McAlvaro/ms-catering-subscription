@@ -197,6 +197,8 @@ public class SubscriptionMapper {
         jpa.setActualEndDate(domain.getActualEndDate());
         jpa.setCreatedAt(domain.getCreatedAt());
         jpa.setActive(domain.isActive());
+        jpa.setCorrelationId(domain.getCorrelationId());
+        jpa.setExtensionDays(domain.getExtensionDays());
         return jpa;
     }
 
@@ -209,6 +211,12 @@ public class SubscriptionMapper {
             setField(PauseRequest.class, req, "actualEndDate", jpa.getActualEndDate());
             setField(PauseRequest.class, req, "createdAt", jpa.getCreatedAt());
             setField(PauseRequest.class, req, "active", jpa.isActive());
+            setField(PauseRequest.class, req, "correlationId", jpa.getCorrelationId() == null || jpa.getCorrelationId().isBlank()
+                    ? "legacy-" + jpa.getId() : jpa.getCorrelationId());
+            setField(PauseRequest.class, req, "extensionDays",
+                    jpa.getExtensionDays() == null
+                            ? (int) java.time.temporal.ChronoUnit.DAYS.between(jpa.getRangeStart(), jpa.getRangeEnd()) + 1
+                            : jpa.getExtensionDays());
             return req;
         } catch (Exception e) {
             throw new RuntimeException(e);

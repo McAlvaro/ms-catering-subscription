@@ -28,7 +28,7 @@ public class PauseSubscriptionCommandHandler implements Command.Handler<PauseSub
                         "Subscription not found: " + command.subscriptionId()));
 
         PauseRange range = new PauseRange(command.startDate(), command.endDate());
-        subscription.pause(range, command.reason());
+        subscription.pause(range, command.reason(), command.correlationId());
 
         subscriptionRepository.save(subscription);
         return null;

@@ -7,6 +7,7 @@ import com.mcalvaro.mscatering.domain.subscription.enums.DeliveryDayStatus;
 import com.mcalvaro.mscatering.domain.subscription.enums.EvaluationStatus;
 import com.mcalvaro.mscatering.domain.subscription.enums.ServiceType;
 import com.mcalvaro.mscatering.domain.subscription.enums.SubscriptionStatus;
+import com.mcalvaro.mscatering.domain.subscription.event.SubscriptionReactivated;
 import com.mcalvaro.mscatering.domain.subscription.vo.DeliveryAddress;
 import com.mcalvaro.mscatering.domain.subscription.vo.DeliveryPreferences;
 import com.mcalvaro.mscatering.domain.subscription.vo.PauseRange;
@@ -106,6 +107,8 @@ class SubscriptionMapperTest {
             assertThat(pause.getActualEndDate()).isEqualTo(LocalDate.of(2027, 7, 4));
             assertThat(pause.getCreatedAt()).isNotNull();
             assertThat(pause.isActive()).isFalse();
+            assertThat(pause.getCorrelationId()).isEqualTo("persisted-pause-correlation");
+            assertThat(pause.getExtensionDays()).isZero();
             assertThat(pause.getSubscription()).isSameAs(result);
         });
         assertThat(result.getEvaluations()).extracting(BiweeklyEvaluationJpaEntity::getId)
@@ -168,6 +171,8 @@ class SubscriptionMapperTest {
             assertThat(pause.getActualEndDate()).isNull();
             assertThat(pause.getCreatedAt()).isEqualTo(Instant.parse("2027-07-29T08:00:00Z"));
             assertThat(pause.isActive()).isTrue();
+            assertThat(pause.getCorrelationId()).isEqualTo("reloaded-pause-correlation");
+            assertThat(pause.getExtensionDays()).isEqualTo(3);
         });
         assertThat(result.getEvaluations()).singleElement().satisfies(evaluation -> {
             assertThat(evaluation.getId()).isEqualTo(subscription.getEvaluations().get(0).getId());
@@ -195,6 +200,26 @@ class SubscriptionMapperTest {
         assertThat(domainResult).isNull();
     }
 
+    @Test
+    @DisplayName("Should retain the persisted pause correlation when a reloaded subscription is reactivated")
+    void shouldReusePersistedPauseCorrelationWhenReloadedSubscriptionIsReactivated() {
+        // Arrange
+        Subscription original = Subscription.create(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
+                buildContract(), buildPreferences(), 1);
+        LocalDate reactivationDate = LocalDate.of(2027, 7, 4);
+        original.pause(new PauseRange(reactivationDate, reactivationDate.plusDays(1)), "Medical appointment",
+                "persisted-pause-flow");
+        Subscription reloaded = mapper.toDomain(mapper.toJpaEntity(original));
+        reloaded.clearDomainEvents();
+
+        // Act
+        reloaded.reactivate(reactivationDate);
+
+        // Assert
+        assertThat(reloaded.getDomainEvents()).singleElement().isInstanceOfSatisfying(SubscriptionReactivated.class,
+                event -> assertThat(event.correlationId()).isEqualTo("persisted-pause-flow"));
+    }
+
     private Subscription buildSubscriptionWithNestedState() {
         UUID subscriptionId = UUID.fromString("ef19967c-98ad-4629-a8c9-69f3b81e3312");
         Subscription subscription = Subscription.create(subscriptionId,
@@ -204,7 +229,8 @@ class SubscriptionMapperTest {
         days.get(0).markAsDelivered();
         days.get(1).markAsFailed("Patient unavailable");
         days.get(2).markAsConsolidated();
-        subscription.pause(new PauseRange(LocalDate.of(2027, 7, 4), LocalDate.of(2027, 7, 5)), "Medical appointment");
+        subscription.pause(new PauseRange(LocalDate.of(2027, 7, 4), LocalDate.of(2027, 7, 5)), "Medical appointment",
+                "persisted-pause-correlation");
         subscription.reactivate(LocalDate.of(2027, 7, 4));
         BiweeklyEvaluation completed = new BiweeklyEvaluation(UUID.fromString("f2b985c0-67b8-4d1d-a54b-47904d8c3b0a"),
                 subscription.getPatientId(), 1, LocalDate.of(2027, 7, 14));
@@ -272,6 +298,8 @@ class SubscriptionMapperTest {
         pause.setActualEndDate(null);
         pause.setCreatedAt(Instant.parse("2027-07-29T08:00:00Z"));
         pause.setActive(true);
+        pause.setCorrelationId("reloaded-pause-correlation");
+        pause.setExtensionDays(3);
         subscription.setPauseRequests(List.of(pause));
         BiweeklyEvaluationJpaEntity evaluation = new BiweeklyEvaluationJpaEntity();
         evaluation.setId(UUID.fromString("5da85e98-1c52-4c09-b86d-21f30d7b3640"));

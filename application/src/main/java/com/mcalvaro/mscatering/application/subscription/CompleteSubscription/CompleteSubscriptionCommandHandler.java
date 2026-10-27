@@ -19,7 +19,7 @@ public class CompleteSubscriptionCommandHandler implements Command.Handler<Compl
                 .orElseThrow(() -> new IllegalArgumentException(
                         "Subscription not found: " + command.subscriptionId()));
 
-        subscription.complete();
+        subscription.complete(command.correlationId());
 
         subscriptionRepository.save(subscription);
         return null;
