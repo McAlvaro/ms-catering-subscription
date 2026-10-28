@@ -1,9 +1,8 @@
 package com.mcalvaro.mscatering.infrastructure.api.subscription;
 
 import com.mcalvaro.mscatering.application.subscription.CreateSubscription.CreateSubscriptionCommand;
-import com.mcalvaro.mscatering.domain.patient.PatientReference;
-import com.mcalvaro.mscatering.domain.patient.IPatientReferenceRepository;
 import com.mcalvaro.mscatering.infrastructure.BaseIntegrationTest;
+import com.mcalvaro.mscatering.infrastructure.support.PatientRegistrationFixture;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -12,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.UUID;
@@ -42,7 +40,7 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
     private static final String URL = "/api/subscriptions";
 
     @Autowired
-    private IPatientReferenceRepository patientRepository;
+    private PatientRegistrationFixture patientFixture;
 
     private UUID activePatientId;
     private UUID inactivePatientId;
@@ -51,11 +49,11 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
     void setUpPatients() {
         // Active patient — eligible to subscribe
         activePatientId = UUID.randomUUID();
-        patientRepository.save(new PatientReference(activePatientId, true, Instant.now()));
+        patientFixture.ingestEligiblePatient(activePatientId);
 
         // Inactive patient — blocked by SUB-015
         inactivePatientId = UUID.randomUUID();
-        patientRepository.save(new PatientReference(inactivePatientId, false, Instant.now()));
+        patientFixture.ingestIneligiblePatient(inactivePatientId);
     }
 
     @Nested
@@ -129,7 +127,7 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
         void shouldReturn400WhenDuplicateSubscription() throws Exception {
             // Arrange — create the first subscription successfully
             UUID patientId = UUID.randomUUID();
-            patientRepository.save(new PatientReference(patientId, true, Instant.now()));
+            patientFixture.ingestEligiblePatient(patientId);
 
             String firstBody = objectMapper.writeValueAsString(buildValidCommand(patientId, 15));
             mockMvc.perform(post(URL)

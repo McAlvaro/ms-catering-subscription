@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -40,6 +41,14 @@ class OpenApiDocsApiIT extends BaseIntegrationTest {
     @Test
     void doesNotHostSwaggerUi() throws Exception {
         mockMvc.perform(get("/swagger-ui.html"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void doesNotAcceptTheRemovedManualPatientMutationEndpoint() throws Exception {
+        mockMvc.perform(post("/api/patients")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{}"))
                 .andExpect(status().isNotFound());
     }
 }

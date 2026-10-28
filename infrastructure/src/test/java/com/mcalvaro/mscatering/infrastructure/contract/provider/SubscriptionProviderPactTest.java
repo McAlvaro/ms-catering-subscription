@@ -15,17 +15,17 @@ import com.mcalvaro.mscatering.domain.subscription.vo.ServiceContract;
 import com.mcalvaro.mscatering.domain.subscription.vo.TimeWindow;
 import com.mcalvaro.mscatering.domain.subscription.vo.ValidityPeriod;
 import com.mcalvaro.mscatering.infrastructure.MsCateringApplication;
-import com.mcalvaro.mscatering.infrastructure.persistence.patient.entity.PatientReferenceJpaEntity;
-import com.mcalvaro.mscatering.infrastructure.persistence.patient.repository.SpringDataPatientReferenceRepository;
 import com.mcalvaro.mscatering.infrastructure.persistence.subscription.entity.SubscriptionJpaEntity;
 import com.mcalvaro.mscatering.infrastructure.persistence.subscription.mapper.SubscriptionMapper;
 import com.mcalvaro.mscatering.infrastructure.persistence.subscription.repository.SpringDataSubscriptionRepository;
+import com.mcalvaro.mscatering.infrastructure.support.PatientRegistrationFixture;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestTemplate;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Propagation;
@@ -64,17 +64,14 @@ import java.util.UUID;
         classes = MsCateringApplication.class,
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
+@Import(PatientRegistrationFixture.class)
 class SubscriptionProviderPactTest {
 
     @LocalServerPort
     private int port;
 
-    /**
-     * Spring Data repository para pacientes — permite saveAndFlush para garantizar
-     * el commit inmediato e idempotente (upsert mediante merge).
-     */
     @Autowired
-    private SpringDataPatientReferenceRepository springDataPatientRepository;
+    private PatientRegistrationFixture patientFixture;
 
     /**
      * Repositorio Spring Data directo para suscripciones: evita la llamada al
@@ -111,11 +108,7 @@ class SubscriptionProviderPactTest {
     @Rollback(false)
     void patientExistsAndIsEligible() {
         UUID patientId = UUID.fromString("550e8400-e29b-41d4-a716-446655440000");
-        PatientReferenceJpaEntity entity = new PatientReferenceJpaEntity();
-        entity.setPatientId(patientId);
-        entity.setActive(true);
-        entity.setUpdatedAt(Instant.now());
-        springDataPatientRepository.saveAndFlush(entity);
+        patientFixture.ingestEligiblePatient(patientId);
     }
 
     /**
@@ -130,12 +123,8 @@ class SubscriptionProviderPactTest {
         UUID patientId      = UUID.fromString("550e8400-e29b-41d4-a716-446655440000");
         UUID dietPlanId     = UUID.fromString("660e8400-e29b-41d4-a716-446655440001");
 
-        // Upsert el paciente (puede que ya exista del primer @State)
-        PatientReferenceJpaEntity patientEntity = new PatientReferenceJpaEntity();
-        patientEntity.setPatientId(patientId);
-        patientEntity.setActive(true);
-        patientEntity.setUpdatedAt(Instant.now());
-        springDataPatientRepository.saveAndFlush(patientEntity);
+        // The canonical ingestion fixture is idempotent if the first state already ran.
+        patientFixture.ingestEligiblePatient(patientId);
 
         if (!springDataSubscriptionRepository.existsById(subscriptionId)) {
             LocalDate startDate = LocalDate.now().plusDays(1);

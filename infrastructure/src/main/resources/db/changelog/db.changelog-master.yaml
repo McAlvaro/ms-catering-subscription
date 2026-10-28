@@ -2,6 +2,8 @@ databaseChangeLog:
   - include:
       file: db/changelog/db.changelog-patient-references.yaml
   - include:
+      file: db/changelog/db.changelog-patient-ingestion.yaml
+  - include:
       file: db/changelog/db.changelog-subscriptions.yaml
   - include:
       file: db/changelog/db.changelog-delivery-calendars.yaml

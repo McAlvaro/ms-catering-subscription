@@ -1,0 +1,54 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1.0-create-processed-inbound-event-receipts
+      author: alvaro
+      changes:
+        - createTable:
+            tableName: processed_inbound_event_receipts
+            columns:
+              - column:
+                  name: event_id
+                  type: binary(16)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: event_name
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: event_version
+                  type: varchar(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: occurred_on
+                  type: datetime
+                  constraints:
+                    nullable: false
+              - column:
+                  name: source
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: correlation_id
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: patient_id
+                  type: binary(16)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: event_fingerprint
+                  type: varchar(64)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: payload_fingerprint
+                  type: varchar(64)
+                  constraints:
+                    nullable: false

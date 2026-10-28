@@ -7,9 +7,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import com.mcalvaro.mscatering.infrastructure.support.PatientRegistrationFixture;
 
 /**
  * Clase base para pruebas de integración del microservicio.
@@ -23,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
+@Import(PatientRegistrationFixture.class)
 public abstract class BaseIntegrationTest {
 
     @Autowired

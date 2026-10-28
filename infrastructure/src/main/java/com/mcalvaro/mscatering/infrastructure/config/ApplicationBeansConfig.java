@@ -17,7 +17,8 @@ import com.mcalvaro.mscatering.application.subscription.PauseSubscription.PauseS
 import com.mcalvaro.mscatering.application.subscription.ReactivateSubscription.ReactivateSubscriptionCommandHandler;
 import com.mcalvaro.mscatering.application.subscription.RegisterFailedDelivery.RegisterFailedDeliveryCommandHandler;
 import com.mcalvaro.mscatering.application.subscription.UpdateDeliveryPreferences.UpdateDeliveryPreferencesCommandHandler;
-import com.mcalvaro.mscatering.application.patient.SavePatientReferenceCommandHandler;
+import com.mcalvaro.mscatering.application.patient.synchronization.PatientReferenceSynchronizationStore;
+import com.mcalvaro.mscatering.application.patient.synchronization.SynchronizePatientReferenceCommandHandler;
 
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.IConsolidatedCalendarRepository;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.service.DailyConsolidator;
@@ -49,13 +50,13 @@ import org.springframework.context.annotation.Configuration;
 public class ApplicationBeansConfig {
 
     // ========================================================================
-    // Patient Command Handlers
+    // Patient Synchronization Handlers
     // ========================================================================
 
     @Bean
-    SavePatientReferenceCommandHandler savePatientReferenceCommandHandler(
-            IPatientReferenceRepository patientRepository) {
-        return new SavePatientReferenceCommandHandler(patientRepository);
+    SynchronizePatientReferenceCommandHandler synchronizePatientReferenceCommandHandler(
+            PatientReferenceSynchronizationStore synchronizationStore) {
+        return new SynchronizePatientReferenceCommandHandler(synchronizationStore);
     }
 
     // ========================================================================
