@@ -240,7 +240,7 @@ class SubscriptionOutboundLifecycleTest {
 
     private Subscription buildSubscription(LocalDate start) {
         return Subscription.create(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
-                new ServiceContract(UUID.randomUUID(), new ValidityPeriod(start, start.plusDays(14)), ServiceType.FULL,
+                new ServiceContract(UUID.randomUUID(), com.mcalvaro.mscatering.domain.dietplan.PlanType.BASE, new ValidityPeriod(start, start.plusDays(14)), ServiceType.FULL,
                         new BigDecimal("250.00"), "Terms accepted", Instant.parse("2025-01-01T10:00:00Z")),
                 new DeliveryPreferences(
                         new DeliveryAddress("Main Street", "10", "Madrid", "Door A", 40.4168, -3.7038,

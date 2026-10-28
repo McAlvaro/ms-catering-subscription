@@ -4,6 +4,7 @@ import com.mcalvaro.mscatering.application.subscription.CreateSubscription.Creat
 import com.mcalvaro.mscatering.infrastructure.BaseIntegrationTest;
 import com.mcalvaro.mscatering.infrastructure.support.PatientRegistrationFixture;
 import com.mcalvaro.mscatering.infrastructure.support.PatientAddressRegistrationFixture;
+import com.mcalvaro.mscatering.infrastructure.support.DietPlanProjectionFixture;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -15,6 +16,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.UUID;
+import java.util.List;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -45,11 +47,14 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
 
     @Autowired
     private PatientAddressRegistrationFixture addressFixture;
+    @Autowired
+    private DietPlanProjectionFixture dietPlanFixture;
 
     private UUID activePatientId;
     private UUID inactivePatientId;
     private UUID activeAddressId;
     private UUID foreignAddressId;
+    private final java.util.Map<Integer, UUID> planIds = new java.util.HashMap<>();
 
     @BeforeEach
     void setUpPatients() {
@@ -62,6 +67,10 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
         // Inactive patient — blocked by SUB-015
         inactivePatientId = UUID.randomUUID();
         patientFixture.ingestIneligiblePatient(inactivePatientId);
+        LocalDate start = LocalDate.now().plusDays(1);
+        for (int duration : List.of(15, 20, 30)) {
+            planIds.put(duration, dietPlanFixture.ingestActiveBasePlan(start, duration));
+        }
     }
 
     @Nested
@@ -177,7 +186,7 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
         void shouldReturn400WhenTotalPriceIsZero() throws Exception {
             // Arrange
             CreateSubscriptionCommand command = new CreateSubscriptionCommand(
-                    activePatientId, UUID.randomUUID(), LocalDate.now().plusDays(1), LocalDate.now().plusDays(15),
+                    activePatientId, planIds.get(15), LocalDate.now().plusDays(1), LocalDate.now().plusDays(15),
                     "LUNCH", BigDecimal.ZERO, "Acepto términos y condiciones del servicio de catering.",
                     activeAddressId, LocalTime.of(12, 0), LocalTime.of(14, 0), null);
             String body = objectMapper.writeValueAsString(command);
@@ -195,7 +204,7 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
         void shouldReturn400WhenTotalPriceIsNegative() throws Exception {
             // Arrange
             CreateSubscriptionCommand command = new CreateSubscriptionCommand(
-                    activePatientId, UUID.randomUUID(), LocalDate.now().plusDays(1), LocalDate.now().plusDays(15),
+                    activePatientId, planIds.get(15), LocalDate.now().plusDays(1), LocalDate.now().plusDays(15),
                     "LUNCH", new BigDecimal("-1.00"), "Acepto términos y condiciones del servicio de catering.",
                     activeAddressId, LocalTime.of(12, 0), LocalTime.of(14, 0), null);
             String body = objectMapper.writeValueAsString(command);
@@ -249,7 +258,7 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
         void shouldReturn400WhenTimeWindowIsInvalid() throws Exception {
             // Arrange — endTime == startTime
             CreateSubscriptionCommand command = new CreateSubscriptionCommand(
-                    activePatientId, UUID.randomUUID(), LocalDate.now().plusDays(1), LocalDate.now().plusDays(15),
+                    activePatientId, planIds.get(15), LocalDate.now().plusDays(1), LocalDate.now().plusDays(15),
                     "LUNCH", new BigDecimal("250.00"), "Acepto términos y conditions del servicio de catering.",
                     activeAddressId, LocalTime.of(14, 0), LocalTime.of(12, 0), null);
             String body = objectMapper.writeValueAsString(command);
@@ -396,7 +405,8 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
             String acceptedConditions, LocalTime prefTimeStart, LocalTime prefTimeEnd) {
         return new CreateSubscriptionCommand(
                 patientId,
-                UUID.randomUUID(),
+                start == null || end == null ? planIds.get(15)
+                        : planIds.get((int) java.time.temporal.ChronoUnit.DAYS.between(start, end) + 1),
                 start,
                 end,
                 "LUNCH",

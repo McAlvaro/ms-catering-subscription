@@ -173,6 +173,7 @@ class DefaultDailyConsolidatorTest {
         DeliveryPreferences preferences = new DeliveryPreferences(address, timeWindow, "Ring the doorbell");
         ServiceContract contract = new ServiceContract(
                 UUID.randomUUID(),
+                com.mcalvaro.mscatering.domain.dietplan.PlanType.BASE,
                 new ValidityPeriod(startDate, startDate.plusDays(14)),
                 ServiceType.LUNCH,
                 new BigDecimal("150.00"),

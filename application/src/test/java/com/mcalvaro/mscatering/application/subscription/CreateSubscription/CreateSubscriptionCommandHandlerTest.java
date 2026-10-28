@@ -4,6 +4,7 @@ import com.mcalvaro.mscatering.domain.core.DomainException;
 import com.mcalvaro.mscatering.domain.subscription.ISubscriptionRepository;
 import com.mcalvaro.mscatering.domain.subscription.Subscription;
 import com.mcalvaro.mscatering.domain.subscription.entity.BiweeklyEvaluation;
+import com.mcalvaro.mscatering.domain.subscription.event.SubscriptionCreated;
 import com.mcalvaro.mscatering.domain.subscription.enums.EvaluationStatus;
 import com.mcalvaro.mscatering.domain.subscription.enums.PlanDuration;
 import com.mcalvaro.mscatering.domain.subscription.enums.ServiceType;
@@ -11,6 +12,9 @@ import com.mcalvaro.mscatering.domain.subscription.enums.SubscriptionStatus;
 import com.mcalvaro.mscatering.domain.subscription.service.BiweeklyEvaluationGenerator;
 import com.mcalvaro.mscatering.domain.subscription.service.SubscriptionDuplicationValidator;
 import com.mcalvaro.mscatering.application.patient.address.DeliveryAddressResolver;
+import com.mcalvaro.mscatering.application.dietplan.DietPlanResolver;
+import com.mcalvaro.mscatering.domain.dietplan.DietPlanProjection;
+import com.mcalvaro.mscatering.domain.dietplan.PlanType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,6 +28,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -50,6 +55,9 @@ class CreateSubscriptionCommandHandlerTest {
     @Mock
     private DeliveryAddressResolver deliveryAddressResolver;
 
+    @Mock
+    private DietPlanResolver dietPlanResolver;
+
     @InjectMocks
     private CreateSubscriptionCommandHandler handler;
 
@@ -65,6 +73,11 @@ class CreateSubscriptionCommandHandlerTest {
         when(deliveryAddressResolver.resolve(command.patientId(), command.deliveryAddressId()))
                 .thenReturn(new com.mcalvaro.mscatering.domain.subscription.vo.DeliveryAddress("Main Street", null,
                         "Cochabamba", "Near park", -17.39, -66.15, null));
+        when(dietPlanResolver.resolve(command.dietPlanId(), command.patientId(), command.startDate(), command.endDate()))
+                .thenReturn(new DietPlanProjection(command.dietPlanId(), PlanType.BASE, null, true, command.startDate(), 15,
+                        IntStream.rangeClosed(1, 15).mapToObj(day -> new com.mcalvaro.mscatering.domain.dietplan.DietPlanDay(UUID.randomUUID(), day, 1,
+                                List.of(new com.mcalvaro.mscatering.domain.dietplan.DietPlanMeal(UUID.randomUUID(), LocalTime.NOON,
+                                        List.of(new com.mcalvaro.mscatering.domain.dietplan.DietPlanRecipe(UUID.randomUUID(), "Meal", 1)))))).toList()));
         ArgumentCaptor<Subscription> subscriptionCaptor = ArgumentCaptor.forClass(Subscription.class);
 
         // Act
@@ -88,6 +101,31 @@ class CreateSubscriptionCommandHandlerTest {
         assertThat(savedSubscription.getEvaluations()).containsExactly(evaluation);
         assertThat(savedSubscription.getEvaluations().get(0).getPatientId()).isEqualTo(command.patientId());
         assertThat(savedSubscription.getEvaluations().get(0).getStatus()).isEqualTo(EvaluationStatus.PENDING);
+    }
+
+    @Test
+    @DisplayName("Should snapshot the personalized plan type without falling back to BASE")
+    void shouldCreatePersonalizedSubscriptionWithPersonalizedContractAndEventSnapshot() {
+        CreateSubscriptionCommand command = buildValidCommand();
+        BiweeklyEvaluation evaluation = buildEvaluation(command.patientId());
+        when(subscriptionRepository.getNextContractSequenceOfYear()).thenReturn(42);
+        when(evaluationGenerator.generate(command.patientId(), command.startDate(), PlanDuration.BIWEEKLY))
+                .thenReturn(List.of(evaluation));
+        when(deliveryAddressResolver.resolve(command.patientId(), command.deliveryAddressId()))
+                .thenReturn(new com.mcalvaro.mscatering.domain.subscription.vo.DeliveryAddress("Main Street", null,
+                        "Cochabamba", "Near park", -17.39, -66.15, null));
+        when(dietPlanResolver.resolve(command.dietPlanId(), command.patientId(), command.startDate(), command.endDate()))
+                .thenReturn(plan(command, PlanType.PERSONALIZED, command.patientId()));
+        ArgumentCaptor<Subscription> subscriptionCaptor = ArgumentCaptor.forClass(Subscription.class);
+
+        handler.handle(command);
+
+        verify(subscriptionRepository).save(subscriptionCaptor.capture());
+        Subscription subscription = subscriptionCaptor.getValue();
+        assertThat(subscription.getContract().planType()).isEqualTo(PlanType.PERSONALIZED);
+        assertThat(subscription.getDomainEvents()).singleElement()
+                .isInstanceOfSatisfying(SubscriptionCreated.class,
+                        event -> assertThat(event.planType()).isEqualTo(PlanType.PERSONALIZED));
     }
 
     @Test
@@ -133,6 +171,8 @@ class CreateSubscriptionCommandHandlerTest {
         // Arrange
         CreateSubscriptionCommand command = buildValidCommand(
                 LocalDate.of(2026, 1, 1), LocalDate.of(2026, 1, 15), BigDecimal.ZERO);
+        when(dietPlanResolver.resolve(command.dietPlanId(), command.patientId(), command.startDate(), command.endDate()))
+                .thenReturn(plan(command, PlanType.BASE, null));
 
         // Act & Assert
         assertThatThrownBy(() -> handler.handle(command))
@@ -166,5 +206,12 @@ class CreateSubscriptionCommandHandlerTest {
 
     private BiweeklyEvaluation buildEvaluation(UUID patientId) {
         return new BiweeklyEvaluation(UUID.randomUUID(), patientId, 1, LocalDate.of(2026, 1, 15));
+    }
+
+    private DietPlanProjection plan(CreateSubscriptionCommand command, PlanType type, UUID ownerPatientId) {
+        return new DietPlanProjection(command.dietPlanId(), type, ownerPatientId, true, command.startDate(), 15,
+                IntStream.rangeClosed(1, 15).mapToObj(day -> new com.mcalvaro.mscatering.domain.dietplan.DietPlanDay(UUID.randomUUID(), day, 1,
+                        List.of(new com.mcalvaro.mscatering.domain.dietplan.DietPlanMeal(UUID.randomUUID(), LocalTime.NOON,
+                                List.of(new com.mcalvaro.mscatering.domain.dietplan.DietPlanRecipe(UUID.randomUUID(), "Meal", 1)))))).toList());
     }
 }

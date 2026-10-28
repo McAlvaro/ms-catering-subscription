@@ -360,7 +360,7 @@ class SubscriptionTest {
     }
 
     private ServiceContract buildContract(LocalDate startDate) {
-        return new ServiceContract(UUID.randomUUID(), new ValidityPeriod(startDate, startDate.plusDays(14)),
+        return new ServiceContract(UUID.randomUUID(), com.mcalvaro.mscatering.domain.dietplan.PlanType.BASE, new ValidityPeriod(startDate, startDate.plusDays(14)),
                 ServiceType.FULL, new BigDecimal("250.00"), "Terms accepted", Instant.parse("2025-01-01T10:00:00Z"));
     }
 

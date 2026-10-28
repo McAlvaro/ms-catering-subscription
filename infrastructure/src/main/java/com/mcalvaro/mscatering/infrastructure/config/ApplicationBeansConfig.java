@@ -20,6 +20,10 @@ import com.mcalvaro.mscatering.application.subscription.UpdateDeliveryPreference
 import com.mcalvaro.mscatering.application.patient.synchronization.PatientReferenceSynchronizationStore;
 import com.mcalvaro.mscatering.application.patient.synchronization.SynchronizePatientReferenceCommandHandler;
 import com.mcalvaro.mscatering.application.patient.address.DeliveryAddressResolver;
+import com.mcalvaro.mscatering.application.dietplan.DietPlanResolver;
+import com.mcalvaro.mscatering.application.dietplan.synchronization.DietPlanSynchronizationStore;
+import com.mcalvaro.mscatering.application.dietplan.synchronization.SynchronizeDietPlanCommandHandler;
+import com.mcalvaro.mscatering.domain.dietplan.IDietPlanProjectionRepository;
 import com.mcalvaro.mscatering.application.patient.address.synchronization.PatientAddressSynchronizationStore;
 import com.mcalvaro.mscatering.application.patient.address.synchronization.SynchronizePatientAddressCommandHandler;
 
@@ -74,6 +78,16 @@ public class ApplicationBeansConfig {
         return new DeliveryAddressResolver(addressRepository);
     }
 
+    @Bean
+    DietPlanResolver dietPlanResolver(IDietPlanProjectionRepository dietPlanRepository) {
+        return new DietPlanResolver(dietPlanRepository);
+    }
+
+    @Bean
+    SynchronizeDietPlanCommandHandler synchronizeDietPlanCommandHandler(DietPlanSynchronizationStore synchronizationStore) {
+        return new SynchronizeDietPlanCommandHandler(synchronizationStore);
+    }
+
     // ========================================================================
     // Subscription Command Handlers
     // ========================================================================
@@ -82,9 +96,10 @@ public class ApplicationBeansConfig {
     CreateSubscriptionCommandHandler createSubscriptionCommandHandler(
             ISubscriptionRepository subscriptionRepository,
             SubscriptionDuplicationValidator duplicationValidator,
-            BiweeklyEvaluationGenerator evaluationGenerator, DeliveryAddressResolver deliveryAddressResolver) {
+            BiweeklyEvaluationGenerator evaluationGenerator, DeliveryAddressResolver deliveryAddressResolver,
+            DietPlanResolver dietPlanResolver) {
         return new CreateSubscriptionCommandHandler(
-                subscriptionRepository, duplicationValidator, evaluationGenerator, deliveryAddressResolver);
+                subscriptionRepository, duplicationValidator, evaluationGenerator, deliveryAddressResolver, dietPlanResolver);
     }
 
     @Bean

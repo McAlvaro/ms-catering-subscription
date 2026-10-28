@@ -37,6 +37,12 @@ public class ProcessedInboundEventReceiptJpaEntity {
     @Column(name = "address_id")
     private UUID addressId;
 
+    @Column(name = "subject_kind", nullable = false, length = 30)
+    private String subjectKind;
+
+    @Column(name = "subject_id", nullable = false)
+    private UUID subjectId;
+
     @Column(name = "event_fingerprint", nullable = false, length = 64)
     private String eventFingerprint;
 
@@ -64,8 +70,18 @@ public class ProcessedInboundEventReceiptJpaEntity {
         this.correlationId = correlationId;
         this.patientId = patientId;
         this.addressId = addressId;
+        this.subjectKind = addressId == null ? ReceiptSubjectKind.PATIENT.name() : ReceiptSubjectKind.PATIENT_ADDRESS.name();
+        this.subjectId = addressId == null ? patientId : addressId;
         this.eventFingerprint = eventFingerprint;
         this.payloadFingerprint = payloadFingerprint;
+    }
+
+    public ProcessedInboundEventReceiptJpaEntity(UUID eventId, String eventName, String eventVersion, Instant occurredOn,
+            String source, String correlationId, ReceiptSubjectKind subjectKind, UUID subjectId, String eventFingerprint,
+            String payloadFingerprint) {
+        this.eventId = eventId; this.eventName = eventName; this.eventVersion = eventVersion; this.occurredOn = occurredOn;
+        this.source = source; this.correlationId = correlationId; this.subjectKind = subjectKind.name(); this.subjectId = subjectId;
+        this.eventFingerprint = eventFingerprint; this.payloadFingerprint = payloadFingerprint;
     }
 
     public UUID getEventId() {

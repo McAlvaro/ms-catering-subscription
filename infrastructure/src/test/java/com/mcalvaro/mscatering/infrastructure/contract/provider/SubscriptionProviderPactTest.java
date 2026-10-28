@@ -22,6 +22,7 @@ import com.mcalvaro.mscatering.infrastructure.persistence.patient.entity.Patient
 import com.mcalvaro.mscatering.infrastructure.persistence.patient.repository.SpringDataPatientReferenceRepository;
 import com.mcalvaro.mscatering.infrastructure.persistence.patientaddress.entity.PatientAddressReferenceJpaEntity;
 import com.mcalvaro.mscatering.infrastructure.persistence.patientaddress.repository.SpringDataPatientAddressReferenceRepository;
+import com.mcalvaro.mscatering.infrastructure.integration.inbound.bc2.dietplan.DietPlanInboundAdapter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestTemplate;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,12 +33,16 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.mock.web.MockHttpServletRequest;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.UUID;
+import java.util.List;
 
 /**
  * Prueba de Contrato — Lado del PROVEEDOR.
@@ -85,6 +90,9 @@ class SubscriptionProviderPactTest {
     @Autowired
     private SubscriptionMapper subscriptionMapper;
 
+    @Autowired
+    private DietPlanInboundAdapter dietPlanInboundAdapter;
+
     @BeforeEach
     void setUp(PactVerificationContext context) {
         context.setTarget(new HttpTestTarget("localhost", port));
@@ -111,6 +119,7 @@ class SubscriptionProviderPactTest {
     void patientExistsAndIsEligible() {
         UUID patientId = UUID.fromString("550e8400-e29b-41d4-a716-446655440000");
         savePatientAndAddress(patientId, UUID.fromString("770e8400-e29b-41d4-a716-446655440010"));
+        ingestPactPlan(UUID.fromString("660e8400-e29b-41d4-a716-446655440001"), LocalDate.of(2026, 10, 1));
     }
 
     /**
@@ -131,6 +140,7 @@ class SubscriptionProviderPactTest {
             LocalDate startDate = LocalDate.now().plusDays(1);
             ServiceContract contract = new ServiceContract(
                     dietPlanId,
+                    com.mcalvaro.mscatering.domain.dietplan.PlanType.BASE,
                     new ValidityPeriod(startDate, startDate.plusDays(14)),
                     ServiceType.LUNCH,
                     new BigDecimal("250.00"),
@@ -167,6 +177,22 @@ class SubscriptionProviderPactTest {
         if (!addressReferenceRepository.existsById(addressId)) {
             addressReferenceRepository.saveAndFlush(new PatientAddressReferenceJpaEntity(addressId, patientId,
                     "Av. Siempre Viva", "Frente al parque", "Lima", -12.046374, -77.042793));
+        }
+    }
+
+    private void ingestPactPlan(UUID planId, LocalDate start) {
+        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(new MockHttpServletRequest()));
+        try {
+            dietPlanInboundAdapter.receiveBase(new DietPlanInboundAdapter.DietPlanCreatedEvent(UUID.randomUUID(),
+                    "bc2.PlanBaseCreado", "1.0", Instant.now(), "MSNutritionPlanner", "pact-plan-" + UUID.randomUUID(),
+                    new DietPlanInboundAdapter.DietPlanData(planId, "ACTIVO", start, 15, true,
+                            java.util.stream.IntStream.rangeClosed(1, 15).mapToObj(day ->
+                                    new DietPlanInboundAdapter.DietPlanDayData(UUID.randomUUID(), day, 1,
+                                            List.of(new DietPlanInboundAdapter.DietPlanMealData(UUID.randomUUID(), "12:00",
+                                                    List.of(new DietPlanInboundAdapter.DietPlanRecipeData(UUID.randomUUID(), "Pact recipe", 100)))))).toList(),
+                            null, null, null)));
+        } finally {
+            RequestContextHolder.resetRequestAttributes();
         }
     }
 }

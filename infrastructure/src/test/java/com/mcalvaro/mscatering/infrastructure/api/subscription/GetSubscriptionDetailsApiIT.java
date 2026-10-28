@@ -109,6 +109,7 @@ class GetSubscriptionDetailsApiIT extends BaseIntegrationTest {
         LocalDate startDate = LocalDate.now().plusDays(10);
         ServiceContract contract = new ServiceContract(
                 UUID.randomUUID(),
+                com.mcalvaro.mscatering.domain.dietplan.PlanType.BASE,
                 new ValidityPeriod(startDate, startDate.plusDays(14)),
                 ServiceType.FULL,
                 new BigDecimal("250.00"),

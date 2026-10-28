@@ -8,6 +8,8 @@ databaseChangeLog:
   - include:
       file: db/changelog/db.changelog-subscriptions.yaml
   - include:
+      file: db/changelog/db.changelog-diet-plan-projections.yaml
+  - include:
       file: db/changelog/db.changelog-delivery-calendars.yaml
   - include:
       file: db/changelog/db.changelog-delivery-days.yaml

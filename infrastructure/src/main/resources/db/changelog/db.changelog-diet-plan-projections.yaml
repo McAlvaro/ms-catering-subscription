@@ -1,0 +1,83 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1.0-create-diet-plan-projections
+      author: alvaro
+      changes:
+        - createTable:
+            tableName: diet_plan_projections
+            columns:
+              - column: { name: id, type: binary(16), constraints: { primaryKey: true, nullable: false } }
+              - column: { name: plan_type, type: varchar(20), constraints: { nullable: false } }
+              - column: { name: owner_patient_id, type: binary(16) }
+              - column: { name: active, type: boolean, constraints: { nullable: false } }
+              - column: { name: effective_start, type: date, constraints: { nullable: false } }
+              - column: { name: duration_days, type: int, constraints: { nullable: false } }
+        - createTable:
+            tableName: diet_plan_days
+            columns:
+              - column: { name: id, type: binary(16), constraints: { primaryKey: true, nullable: false } }
+              - column: { name: plan_id, type: binary(16), constraints: { nullable: false } }
+              - column: { name: day_number, type: int, constraints: { nullable: false } }
+              - column: { name: meal_count, type: int, constraints: { nullable: false } }
+        - createTable:
+            tableName: diet_plan_meals
+            columns:
+              - column: { name: id, type: binary(16), constraints: { primaryKey: true, nullable: false } }
+              - column: { name: day_id, type: binary(16), constraints: { nullable: false } }
+              - column: { name: meal_time, type: varchar(5), constraints: { nullable: false } }
+        - createTable:
+            tableName: diet_plan_recipes
+            columns:
+              - column: { name: id, type: binary(16), constraints: { primaryKey: true, nullable: false } }
+              - column: { name: meal_id, type: binary(16), constraints: { nullable: false } }
+              - column: { name: recipe_id, type: binary(16), constraints: { nullable: false } }
+              - column: { name: recipe_name, type: varchar(255), constraints: { nullable: false } }
+              - column: { name: portion_grams, type: int, constraints: { nullable: false } }
+        - addUniqueConstraint:
+            tableName: diet_plan_days
+            columnNames: plan_id, day_number
+            constraintName: uq_diet_plan_days_plan_day
+        - addUniqueConstraint:
+            tableName: diet_plan_meals
+            columnNames: day_id, meal_time
+            constraintName: uq_diet_plan_meals_day_time
+        - addUniqueConstraint:
+            tableName: diet_plan_recipes
+            columnNames: meal_id, recipe_id
+            constraintName: uq_diet_plan_recipes_meal_recipe
+  - changeSet:
+      id: 1.1-generalize-inbound-receipts-and-plan-type
+      author: alvaro
+      preConditions:
+        onFail: HALT
+        sqlCheck:
+          expectedResult: 0
+          sql: "SELECT COUNT(*) FROM subscriptions s LEFT JOIN diet_plan_projections p ON p.id = s.diet_plan_id WHERE p.id IS NULL"
+      changes:
+        - addColumn:
+            tableName: processed_inbound_event_receipts
+            columns:
+              - column: { name: subject_kind, type: varchar(30) }
+              - column: { name: subject_id, type: binary(16) }
+        - update:
+            tableName: processed_inbound_event_receipts
+            columns:
+              - column: { name: subject_kind, value: PATIENT }
+              - column: { name: subject_id, valueComputed: patient_id }
+            where: address_id IS NULL
+        - update:
+            tableName: processed_inbound_event_receipts
+            columns:
+              - column: { name: subject_kind, value: PATIENT_ADDRESS }
+              - column: { name: subject_id, valueComputed: address_id }
+            where: address_id IS NOT NULL
+        - addNotNullConstraint: { tableName: processed_inbound_event_receipts, columnName: subject_kind, columnDataType: varchar(30) }
+        - addNotNullConstraint: { tableName: processed_inbound_event_receipts, columnName: subject_id, columnDataType: binary(16) }
+        - dropNotNullConstraint: { tableName: processed_inbound_event_receipts, columnName: patient_id, columnDataType: binary(16) }
+        - addColumn:
+            tableName: subscriptions
+            columns:
+              - column: { name: plan_type, type: varchar(20) }
+        - sql:
+            sql: "UPDATE subscriptions s SET plan_type = (SELECT p.plan_type FROM diet_plan_projections p WHERE p.id = s.diet_plan_id)"
+        - addNotNullConstraint: { tableName: subscriptions, columnName: plan_type, columnDataType: varchar(20) }

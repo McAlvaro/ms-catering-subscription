@@ -43,6 +43,7 @@ class SpringDataSubscriptionRepositoryTest {
         entity.setId(UUID.randomUUID());
         entity.setPatientId(UUID.randomUUID());
         entity.setDietPlanId(UUID.randomUUID());
+        entity.setPlanType("BASE");
         entity.setContractCode("NTC-2026-" + UUID.randomUUID().toString().substring(0, 8));
         entity.setStatus(status);
         entity.setContractStartDate(LocalDate.of(2026, 1, 1));

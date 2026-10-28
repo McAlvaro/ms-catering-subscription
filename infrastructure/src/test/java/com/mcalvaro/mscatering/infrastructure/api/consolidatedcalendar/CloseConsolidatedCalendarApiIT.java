@@ -127,6 +127,7 @@ class CloseConsolidatedCalendarApiIT extends BaseIntegrationTest {
     private Subscription buildSubscription() {
         ServiceContract contract = new ServiceContract(
                 dietPlanId,
+                com.mcalvaro.mscatering.domain.dietplan.PlanType.BASE,
                 new ValidityPeriod(deliveryDate, deliveryDate.plusDays(14)),
                 ServiceType.LUNCH,
                 new BigDecimal("150.00"),

@@ -76,7 +76,7 @@ class ReactivateSubscriptionApiIT extends BaseIntegrationTest {
     private Subscription buildValidCommand(UUID id) {
         LocalDate start = LocalDate.now().plusDays(10);
         return Subscription.create(id, UUID.randomUUID(), UUID.randomUUID(),
-                new ServiceContract(UUID.randomUUID(), new ValidityPeriod(start, start.plusDays(14)), ServiceType.FULL,
+                new ServiceContract(UUID.randomUUID(), com.mcalvaro.mscatering.domain.dietplan.PlanType.BASE, new ValidityPeriod(start, start.plusDays(14)), ServiceType.FULL,
                         new BigDecimal("250"), "Terms", Instant.now()),
                 new DeliveryPreferences(new DeliveryAddress("Main", "1", "Lima", null, 0, 0, "1"),
                         new TimeWindow(LocalTime.NOON, LocalTime.of(14, 0)), null),

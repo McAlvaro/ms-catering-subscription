@@ -4,6 +4,7 @@ import com.mcalvaro.mscatering.application.patient.address.synchronization.Patie
 import com.mcalvaro.mscatering.application.patient.address.synchronization.SynchronizePatientAddressCommand;
 import com.mcalvaro.mscatering.application.patient.synchronization.PatientReferenceSynchronizationException;
 import com.mcalvaro.mscatering.infrastructure.persistence.inboundevent.entity.ProcessedInboundEventReceiptJpaEntity;
+import com.mcalvaro.mscatering.infrastructure.persistence.inboundevent.entity.ReceiptSubjectKind;
 import com.mcalvaro.mscatering.infrastructure.persistence.inboundevent.repository.SpringDataProcessedInboundEventReceiptRepository;
 import com.mcalvaro.mscatering.infrastructure.persistence.patientaddress.entity.PatientAddressReferenceJpaEntity;
 import com.mcalvaro.mscatering.infrastructure.persistence.patientaddress.repository.SpringDataPatientAddressReferenceRepository;
@@ -37,7 +38,7 @@ public class JpaPatientAddressSynchronizationStore implements PatientAddressSync
                 return;
             throw conflict("Inbound eventId was reused with different canonical content");
         }
-        if (receiptRepository.existsByAddressIdAndPayloadFingerprint(command.addressId(),
+        if (receiptRepository.existsBySubjectKindAndSubjectIdAndPayloadFingerprint(ReceiptSubjectKind.PATIENT_ADDRESS.name(), command.addressId(),
                 command.payloadFingerprint())) {
             receiptRepository.saveAndFlush(receipt(command, eventFingerprint));
             return;

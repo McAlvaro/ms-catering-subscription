@@ -248,6 +248,7 @@ class SubscriptionMapperTest {
         subscription.setId(UUID.fromString("d7f5c16c-ca8d-4828-97b4-bfc9316ebd3a"));
         subscription.setPatientId(UUID.fromString("2b6d5d06-94e8-4ab8-8ea1-1648016be289"));
         subscription.setDietPlanId(UUID.fromString("e9d0f851-f385-45e8-b6fe-931678dd7a25"));
+        subscription.setPlanType("BASE");
         subscription.setContractCode(source.getContractCode().value());
         subscription.setStatus(SubscriptionStatus.PAUSED.name());
         subscription.setContractStartDate(LocalDate.of(2027, 8, 1));
@@ -314,6 +315,7 @@ class SubscriptionMapperTest {
 
     private ServiceContract buildContract() {
         return new ServiceContract(UUID.fromString("cea36c1d-e158-4827-84e2-1dd095550fcb"),
+                com.mcalvaro.mscatering.domain.dietplan.PlanType.BASE,
                 new ValidityPeriod(LocalDate.of(2027, 7, 1), LocalDate.of(2027, 7, 15)), ServiceType.values()[0],
                 new BigDecimal("199.99"), "Conditions were accepted", Instant.parse("2027-06-20T10:30:00Z"));
     }

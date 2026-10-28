@@ -34,6 +34,9 @@ public class SubscriptionJpaEntity {
     @Column(name = "diet_plan_id", nullable = false)
     private UUID dietPlanId;
 
+    @Column(name = "plan_type", nullable = false, length = 20)
+    private String planType;
+
     @Column(name = "contract_code", nullable = false, unique = true, length = 20)
     private String contractCode;
 
@@ -130,6 +133,14 @@ public class SubscriptionJpaEntity {
 
     public void setDietPlanId(UUID dietPlanId) {
         this.dietPlanId = dietPlanId;
+    }
+
+    public String getPlanType() {
+        return planType;
+    }
+
+    public void setPlanType(String planType) {
+        this.planType = planType;
     }
 
     public String getContractCode() {

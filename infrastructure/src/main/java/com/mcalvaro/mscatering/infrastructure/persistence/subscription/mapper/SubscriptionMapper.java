@@ -14,6 +14,7 @@ import com.mcalvaro.mscatering.domain.subscription.vo.DeliveryAddress;
 import com.mcalvaro.mscatering.domain.subscription.vo.DeliveryPreferences;
 import com.mcalvaro.mscatering.domain.subscription.vo.PauseRange;
 import com.mcalvaro.mscatering.domain.subscription.vo.ServiceContract;
+import com.mcalvaro.mscatering.domain.dietplan.PlanType;
 import com.mcalvaro.mscatering.domain.subscription.vo.TimeWindow;
 import com.mcalvaro.mscatering.domain.subscription.vo.ValidityPeriod;
 import com.mcalvaro.mscatering.infrastructure.persistence.subscription.entity.BiweeklyEvaluationJpaEntity;
@@ -45,6 +46,7 @@ public class SubscriptionMapper {
 
         // Contract
         ServiceContract contract = domain.getContract();
+        jpa.setPlanType(contract.planType().name());
         jpa.setContractStartDate(contract.period().startDate());
         jpa.setContractEndDate(contract.period().endDate());
         jpa.setContractDurationDays(contract.period().durationDays());
@@ -101,6 +103,7 @@ public class SubscriptionMapper {
             ValidityPeriod period = new ValidityPeriod(jpa.getContractStartDate(), jpa.getContractEndDate());
             ServiceContract contract = new ServiceContract(
                     jpa.getDietPlanId(),
+                    PlanType.valueOf(jpa.getPlanType()),
                     period,
                     ServiceType.valueOf(jpa.getServiceType()),
                     jpa.getTotalPrice(),

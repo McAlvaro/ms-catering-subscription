@@ -15,6 +15,8 @@ import com.mcalvaro.mscatering.domain.subscription.vo.ServiceContract;
 import com.mcalvaro.mscatering.domain.subscription.vo.TimeWindow;
 import com.mcalvaro.mscatering.domain.subscription.vo.ValidityPeriod;
 import com.mcalvaro.mscatering.application.patient.address.DeliveryAddressResolver;
+import com.mcalvaro.mscatering.application.dietplan.DietPlanResolver;
+import com.mcalvaro.mscatering.domain.dietplan.DietPlanProjection;
 
 import java.time.Instant;
 import java.util.List;
@@ -41,24 +43,29 @@ public class CreateSubscriptionCommandHandler implements Command.Handler<CreateS
     private final SubscriptionDuplicationValidator duplicationValidator;
     private final BiweeklyEvaluationGenerator evaluationGenerator;
     private final DeliveryAddressResolver deliveryAddressResolver;
+    private final DietPlanResolver dietPlanResolver;
 
     public CreateSubscriptionCommandHandler(ISubscriptionRepository subscriptionRepository,
             SubscriptionDuplicationValidator duplicationValidator,
-            BiweeklyEvaluationGenerator evaluationGenerator, DeliveryAddressResolver deliveryAddressResolver) {
+            BiweeklyEvaluationGenerator evaluationGenerator, DeliveryAddressResolver deliveryAddressResolver,
+            DietPlanResolver dietPlanResolver) {
         this.subscriptionRepository = subscriptionRepository;
         this.duplicationValidator = duplicationValidator;
         this.evaluationGenerator = evaluationGenerator;
         this.deliveryAddressResolver = deliveryAddressResolver;
+        this.dietPlanResolver = dietPlanResolver;
     }
 
     @Override
     public UUID handle(CreateSubscriptionCommand command) {
         duplicationValidator.validate(command.patientId());
-
         // Build domain Value Objects from primitive command fields
         ValidityPeriod period = new ValidityPeriod(command.startDate(), command.endDate());
+        DietPlanProjection dietPlan = dietPlanResolver.resolve(command.dietPlanId(), command.patientId(),
+                command.startDate(), command.endDate());
         ServiceContract contract = new ServiceContract(
                 command.dietPlanId(),
+                dietPlan.type(),
                 period,
                 ServiceType.valueOf(command.serviceType()),
                 command.totalPrice(),
@@ -72,20 +79,20 @@ public class CreateSubscriptionCommandHandler implements Command.Handler<CreateS
         UUID subscriptionId = UUID.randomUUID();
         int nextSequence = subscriptionRepository.getNextContractSequenceOfYear();
 
+        PlanDuration duration = PlanDuration.fromDays(period.durationDays());
+        List<BiweeklyEvaluation> evaluations = evaluationGenerator.generate(
+                command.patientId(),
+                period.startDate(),
+                duration);
         Subscription subscription = Subscription.create(
                 subscriptionId,
                 command.patientId(),
                 command.dietPlanId(),
                 contract,
                 preferences,
-                nextSequence);
-
-        PlanDuration duration = PlanDuration.fromDays(period.durationDays());
-        List<BiweeklyEvaluation> evaluations = evaluationGenerator.generate(
-                command.patientId(),
-                period.startDate(),
-                duration);
-        subscription.scheduleEvaluations(evaluations);
+                nextSequence,
+                evaluations,
+                UUID.randomUUID().toString());
 
         subscriptionRepository.save(subscription);
 
