@@ -3,6 +3,7 @@ package com.mcalvaro.mscatering.domain.subscription.vo;
 import com.mcalvaro.mscatering.domain.core.DomainException;
 import com.mcalvaro.mscatering.domain.subscription.enums.PlanDuration;
 import com.mcalvaro.mscatering.domain.subscription.enums.ServiceType;
+import com.mcalvaro.mscatering.domain.dietplan.PlanType;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -22,6 +23,7 @@ import java.util.UUID;
  */
 public record ServiceContract(
         UUID dietPlanId,
+        PlanType planType,
         ValidityPeriod period,
         ServiceType serviceType,
         BigDecimal totalPrice,
@@ -31,6 +33,9 @@ public record ServiceContract(
     public ServiceContract {
         if (period == null) {
             throw new DomainException("VO-009", "ServiceContract: period must not be null.");
+        }
+        if (planType == null) {
+            throw new DomainException("VO-013", "ServiceContract: plan type must not be null.");
         }
         // Se eliminó la validación estricta de PlanDuration aquí porque 
         // cuando una suscripción se pausa, ValidityPeriod se extiende y ya no dura 

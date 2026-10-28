@@ -88,6 +88,19 @@ public class Subscription extends AggregateRoot {
             ServiceContract contract,
             DeliveryPreferences preferences,
             int contractSequence) {
+        return create(id, patientId, dietPlanId, contract, preferences, contractSequence, List.of(), UUID.randomUUID().toString());
+    }
+
+    public static Subscription create(UUID id, UUID patientId, UUID dietPlanId,
+            ServiceContract contract, DeliveryPreferences preferences, int contractSequence,
+            List<BiweeklyEvaluation> generatedEvaluations) {
+        return create(id, patientId, dietPlanId, contract, preferences, contractSequence, generatedEvaluations,
+                UUID.randomUUID().toString());
+    }
+
+    public static Subscription create(UUID id, UUID patientId, UUID dietPlanId,
+            ServiceContract contract, DeliveryPreferences preferences, int contractSequence,
+            List<BiweeklyEvaluation> generatedEvaluations, String correlationId) {
         ContractCode code = ContractCode.generate(Year.now().getValue(), contractSequence);
 
         ValidityPeriod period = contract.period();
@@ -104,8 +117,10 @@ public class Subscription extends AggregateRoot {
 
         Subscription subscription = new Subscription(
                 id, patientId, dietPlanId, code, contract, preferences, calendar);
-
-        subscription.addDomainEvent(new SubscriptionCreated(id, patientId, code));
+        subscription.evaluations.addAll(generatedEvaluations);
+        subscription.addDomainEvent(new SubscriptionCreated(id, patientId, code, dietPlanId, contract.planType(),
+                contract.period().startDate(), contract.period().endDate(), contract.period().durationDays(),
+                generatedEvaluations.stream().map(BiweeklyEvaluation::getId).toList(), contract.totalPrice(), correlationId));
         return subscription;
     }
 
@@ -285,7 +300,7 @@ public class Subscription extends AggregateRoot {
     }
 
     private ServiceContract withPeriod(ValidityPeriod period) {
-        return new ServiceContract(contract.dietPlanId(), period, contract.serviceType(), contract.totalPrice(),
+        return new ServiceContract(contract.dietPlanId(), contract.planType(), period, contract.serviceType(), contract.totalPrice(),
                 contract.acceptedConditions(), contract.signedAt());
     }
 
