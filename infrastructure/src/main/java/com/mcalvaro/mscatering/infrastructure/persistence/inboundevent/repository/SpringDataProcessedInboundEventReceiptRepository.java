@@ -11,4 +11,6 @@ public interface SpringDataProcessedInboundEventReceiptRepository
     boolean existsByPatientId(UUID patientId);
 
     boolean existsByPatientIdAndPayloadFingerprint(UUID patientId, String payloadFingerprint);
+
+    boolean existsByAddressIdAndPayloadFingerprint(UUID addressId, String payloadFingerprint);
 }

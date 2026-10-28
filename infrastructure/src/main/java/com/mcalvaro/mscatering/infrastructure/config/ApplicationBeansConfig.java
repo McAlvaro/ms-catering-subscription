@@ -19,11 +19,15 @@ import com.mcalvaro.mscatering.application.subscription.RegisterFailedDelivery.R
 import com.mcalvaro.mscatering.application.subscription.UpdateDeliveryPreferences.UpdateDeliveryPreferencesCommandHandler;
 import com.mcalvaro.mscatering.application.patient.synchronization.PatientReferenceSynchronizationStore;
 import com.mcalvaro.mscatering.application.patient.synchronization.SynchronizePatientReferenceCommandHandler;
+import com.mcalvaro.mscatering.application.patient.address.DeliveryAddressResolver;
+import com.mcalvaro.mscatering.application.patient.address.synchronization.PatientAddressSynchronizationStore;
+import com.mcalvaro.mscatering.application.patient.address.synchronization.SynchronizePatientAddressCommandHandler;
 
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.IConsolidatedCalendarRepository;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.service.DailyConsolidator;
 import com.mcalvaro.mscatering.application.consolidatedcalendar.service.DefaultDailyConsolidator;
 import com.mcalvaro.mscatering.domain.patient.IPatientReferenceRepository;
+import com.mcalvaro.mscatering.domain.patient.IPatientAddressReferenceRepository;
 import com.mcalvaro.mscatering.domain.subscription.ISubscriptionRepository;
 import com.mcalvaro.mscatering.domain.subscription.service.BiweeklyEvaluationGenerator;
 import com.mcalvaro.mscatering.domain.subscription.service.DefaultBiweeklyEvaluationGenerator;
@@ -59,6 +63,17 @@ public class ApplicationBeansConfig {
         return new SynchronizePatientReferenceCommandHandler(synchronizationStore);
     }
 
+    @Bean
+    SynchronizePatientAddressCommandHandler synchronizePatientAddressCommandHandler(
+            PatientAddressSynchronizationStore synchronizationStore) {
+        return new SynchronizePatientAddressCommandHandler(synchronizationStore);
+    }
+
+    @Bean
+    DeliveryAddressResolver deliveryAddressResolver(IPatientAddressReferenceRepository addressRepository) {
+        return new DeliveryAddressResolver(addressRepository);
+    }
+
     // ========================================================================
     // Subscription Command Handlers
     // ========================================================================
@@ -67,9 +82,9 @@ public class ApplicationBeansConfig {
     CreateSubscriptionCommandHandler createSubscriptionCommandHandler(
             ISubscriptionRepository subscriptionRepository,
             SubscriptionDuplicationValidator duplicationValidator,
-            BiweeklyEvaluationGenerator evaluationGenerator) {
+            BiweeklyEvaluationGenerator evaluationGenerator, DeliveryAddressResolver deliveryAddressResolver) {
         return new CreateSubscriptionCommandHandler(
-                subscriptionRepository, duplicationValidator, evaluationGenerator);
+                subscriptionRepository, duplicationValidator, evaluationGenerator, deliveryAddressResolver);
     }
 
     @Bean
@@ -128,8 +143,8 @@ public class ApplicationBeansConfig {
 
     @Bean
     UpdateDeliveryPreferencesCommandHandler updateDeliveryPreferencesCommandHandler(
-            ISubscriptionRepository subscriptionRepository) {
-        return new UpdateDeliveryPreferencesCommandHandler(subscriptionRepository);
+            ISubscriptionRepository subscriptionRepository, DeliveryAddressResolver deliveryAddressResolver) {
+        return new UpdateDeliveryPreferencesCommandHandler(subscriptionRepository, deliveryAddressResolver);
     }
 
     // ========================================================================

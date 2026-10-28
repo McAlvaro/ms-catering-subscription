@@ -34,6 +34,9 @@ public class ProcessedInboundEventReceiptJpaEntity {
     @Column(name = "patient_id", nullable = false)
     private UUID patientId;
 
+    @Column(name = "address_id")
+    private UUID addressId;
+
     @Column(name = "event_fingerprint", nullable = false, length = 64)
     private String eventFingerprint;
 
@@ -46,6 +49,13 @@ public class ProcessedInboundEventReceiptJpaEntity {
     public ProcessedInboundEventReceiptJpaEntity(UUID eventId, String eventName, String eventVersion,
             Instant occurredOn,
             String source, String correlationId, UUID patientId, String eventFingerprint, String payloadFingerprint) {
+        this(eventId, eventName, eventVersion, occurredOn, source, correlationId, patientId, null, eventFingerprint,
+                payloadFingerprint);
+    }
+
+    public ProcessedInboundEventReceiptJpaEntity(UUID eventId, String eventName, String eventVersion,
+            Instant occurredOn, String source, String correlationId, UUID patientId, UUID addressId,
+            String eventFingerprint, String payloadFingerprint) {
         this.eventId = eventId;
         this.eventName = eventName;
         this.eventVersion = eventVersion;
@@ -53,6 +63,7 @@ public class ProcessedInboundEventReceiptJpaEntity {
         this.source = source;
         this.correlationId = correlationId;
         this.patientId = patientId;
+        this.addressId = addressId;
         this.eventFingerprint = eventFingerprint;
         this.payloadFingerprint = payloadFingerprint;
     }

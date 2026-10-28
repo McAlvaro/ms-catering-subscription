@@ -18,14 +18,16 @@ import com.mcalvaro.mscatering.infrastructure.MsCateringApplication;
 import com.mcalvaro.mscatering.infrastructure.persistence.subscription.entity.SubscriptionJpaEntity;
 import com.mcalvaro.mscatering.infrastructure.persistence.subscription.mapper.SubscriptionMapper;
 import com.mcalvaro.mscatering.infrastructure.persistence.subscription.repository.SpringDataSubscriptionRepository;
-import com.mcalvaro.mscatering.infrastructure.support.PatientRegistrationFixture;
+import com.mcalvaro.mscatering.infrastructure.persistence.patient.entity.PatientReferenceJpaEntity;
+import com.mcalvaro.mscatering.infrastructure.persistence.patient.repository.SpringDataPatientReferenceRepository;
+import com.mcalvaro.mscatering.infrastructure.persistence.patientaddress.entity.PatientAddressReferenceJpaEntity;
+import com.mcalvaro.mscatering.infrastructure.persistence.patientaddress.repository.SpringDataPatientAddressReferenceRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestTemplate;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Propagation;
@@ -54,24 +56,24 @@ import java.util.UUID;
  * <p>
  * Interacciones verificadas:
  * <ol>
- *   <li>POST /api/subscriptions → 201 Created con UUID</li>
- *   <li>GET /api/subscriptions/{id} → 200 OK con DTO de suscripción</li>
+ * <li>POST /api/subscriptions → 201 Created con UUID</li>
+ * <li>GET /api/subscriptions/{id} → 200 OK con DTO de suscripción</li>
  * </ol>
  */
 @Provider("ms-catering-subscription")
 @PactFolder("../pacts")
-@SpringBootTest(
-        classes = MsCateringApplication.class,
-        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(classes = MsCateringApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
-@Import(PatientRegistrationFixture.class)
 class SubscriptionProviderPactTest {
 
     @LocalServerPort
     private int port;
 
     @Autowired
-    private PatientRegistrationFixture patientFixture;
+    private SpringDataPatientReferenceRepository patientReferenceRepository;
+
+    @Autowired
+    private SpringDataPatientAddressReferenceRepository addressReferenceRepository;
 
     /**
      * Repositorio Spring Data directo para suscripciones: evita la llamada al
@@ -103,12 +105,12 @@ class SubscriptionProviderPactTest {
      * Estado requerido para Interacción 1 (POST /api/subscriptions).
      * Asegura que el paciente con UUID fijo del contrato exista y esté activo.
      */
-    @State("a patient with ID 550e8400-e29b-41d4-a716-446655440000 exists and is eligible")
+    @State("a patient with ID 550e8400-e29b-41d4-a716-446655440000 exists and owns address 770e8400-e29b-41d4-a716-446655440010")
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Rollback(false)
     void patientExistsAndIsEligible() {
         UUID patientId = UUID.fromString("550e8400-e29b-41d4-a716-446655440000");
-        patientFixture.ingestEligiblePatient(patientId);
+        savePatientAndAddress(patientId, UUID.fromString("770e8400-e29b-41d4-a716-446655440010"));
     }
 
     /**
@@ -120,11 +122,10 @@ class SubscriptionProviderPactTest {
     @Rollback(false)
     void subscriptionExistsInRepository() {
         UUID subscriptionId = UUID.fromString("770e8400-e29b-41d4-a716-446655440002");
-        UUID patientId      = UUID.fromString("550e8400-e29b-41d4-a716-446655440000");
-        UUID dietPlanId     = UUID.fromString("660e8400-e29b-41d4-a716-446655440001");
+        UUID patientId = UUID.fromString("550e8400-e29b-41d4-a716-446655440000");
+        UUID dietPlanId = UUID.fromString("660e8400-e29b-41d4-a716-446655440001");
 
-        // The canonical ingestion fixture is idempotent if the first state already ran.
-        patientFixture.ingestEligiblePatient(patientId);
+        savePatientAndAddress(patientId, UUID.fromString("770e8400-e29b-41d4-a716-446655440010"));
 
         if (!springDataSubscriptionRepository.existsById(subscriptionId)) {
             LocalDate startDate = LocalDate.now().plusDays(1);
@@ -152,6 +153,20 @@ class SubscriptionProviderPactTest {
 
             SubscriptionJpaEntity jpaEntity = subscriptionMapper.toJpaEntity(subscription);
             springDataSubscriptionRepository.saveAndFlush(jpaEntity);
+        }
+    }
+
+    private void savePatientAndAddress(UUID patientId, UUID addressId) {
+        if (!patientReferenceRepository.existsById(patientId)) {
+            PatientReferenceJpaEntity patient = new PatientReferenceJpaEntity();
+            patient.setPatientId(patientId);
+            patient.setActive(true);
+            patient.setUpdatedAt(Instant.now());
+            patientReferenceRepository.saveAndFlush(patient);
+        }
+        if (!addressReferenceRepository.existsById(addressId)) {
+            addressReferenceRepository.saveAndFlush(new PatientAddressReferenceJpaEntity(addressId, patientId,
+                    "Av. Siempre Viva", "Frente al parque", "Lima", -12.046374, -77.042793));
         }
     }
 }

@@ -11,13 +11,7 @@ import java.util.UUID;
  */
 public record UpdateDeliveryPreferencesCommand(
         UUID subscriptionId,
-        String street,
-        String number,
-        String city,
-        String reference,
-        double latitude,
-        double longitude,
-        String phone,
+        UUID deliveryAddressId,
         LocalTime startTime,
         LocalTime endTime,
         String specialInstructions) implements Command<Void> {

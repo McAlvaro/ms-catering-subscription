@@ -3,6 +3,7 @@ package com.mcalvaro.mscatering.infrastructure.api.subscription;
 import com.mcalvaro.mscatering.application.subscription.CreateSubscription.CreateSubscriptionCommand;
 import com.mcalvaro.mscatering.infrastructure.BaseIntegrationTest;
 import com.mcalvaro.mscatering.infrastructure.support.PatientRegistrationFixture;
+import com.mcalvaro.mscatering.infrastructure.support.PatientAddressRegistrationFixture;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -42,14 +43,21 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
     @Autowired
     private PatientRegistrationFixture patientFixture;
 
+    @Autowired
+    private PatientAddressRegistrationFixture addressFixture;
+
     private UUID activePatientId;
     private UUID inactivePatientId;
+    private UUID activeAddressId;
+    private UUID foreignAddressId;
 
     @BeforeEach
     void setUpPatients() {
         // Active patient — eligible to subscribe
         activePatientId = UUID.randomUUID();
         patientFixture.ingestEligiblePatient(activePatientId);
+        activeAddressId = addressFixture.ingestAddress(activePatientId);
+        foreignAddressId = addressFixture.ingestAddress(UUID.randomUUID());
 
         // Inactive patient — blocked by SUB-015
         inactivePatientId = UUID.randomUUID();
@@ -128,8 +136,9 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
             // Arrange — create the first subscription successfully
             UUID patientId = UUID.randomUUID();
             patientFixture.ingestEligiblePatient(patientId);
+            UUID addressId = addressFixture.ingestAddress(patientId);
 
-            String firstBody = objectMapper.writeValueAsString(buildValidCommand(patientId, 15));
+            String firstBody = objectMapper.writeValueAsString(buildValidCommand(patientId, addressId, 15));
             mockMvc.perform(post(URL)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(firstBody))
@@ -168,23 +177,9 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
         void shouldReturn400WhenTotalPriceIsZero() throws Exception {
             // Arrange
             CreateSubscriptionCommand command = new CreateSubscriptionCommand(
-                    activePatientId,
-                    UUID.randomUUID(),
-                    LocalDate.now().plusDays(1),
-                    LocalDate.now().plusDays(15),
-                    "LUNCH",
-                    BigDecimal.ZERO, // invalid — must be > 0
-                    "Acepto términos y condiciones del servicio de catering.",
-                    "Av. Siempre Viva",
-                    "742",
-                    "Lima",
-                    null,
-                    -12.046374,
-                    -77.042793,
-                    "+51 999 888 777",
-                    LocalTime.of(12, 0),
-                    LocalTime.of(14, 0),
-                    null);
+                    activePatientId, UUID.randomUUID(), LocalDate.now().plusDays(1), LocalDate.now().plusDays(15),
+                    "LUNCH", BigDecimal.ZERO, "Acepto términos y condiciones del servicio de catering.",
+                    activeAddressId, LocalTime.of(12, 0), LocalTime.of(14, 0), null);
             String body = objectMapper.writeValueAsString(command);
 
             // Act & Assert
@@ -200,23 +195,9 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
         void shouldReturn400WhenTotalPriceIsNegative() throws Exception {
             // Arrange
             CreateSubscriptionCommand command = new CreateSubscriptionCommand(
-                    activePatientId,
-                    UUID.randomUUID(),
-                    LocalDate.now().plusDays(1),
-                    LocalDate.now().plusDays(15),
-                    "LUNCH",
-                    new BigDecimal("-1.00"), // invalid — must be > 0
-                    "Acepto términos y condiciones del servicio de catering.",
-                    "Av. Siempre Viva",
-                    "742",
-                    "Lima",
-                    null,
-                    -12.046374,
-                    -77.042793,
-                    "+51 999 888 777",
-                    LocalTime.of(12, 0),
-                    LocalTime.of(14, 0),
-                    null);
+                    activePatientId, UUID.randomUUID(), LocalDate.now().plusDays(1), LocalDate.now().plusDays(15),
+                    "LUNCH", new BigDecimal("-1.00"), "Acepto términos y condiciones del servicio de catering.",
+                    activeAddressId, LocalTime.of(12, 0), LocalTime.of(14, 0), null);
             String body = objectMapper.writeValueAsString(command);
 
             // Act & Assert
@@ -233,23 +214,9 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
             // Arrange — same day: startDate == endDate
             LocalDate sameDay = LocalDate.now().plusDays(1);
             CreateSubscriptionCommand command = new CreateSubscriptionCommand(
-                    activePatientId,
-                    UUID.randomUUID(),
-                    sameDay,
-                    sameDay, // invalid: must be strictly before
-                    "LUNCH",
-                    new BigDecimal("250.00"),
-                    "Acepto términos y condiciones del servicio de catering.",
-                    "Av. Siempre Viva",
-                    "742",
-                    "Lima",
-                    null,
-                    -12.046374,
-                    -77.042793,
-                    "+51 999 888 777",
-                    LocalTime.of(12, 0),
-                    LocalTime.of(14, 0),
-                    null);
+                    activePatientId, UUID.randomUUID(), sameDay, sameDay, "LUNCH", new BigDecimal("250.00"),
+                    "Acepto términos y condiciones del servicio de catering.", activeAddressId,
+                    LocalTime.of(12, 0), LocalTime.of(14, 0), null);
             String body = objectMapper.writeValueAsString(command);
 
             // Act & Assert
@@ -282,23 +249,9 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
         void shouldReturn400WhenTimeWindowIsInvalid() throws Exception {
             // Arrange — endTime == startTime
             CreateSubscriptionCommand command = new CreateSubscriptionCommand(
-                    activePatientId,
-                    UUID.randomUUID(),
-                    LocalDate.now().plusDays(1),
-                    LocalDate.now().plusDays(15),
-                    "LUNCH",
-                    new BigDecimal("250.00"),
-                    "Acepto términos y condiciones del servicio de catering.",
-                    "Av. Siempre Viva",
-                    "742",
-                    "Lima",
-                    null,
-                    -12.046374,
-                    -77.042793,
-                    "+51 999 888 777",
-                    LocalTime.of(14, 0),
-                    LocalTime.of(12, 0), // invalid: end before start
-                    null);
+                    activePatientId, UUID.randomUUID(), LocalDate.now().plusDays(1), LocalDate.now().plusDays(15),
+                    "LUNCH", new BigDecimal("250.00"), "Acepto términos y conditions del servicio de catering.",
+                    activeAddressId, LocalTime.of(14, 0), LocalTime.of(12, 0), null);
             String body = objectMapper.writeValueAsString(command);
 
             // Act & Assert
@@ -327,67 +280,31 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
         }
 
         @Test
-        @DisplayName("Should return 400 VO-003 when prefStreet is blank")
-        void shouldReturn400WhenStreetIsBlank() throws Exception {
-            // Arrange
-            CreateSubscriptionCommand command = new CreateSubscriptionCommand(
-                    activePatientId,
-                    UUID.randomUUID(),
-                    LocalDate.now().plusDays(1),
-                    LocalDate.now().plusDays(15),
-                    "LUNCH",
-                    new BigDecimal("250.00"),
-                    "Acepto términos y condiciones del servicio de catering.",
-                    "   ", // blank — invalid
-                    "742",
-                    "Lima",
-                    null,
-                    -12.046374,
-                    -77.042793,
-                    "+51 999 888 777",
-                    LocalTime.of(12, 0),
-                    LocalTime.of(14, 0),
-                    null);
-            String body = objectMapper.writeValueAsString(command);
+        @DisplayName("Should return 400 ADR-001 when the selected address belongs to another patient")
+        void shouldReturn400WhenAddressIsForeign() throws Exception {
+            String body = buildValidCommandJson(activePatientId, 15)
+                    .replace(activeAddressId.toString(), foreignAddressId.toString());
 
             // Act & Assert
             mockMvc.perform(post(URL)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(body))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("VO-003"));
+                    .andExpect(jsonPath("$.code").value("ADR-001"));
         }
 
         @Test
-        @DisplayName("Should return 400 VO-004 when prefCity is blank")
-        void shouldReturn400WhenCityIsBlank() throws Exception {
-            // Arrange
-            CreateSubscriptionCommand command = new CreateSubscriptionCommand(
-                    activePatientId,
-                    UUID.randomUUID(),
-                    LocalDate.now().plusDays(1),
-                    LocalDate.now().plusDays(15),
-                    "LUNCH",
-                    new BigDecimal("250.00"),
-                    "Acepto términos y condiciones del servicio de catering.",
-                    "Av. Siempre Viva",
-                    "742",
-                    "   ", // blank city — invalid
-                    null,
-                    -12.046374,
-                    -77.042793,
-                    "+51 999 888 777",
-                    LocalTime.of(12, 0),
-                    LocalTime.of(14, 0),
-                    null);
-            String body = objectMapper.writeValueAsString(command);
+        @DisplayName("Should return 400 ADR-001 when the selected address does not exist")
+        void shouldReturn400WhenAddressIsMissing() throws Exception {
+            String body = buildValidCommandJson(activePatientId, 15)
+                    .replace(activeAddressId.toString(), "00000000-0000-0000-0000-000000000001");
 
             // Act & Assert
             mockMvc.perform(post(URL)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(body))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("VO-004"));
+                    .andExpect(jsonPath("$.code").value("ADR-001"));
         }
 
         @Test
@@ -458,10 +375,13 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
     }
 
     private CreateSubscriptionCommand buildValidCommand(UUID patientId, int planDays) {
+        return buildValidCommand(patientId, activeAddressId, planDays);
+    }
+
+    private CreateSubscriptionCommand buildValidCommand(UUID patientId, UUID addressId, int planDays) {
         LocalDate start = LocalDate.now().plusDays(1);
         LocalDate end = start.plusDays(planDays - 1);
-        return buildCommand(
-                patientId, start, end,
+        return buildCommand(patientId, addressId, start, end,
                 "Acepto términos y condiciones del servicio de catering.",
                 LocalTime.of(12, 0), LocalTime.of(14, 0));
     }
@@ -469,6 +389,11 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
     private CreateSubscriptionCommand buildCommand(
             UUID patientId, LocalDate start, LocalDate end, String acceptedConditions,
             LocalTime prefTimeStart, LocalTime prefTimeEnd) {
+        return buildCommand(patientId, activeAddressId, start, end, acceptedConditions, prefTimeStart, prefTimeEnd);
+    }
+
+    private CreateSubscriptionCommand buildCommand(UUID patientId, UUID addressId, LocalDate start, LocalDate end,
+            String acceptedConditions, LocalTime prefTimeStart, LocalTime prefTimeEnd) {
         return new CreateSubscriptionCommand(
                 patientId,
                 UUID.randomUUID(),
@@ -477,13 +402,7 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
                 "LUNCH",
                 new BigDecimal("250.00"),
                 acceptedConditions,
-                "Av. Siempre Viva",
-                "742",
-                "Lima",
-                "Frente al parque",
-                -12.046374,
-                -77.042793,
-                "+51 999 888 777",
+                addressId,
                 prefTimeStart,
                 prefTimeEnd,
                 "Sin picante");

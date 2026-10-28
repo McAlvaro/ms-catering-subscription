@@ -7,23 +7,17 @@
       "description": "una solicitud para crear una nueva suscripcion de catering de 15 dias",
       "providerStates": [
         {
-          "name": "a patient with ID 550e8400-e29b-41d4-a716-446655440000 exists and is eligible"
+          "name": "a patient with ID 550e8400-e29b-41d4-a716-446655440000 exists and owns address 770e8400-e29b-41d4-a716-446655440010"
         }
       ],
       "request": {
         "body": {
           "acceptedConditions": "Acepto los terminos y condiciones del servicio de catering.",
+          "deliveryAddressId": "770e8400-e29b-41d4-a716-446655440010",
           "dietPlanId": "660e8400-e29b-41d4-a716-446655440001",
           "endDate": "2026-10-15",
           "patientId": "550e8400-e29b-41d4-a716-446655440000",
-          "prefCity": "Lima",
-          "prefLatitude": -12.046374,
-          "prefLongitude": -77.042793,
-          "prefNumber": "742",
-          "prefPhone": "+51 999 888 777",
-          "prefReference": "Frente al parque",
           "prefSpecialInstructions": "Sin picante",
-          "prefStreet": "Av. Siempre Viva",
           "prefTimeEnd": "14:00:00",
           "prefTimeStart": "12:00:00",
           "serviceType": "LUNCH",
@@ -35,6 +29,15 @@
         },
         "matchingRules": {
           "body": {
+            "$.deliveryAddressId": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "regex",
+                  "regex": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+                }
+              ]
+            },
             "$.dietPlanId": {
               "combine": "AND",
               "matchers": [
@@ -50,22 +53,6 @@
                 {
                   "match": "regex",
                   "regex": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
-                }
-              ]
-            },
-            "$.prefLatitude": {
-              "combine": "AND",
-              "matchers": [
-                {
-                  "match": "number"
-                }
-              ]
-            },
-            "$.prefLongitude": {
-              "combine": "AND",
-              "matchers": [
-                {
-                  "match": "number"
                 }
               ]
             },

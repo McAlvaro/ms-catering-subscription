@@ -14,6 +14,7 @@ import com.mcalvaro.mscatering.application.subscription.PauseSubscription.PauseS
 import com.mcalvaro.mscatering.application.subscription.ReactivateSubscription.ReactivateSubscriptionCommand;
 import com.mcalvaro.mscatering.application.subscription.RegisterFailedDelivery.RegisterFailedDeliveryCommand;
 import com.mcalvaro.mscatering.application.subscription.UpdateDeliveryPreferences.UpdateDeliveryPreferencesCommand;
+import com.mcalvaro.mscatering.domain.core.DomainException;
 import com.mcalvaro.mscatering.infrastructure.api.CorrelationIdFilter;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -35,6 +36,9 @@ public class SubscriptionController {
 
     @PostMapping
     public ResponseEntity<UUID> create(@RequestBody CreateSubscriptionCommand command) {
+        if (command.patientId() == null || command.dietPlanId() == null || command.deliveryAddressId() == null) {
+            throw new DomainException("INVALID_PAYLOAD", "A patient, plan and delivery address are required");
+        }
         UUID resultId = pipeline.send(command);
         return ResponseEntity.status(HttpStatus.CREATED).body(resultId);
     }
@@ -125,10 +129,12 @@ public class SubscriptionController {
     public ResponseEntity<Void> updatePreferences(
             @PathVariable UUID id,
             @RequestBody UpdateDeliveryPreferencesCommand body) {
+        if (body.deliveryAddressId() == null) {
+            throw new DomainException("INVALID_PAYLOAD", "A delivery address is required");
+        }
         pipeline.send(new UpdateDeliveryPreferencesCommand(
                 id,
-                body.street(), body.number(), body.city(), body.reference(),
-                body.latitude(), body.longitude(), body.phone(),
+                body.deliveryAddressId(),
                 body.startTime(), body.endTime(), body.specialInstructions()));
         return ResponseEntity.ok().build();
     }

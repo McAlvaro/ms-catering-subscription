@@ -9,6 +9,7 @@ import au.com.dius.pact.consumer.junit5.PactTestFor;
 import au.com.dius.pact.core.model.PactSpecVersion;
 import au.com.dius.pact.core.model.RequestResponsePact;
 import au.com.dius.pact.core.model.annotations.Pact;
+import au.com.dius.pact.core.model.annotations.PactDirectory;
 import com.mcalvaro.mscatering.infrastructure.contract.consumer.client.SubscriptionClient;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -41,6 +42,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @ExtendWith(PactConsumerTestExt.class)
 @PactTestFor(providerName = "ms-catering-subscription", pactVersion = PactSpecVersion.V3)
+@PactDirectory("../pacts")
 class SubscriptionConsumerPactTest {
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -50,7 +52,7 @@ class SubscriptionConsumerPactTest {
     @Pact(consumer = "NutricenterPortalConsumer", provider = "ms-catering-subscription")
     RequestResponsePact createSubscriptionPact(PactDslWithProvider builder) {
         return builder
-                .given("a patient with ID 550e8400-e29b-41d4-a716-446655440000 exists and is eligible")
+                .given("a patient with ID 550e8400-e29b-41d4-a716-446655440000 exists and owns address 770e8400-e29b-41d4-a716-446655440010")
                 .uponReceiving("una solicitud para crear una nueva suscripcion de catering de 15 dias")
                     .method("POST")
                     .path("/api/subscriptions")
@@ -64,13 +66,7 @@ class SubscriptionConsumerPactTest {
                             .decimalType("totalPrice", 250.00)
                             .stringValue("acceptedConditions",
                                     "Acepto los terminos y condiciones del servicio de catering.")
-                            .stringValue("prefStreet", "Av. Siempre Viva")
-                            .stringValue("prefNumber", "742")
-                            .stringValue("prefCity", "Lima")
-                            .stringValue("prefReference", "Frente al parque")
-                            .numberType("prefLatitude", -12.046374)
-                            .numberType("prefLongitude", -77.042793)
-                            .stringValue("prefPhone", "+51 999 888 777")
+                            .uuid("deliveryAddressId", "770e8400-e29b-41d4-a716-446655440010")
                             .stringValue("prefTimeStart", "12:00:00")
                             .stringValue("prefTimeEnd", "14:00:00")
                             .stringValue("prefSpecialInstructions", "Sin picante"))
@@ -139,13 +135,7 @@ class SubscriptionConsumerPactTest {
                   "serviceType": "LUNCH",
                   "totalPrice": 250.00,
                   "acceptedConditions": "Acepto los terminos y condiciones del servicio de catering.",
-                  "prefStreet": "Av. Siempre Viva",
-                  "prefNumber": "742",
-                  "prefCity": "Lima",
-                  "prefReference": "Frente al parque",
-                  "prefLatitude": -12.046374,
-                  "prefLongitude": -77.042793,
-                  "prefPhone": "+51 999 888 777",
+                  "deliveryAddressId": "770e8400-e29b-41d4-a716-446655440010",
                   "prefTimeStart": "12:00:00",
                   "prefTimeEnd": "14:00:00",
                   "prefSpecialInstructions": "Sin picante"

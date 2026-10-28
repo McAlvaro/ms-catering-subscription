@@ -1,0 +1,60 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1.0-add-address-to-inbound-receipts
+      author: alvaro
+      changes:
+        - addColumn:
+            tableName: processed_inbound_event_receipts
+            columns:
+              - column:
+                  name: address_id
+                  type: binary(16)
+  - changeSet:
+      id: 1.0-create-patient-address-references
+      author: alvaro
+      changes:
+        - createTable:
+            tableName: patient_address_references
+            columns:
+              - column:
+                  name: address_id
+                  type: binary(16)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: patient_id
+                  type: binary(16)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: street
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: reference
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: city
+                  type: varchar(120)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: latitude
+                  type: decimal(10,7)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: longitude
+                  type: decimal(10,7)
+                  constraints:
+                    nullable: false
+        - createIndex:
+            tableName: patient_address_references
+            indexName: idx_patient_address_references_patient_id
+            columns:
+              - column:
+                  name: patient_id

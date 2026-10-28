@@ -9,6 +9,7 @@ import com.mcalvaro.mscatering.domain.subscription.vo.DeliveryPreferences;
 import com.mcalvaro.mscatering.domain.subscription.vo.ServiceContract;
 import com.mcalvaro.mscatering.domain.subscription.vo.TimeWindow;
 import com.mcalvaro.mscatering.domain.subscription.vo.ValidityPeriod;
+import com.mcalvaro.mscatering.application.patient.address.DeliveryAddressResolver;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,8 +35,14 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class UpdateDeliveryPreferencesCommandHandlerTest {
 
+    private static final UUID DELIVERY_ADDRESS_ID = UUID.fromString("550e8400-e29b-41d4-a716-446655440011");
+    private static final UUID FOREIGN_ADDRESS_ID = UUID.fromString("550e8400-e29b-41d4-a716-446655440012");
+
     @Mock
     private ISubscriptionRepository subscriptionRepository;
+
+    @Mock
+    private DeliveryAddressResolver deliveryAddressResolver;
 
     @InjectMocks
     private UpdateDeliveryPreferencesCommandHandler handler;
@@ -47,14 +54,16 @@ class UpdateDeliveryPreferencesCommandHandlerTest {
         Subscription subscription = buildSubscription();
         UpdateDeliveryPreferencesCommand command = buildValidCommand(subscription.getId());
         when(subscriptionRepository.findById(command.subscriptionId())).thenReturn(Optional.of(subscription));
+        when(deliveryAddressResolver.resolve(subscription.getPatientId(), command.deliveryAddressId()))
+                .thenReturn(new DeliveryAddress("New Street", null, "Barcelona", "Floor 2", 41.3874, 2.1686, null));
 
         // Act
         handler.handle(command);
 
         // Assert
-        assertThat(subscription.getPreferences().primaryAddress().street()).isEqualTo(command.street());
-        assertThat(subscription.getPreferences().primaryAddress().number()).isEqualTo(command.number());
-        assertThat(subscription.getPreferences().primaryAddress().city()).isEqualTo(command.city());
+        assertThat(subscription.getPreferences().primaryAddress().street()).isEqualTo("New Street");
+        assertThat(subscription.getPreferences().primaryAddress().number()).isNull();
+        assertThat(subscription.getPreferences().primaryAddress().city()).isEqualTo("Barcelona");
         assertThat(subscription.getPreferences().timeWindow().startTime()).isEqualTo(command.startTime());
         assertThat(subscription.getPreferences().timeWindow().endTime()).isEqualTo(command.endTime());
         assertThat(subscription.getPreferences().specialInstructions()).isEqualTo(command.specialInstructions());
@@ -84,14 +93,14 @@ class UpdateDeliveryPreferencesCommandHandlerTest {
         // Arrange
         Subscription subscription = buildSubscription();
         UpdateDeliveryPreferencesCommand command = new UpdateDeliveryPreferencesCommand(
-                subscription.getId(), " ", "25", "Barcelona", "Floor 2", 41.3874, 2.1686, "600000001",
-                LocalTime.of(12, 0), LocalTime.of(14, 0), "Call on arrival");
+                subscription.getId(), FOREIGN_ADDRESS_ID, LocalTime.of(12, 0), LocalTime.of(14, 0), "Call on arrival");
         when(subscriptionRepository.findById(command.subscriptionId())).thenReturn(Optional.of(subscription));
 
         // Act & Assert
-        assertThatThrownBy(() -> handler.handle(command))
-                .isInstanceOf(DomainException.class)
-                .hasFieldOrPropertyWithValue("code", "VO-003");
+        when(deliveryAddressResolver.resolve(subscription.getPatientId(), command.deliveryAddressId()))
+                .thenThrow(new DomainException("ADR-001", "Delivery address is not available for the patient"));
+        assertThatThrownBy(() -> handler.handle(command)).isInstanceOf(DomainException.class)
+                .hasFieldOrPropertyWithValue("code", "ADR-001");
 
         assertThat(subscription.getPreferences().primaryAddress().street()).isEqualTo("Main Street");
         verify(subscriptionRepository, times(1)).findById(command.subscriptionId());
@@ -99,13 +108,14 @@ class UpdateDeliveryPreferencesCommandHandlerTest {
     }
 
     private UpdateDeliveryPreferencesCommand buildValidCommand(UUID subscriptionId) {
-        return new UpdateDeliveryPreferencesCommand(subscriptionId, "New Street", "25", "Barcelona", "Floor 2",
-                41.3874, 2.1686, "600000001", LocalTime.of(12, 0), LocalTime.of(14, 0), "Call on arrival");
+        return new UpdateDeliveryPreferencesCommand(subscriptionId, DELIVERY_ADDRESS_ID, LocalTime.of(12, 0),
+                LocalTime.of(14, 0), "Call on arrival");
     }
 
     private Subscription buildSubscription() {
         LocalDate startDate = LocalDate.now().plusDays(10);
-        ServiceContract contract = new ServiceContract(UUID.randomUUID(), new ValidityPeriod(startDate, startDate.plusDays(14)),
+        ServiceContract contract = new ServiceContract(UUID.randomUUID(),
+                new ValidityPeriod(startDate, startDate.plusDays(14)),
                 ServiceType.FULL, new BigDecimal("250.00"), "Terms accepted", Instant.parse("2025-01-01T10:00:00Z"));
         DeliveryPreferences preferences = new DeliveryPreferences(
                 new DeliveryAddress("Main Street", "10", "Madrid", "Door A", 40.4168, -3.7038, "600000000"),

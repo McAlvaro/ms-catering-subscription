@@ -10,6 +10,7 @@ import com.mcalvaro.mscatering.domain.subscription.enums.ServiceType;
 import com.mcalvaro.mscatering.domain.subscription.enums.SubscriptionStatus;
 import com.mcalvaro.mscatering.domain.subscription.service.BiweeklyEvaluationGenerator;
 import com.mcalvaro.mscatering.domain.subscription.service.SubscriptionDuplicationValidator;
+import com.mcalvaro.mscatering.application.patient.address.DeliveryAddressResolver;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,6 +36,8 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class CreateSubscriptionCommandHandlerTest {
 
+    private static final UUID DELIVERY_ADDRESS_ID = UUID.fromString("550e8400-e29b-41d4-a716-446655440010");
+
     @Mock
     private ISubscriptionRepository subscriptionRepository;
 
@@ -43,6 +46,9 @@ class CreateSubscriptionCommandHandlerTest {
 
     @Mock
     private BiweeklyEvaluationGenerator evaluationGenerator;
+
+    @Mock
+    private DeliveryAddressResolver deliveryAddressResolver;
 
     @InjectMocks
     private CreateSubscriptionCommandHandler handler;
@@ -56,6 +62,9 @@ class CreateSubscriptionCommandHandlerTest {
         when(subscriptionRepository.getNextContractSequenceOfYear()).thenReturn(42);
         when(evaluationGenerator.generate(command.patientId(), command.startDate(), PlanDuration.BIWEEKLY))
                 .thenReturn(List.of(evaluation));
+        when(deliveryAddressResolver.resolve(command.patientId(), command.deliveryAddressId()))
+                .thenReturn(new com.mcalvaro.mscatering.domain.subscription.vo.DeliveryAddress("Main Street", null,
+                        "Cochabamba", "Near park", -17.39, -66.15, null));
         ArgumentCaptor<Subscription> subscriptionCaptor = ArgumentCaptor.forClass(Subscription.class);
 
         // Act
@@ -142,20 +151,14 @@ class CreateSubscriptionCommandHandlerTest {
 
     private CreateSubscriptionCommand buildValidCommand(LocalDate startDate, LocalDate endDate, BigDecimal totalPrice) {
         return new CreateSubscriptionCommand(
-                UUID.randomUUID(),
+                DELIVERY_ADDRESS_ID,
                 UUID.randomUUID(),
                 startDate,
                 endDate,
                 ServiceType.FULL.name(),
                 totalPrice,
                 "Accepted terms and conditions",
-                "Main Street",
-                "123",
-                "Cochabamba",
-                "Near the park",
-                -17.3935,
-                -66.1570,
-                "+59170000000",
+                UUID.randomUUID(),
                 LocalTime.of(9, 0),
                 LocalTime.of(11, 0),
                 "Ring the doorbell");

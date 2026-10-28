@@ -14,6 +14,7 @@ import com.mcalvaro.mscatering.domain.subscription.vo.DeliveryPreferences;
 import com.mcalvaro.mscatering.domain.subscription.vo.ServiceContract;
 import com.mcalvaro.mscatering.domain.subscription.vo.TimeWindow;
 import com.mcalvaro.mscatering.domain.subscription.vo.ValidityPeriod;
+import com.mcalvaro.mscatering.application.patient.address.DeliveryAddressResolver;
 
 import java.time.Instant;
 import java.util.List;
@@ -39,13 +40,15 @@ public class CreateSubscriptionCommandHandler implements Command.Handler<CreateS
     private final ISubscriptionRepository subscriptionRepository;
     private final SubscriptionDuplicationValidator duplicationValidator;
     private final BiweeklyEvaluationGenerator evaluationGenerator;
+    private final DeliveryAddressResolver deliveryAddressResolver;
 
     public CreateSubscriptionCommandHandler(ISubscriptionRepository subscriptionRepository,
             SubscriptionDuplicationValidator duplicationValidator,
-            BiweeklyEvaluationGenerator evaluationGenerator) {
+            BiweeklyEvaluationGenerator evaluationGenerator, DeliveryAddressResolver deliveryAddressResolver) {
         this.subscriptionRepository = subscriptionRepository;
         this.duplicationValidator = duplicationValidator;
         this.evaluationGenerator = evaluationGenerator;
+        this.deliveryAddressResolver = deliveryAddressResolver;
     }
 
     @Override
@@ -62,15 +65,8 @@ public class CreateSubscriptionCommandHandler implements Command.Handler<CreateS
                 command.acceptedConditions(),
                 Instant.now());
 
-        DeliveryAddress address = new DeliveryAddress(
-                command.prefStreet(),
-                command.prefNumber(),
-                command.prefCity(),
-                command.prefReference(),
-                command.prefLatitude(),
-                command.prefLongitude(),
-                command.prefPhone());
         TimeWindow window = new TimeWindow(command.prefTimeStart(), command.prefTimeEnd());
+        DeliveryAddress address = deliveryAddressResolver.resolve(command.patientId(), command.deliveryAddressId());
         DeliveryPreferences preferences = new DeliveryPreferences(address, window, command.prefSpecialInstructions());
 
         UUID subscriptionId = UUID.randomUUID();
