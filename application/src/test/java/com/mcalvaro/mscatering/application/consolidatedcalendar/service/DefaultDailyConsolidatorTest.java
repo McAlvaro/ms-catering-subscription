@@ -4,6 +4,10 @@ import com.mcalvaro.mscatering.domain.consolidatedcalendar.ConsolidatedCalendar;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.entity.ConsolidatedLine;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.enums.ConsolidateStatus;
 import com.mcalvaro.mscatering.domain.subscription.ISubscriptionRepository;
+import com.mcalvaro.mscatering.domain.dietplan.IDietPlanProjectionRepository;
+import com.mcalvaro.mscatering.domain.dietplan.*;
+import com.mcalvaro.mscatering.domain.patient.IPatientReferenceRepository;
+import com.mcalvaro.mscatering.domain.patient.PatientReference;
 import com.mcalvaro.mscatering.domain.subscription.Subscription;
 import com.mcalvaro.mscatering.domain.subscription.entity.DeliveryDay;
 import com.mcalvaro.mscatering.domain.subscription.enums.DeliveryDayStatus;
@@ -33,12 +37,15 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.lenient;
 
 @ExtendWith(MockitoExtension.class)
 class DefaultDailyConsolidatorTest {
 
     @Mock
     private ISubscriptionRepository subscriptionRepository;
+    @Mock private IDietPlanProjectionRepository dietPlanRepository;
+    @Mock private IPatientReferenceRepository patientRepository;
 
     @InjectMocks
     private DefaultDailyConsolidator consolidator;
@@ -167,7 +174,7 @@ class DefaultDailyConsolidatorTest {
     }
 
     private Subscription buildSubscription(LocalDate startDate) {
-        DeliveryAddress address = new DeliveryAddress(
+        DeliveryAddress address = new DeliveryAddress(UUID.randomUUID(), "Home",
                 "Main Street", "123", "Madrid", "Reception", 40.4168, -3.7038, "+34123456789");
         TimeWindow timeWindow = new TimeWindow(LocalTime.of(12, 0), LocalTime.of(14, 0));
         DeliveryPreferences preferences = new DeliveryPreferences(address, timeWindow, "Ring the doorbell");
@@ -180,6 +187,17 @@ class DefaultDailyConsolidatorTest {
                 "Accepted terms",
                 Instant.parse("2026-09-01T10:00:00Z"));
 
-        return Subscription.create(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), contract, preferences, 1);
+        UUID patientId = UUID.randomUUID();
+        UUID planId = contract.dietPlanId();
+        lenient().when(dietPlanRepository.findById(planId)).thenReturn(java.util.Optional.of(plan(planId, startDate)));
+        lenient().when(patientRepository.findById(patientId)).thenReturn(java.util.Optional.of(new PatientReference(patientId, "Ada", true, Instant.now())));
+        return Subscription.create(UUID.randomUUID(), patientId, planId, contract, preferences, 1);
+    }
+
+    private DietPlanProjection plan(UUID id, LocalDate start) {
+        return new DietPlanProjection(id, PlanType.BASE, null, true, start, 15,
+                java.util.stream.IntStream.rangeClosed(1, 15).mapToObj(day -> new DietPlanDay(UUID.randomUUID(), day, 1,
+                        List.of(new DietPlanMeal(UUID.randomUUID(), MealType.LUNCH, LocalTime.NOON,
+                                List.of(new DietPlanRecipe(UUID.randomUUID(), "Lunch", 100)))))).toList());
     }
 }

@@ -17,5 +17,6 @@ public record SynchronizePatientReferenceCommand(
         String source,
         String correlationId,
         UUID patientId,
+        String patientName,
         String payloadFingerprint) implements Command<Void> {
 }

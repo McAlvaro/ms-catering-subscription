@@ -16,8 +16,10 @@ import java.util.UUID;
  */
 public record PatientReference(
         UUID patientId,
+        String patientName,
         boolean active,
         Instant updatedAt) {
+
 
     public boolean isActive() {
         return active;

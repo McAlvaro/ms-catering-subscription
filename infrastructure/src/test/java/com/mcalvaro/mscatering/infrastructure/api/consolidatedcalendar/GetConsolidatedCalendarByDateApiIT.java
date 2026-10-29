@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 import java.util.UUID;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -112,12 +113,14 @@ class GetConsolidatedCalendarByDateApiIT extends BaseIntegrationTest {
                 calendarId,
                 subscriptionId,
                 patientId,
+                "Ada Lovelace",
                 dietPlanId,
+                1,
                 ServiceType.LUNCH,
-                new DeliveryAddress("Main Street", "123", "Madrid", "Reception", 40.4168, -3.7038,
+                new DeliveryAddress(UUID.randomUUID(), "Home", "Main Street", "123", "Madrid", "Reception", 40.4168, -3.7038,
                         "+34123456789"),
                 new TimeWindow(LocalTime.of(12, 0), LocalTime.of(14, 0)),
-                "Ring the doorbell"));
+                "Ring the doorbell", List.of(new com.mcalvaro.mscatering.domain.consolidatedcalendar.entity.ConsolidatedRecipeSnapshot(UUID.randomUUID(), "Lunch", LocalTime.NOON, 100))));
         calendar.close("daily-operator");
         return calendar;
     }

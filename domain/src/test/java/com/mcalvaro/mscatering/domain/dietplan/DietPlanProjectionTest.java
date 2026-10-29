@@ -35,9 +35,9 @@ class DietPlanProjectionTest {
     @Test
     void rejectsMealsScheduledAtTheSameTimeOnOneDay() {
         LocalTime breakfastTime = LocalTime.of(8, 0);
-        DietPlanMeal breakfast = new DietPlanMeal(UUID.randomUUID(), breakfastTime,
+        DietPlanMeal breakfast = new DietPlanMeal(UUID.randomUUID(), MealType.BREAKFAST, breakfastTime,
                 List.of(new DietPlanRecipe(UUID.randomUUID(), "Breakfast", 250)));
-        DietPlanMeal duplicateBreakfast = new DietPlanMeal(UUID.randomUUID(), breakfastTime,
+        DietPlanMeal duplicateBreakfast = new DietPlanMeal(UUID.randomUUID(), MealType.BREAKFAST, breakfastTime,
                 List.of(new DietPlanRecipe(UUID.randomUUID(), "Second breakfast", 200)));
 
         assertThatThrownBy(() -> new DietPlanDay(UUID.randomUUID(), 1, 2, List.of(breakfast, duplicateBreakfast)))
@@ -47,7 +47,7 @@ class DietPlanProjectionTest {
 
     private DietPlanDay day(int number) {
         return new DietPlanDay(UUID.randomUUID(), number, 1,
-                List.of(new DietPlanMeal(UUID.randomUUID(), LocalTime.of(8, 0),
+                List.of(new DietPlanMeal(UUID.randomUUID(), MealType.BREAKFAST, LocalTime.of(8, 0),
                         List.of(new DietPlanRecipe(UUID.randomUUID(), "Breakfast", 250)))));
     }
 }

@@ -14,5 +14,9 @@ import java.util.UUID;
  */
 public record CloseConsolidatedCalendarCommand(
         LocalDate date,
-        String closedBy) implements Command<UUID> {
+        String closedBy,
+        String correlationId) implements Command<UUID> {
+    public CloseConsolidatedCalendarCommand(LocalDate date, String closedBy) {
+        this(date, closedBy, UUID.randomUUID().toString());
+    }
 }

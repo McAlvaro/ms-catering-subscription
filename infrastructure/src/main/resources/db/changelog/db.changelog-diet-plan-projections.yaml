@@ -81,3 +81,11 @@ databaseChangeLog:
         - sql:
             sql: "UPDATE subscriptions s SET plan_type = (SELECT p.plan_type FROM diet_plan_projections p WHERE p.id = s.diet_plan_id)"
         - addNotNullConstraint: { tableName: subscriptions, columnName: plan_type, columnDataType: varchar(20) }
+  - changeSet:
+      id: 1.2-add-explicit-meal-type
+      author: alvaro
+      changes:
+        - addColumn:
+            tableName: diet_plan_meals
+            columns:
+              - column: { name: meal_type, type: varchar(20), defaultValue: LUNCH, constraints: { nullable: false } }

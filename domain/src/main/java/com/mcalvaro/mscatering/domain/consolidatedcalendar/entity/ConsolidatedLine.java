@@ -6,6 +6,7 @@ import com.mcalvaro.mscatering.domain.subscription.vo.DeliveryAddress;
 import com.mcalvaro.mscatering.domain.subscription.vo.TimeWindow;
 
 import java.util.UUID;
+import java.util.List;
 
 /**
  * Entity representing a single delivery line in the consolidated calendar
@@ -20,24 +21,32 @@ public class ConsolidatedLine extends Entity {
     private final UUID consolidatedCalendarId;
     private final UUID subscriptionId;
     private final UUID patientId;
+    private final String patientName;
     private final UUID dietPlanId;
+    private final int planDayNumber;
     private final ServiceType serviceType;
     private final DeliveryAddress address;
     private final TimeWindow timeWindow;
     private final String instructions;
+    private final List<ConsolidatedRecipeSnapshot> recipes;
 
-    public ConsolidatedLine(UUID id, UUID consolidatedCalendarId, UUID subscriptionId,
-            UUID patientId, UUID dietPlanId, ServiceType serviceType,
-            DeliveryAddress address, TimeWindow timeWindow, String instructions) {
+    public ConsolidatedLine(UUID id, UUID consolidatedCalendarId, UUID subscriptionId, UUID patientId,
+            String patientName, UUID dietPlanId, int planDayNumber, ServiceType serviceType,
+            DeliveryAddress address, TimeWindow timeWindow, String instructions,
+            List<ConsolidatedRecipeSnapshot> recipes) {
         super(id);
         this.consolidatedCalendarId = consolidatedCalendarId;
         this.subscriptionId = subscriptionId;
         this.patientId = patientId;
+        this.patientName = patientName;
         this.dietPlanId = dietPlanId;
+        this.planDayNumber = planDayNumber;
         this.serviceType = serviceType;
         this.address = address;
         this.timeWindow = timeWindow;
         this.instructions = instructions;
+        this.recipes = recipes == null ? List.of() : List.copyOf(recipes);
+        validateSnapshot();
     }
 
     public UUID getConsolidatedCalendarId() {
@@ -54,6 +63,24 @@ public class ConsolidatedLine extends Entity {
 
     public UUID getDietPlanId() {
         return dietPlanId;
+    }
+
+    public String getPatientName() { return patientName; }
+    public int getPlanDayNumber() { return planDayNumber; }
+    public List<ConsolidatedRecipeSnapshot> getRecipes() { return recipes; }
+
+    public ConsolidatedDeliverySnapshot snapshot() {
+        return new ConsolidatedDeliverySnapshot(getId(), subscriptionId, patientId, patientName, dietPlanId,
+                planDayNumber, address, recipes);
+    }
+
+    private void validateSnapshot() {
+        if (consolidatedCalendarId == null || subscriptionId == null || patientId == null || patientName == null
+                || patientName.isBlank() || dietPlanId == null || planDayNumber < 1 || serviceType == null
+                || address == null || address.addressId() == null || address.alias() == null || address.alias().isBlank()
+                || address.reference() == null || address.reference().isBlank() || recipes.isEmpty()) {
+            throw new com.mcalvaro.mscatering.domain.core.DomainException("CAL-004", "Delivery snapshot is incomplete");
+        }
     }
 
     public ServiceType getServiceType() {

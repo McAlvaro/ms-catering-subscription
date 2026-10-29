@@ -3,8 +3,12 @@ package com.mcalvaro.mscatering.application.consolidatedcalendar.CloseConsolidat
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.ConsolidatedCalendar;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.IConsolidatedCalendarRepository;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.entity.ConsolidatedLine;
+import com.mcalvaro.mscatering.domain.consolidatedcalendar.entity.ConsolidatedRecipeSnapshot;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.service.DailyConsolidator;
 import com.mcalvaro.mscatering.domain.core.DomainException;
+import com.mcalvaro.mscatering.domain.subscription.enums.ServiceType;
+import com.mcalvaro.mscatering.domain.subscription.vo.DeliveryAddress;
+import com.mcalvaro.mscatering.domain.subscription.vo.TimeWindow;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,6 +17,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -114,7 +120,11 @@ class CloseConsolidatedCalendarCommandHandlerTest {
     private ConsolidatedCalendar buildCalendarWithOneLine(LocalDate date) {
         ConsolidatedCalendar calendar = ConsolidatedCalendar.create(UUID.randomUUID(), date);
 
-        ConsolidatedLine line = mock(ConsolidatedLine.class);
+        ConsolidatedLine line = new ConsolidatedLine(UUID.randomUUID(), calendar.getId(), UUID.randomUUID(),
+                UUID.randomUUID(), "Ada", UUID.randomUUID(), 1, ServiceType.LUNCH,
+                new DeliveryAddress(UUID.randomUUID(), "Home", "Main", null, "Madrid", "Desk", 0, 0, null),
+                new TimeWindow(LocalTime.NOON, LocalTime.of(14, 0)), null,
+                List.of(new ConsolidatedRecipeSnapshot(UUID.randomUUID(), "Lunch", LocalTime.NOON, 100)));
         calendar.addLine(line);
 
         return calendar;

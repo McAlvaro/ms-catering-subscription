@@ -32,6 +32,7 @@ class SynchronizePatientReferenceCommandHandlerTest {
                 "MsPatientsConsulCore",
                 "corr-123",
                 UUID.fromString("660e8400-e29b-41d4-a716-446655440001"),
+                "Ada Lovelace",
                 "a".repeat(64));
 
         Void result = handler.handle(command);
@@ -40,7 +41,7 @@ class SynchronizePatientReferenceCommandHandlerTest {
         assertThat(SynchronizePatientReferenceCommand.class.getRecordComponents())
                 .extracting(component -> component.getName())
                 .containsExactly("eventId", "eventName", "eventVersion", "occurredOn", "source", "correlationId",
-                        "patientId", "payloadFingerprint");
+                         "patientId", "patientName", "payloadFingerprint");
         verify(synchronizationStore).synchronize(command);
         verifyNoMoreInteractions(synchronizationStore);
     }

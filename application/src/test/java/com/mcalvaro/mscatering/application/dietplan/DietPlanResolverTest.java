@@ -29,6 +29,6 @@ class DietPlanResolverTest {
     }
     private void assertCode(String code, Runnable operation) { assertThatThrownBy(operation::run).isInstanceOf(DomainException.class).hasFieldOrPropertyWithValue("code", code); }
     private DietPlanProjection plan(UUID id, PlanType type, UUID owner, boolean active, LocalDate start) {
-        return new DietPlanProjection(id, type, owner, active, start, 15, java.util.stream.IntStream.rangeClosed(1, 15).mapToObj(day -> new DietPlanDay(UUID.randomUUID(), day, 1, List.of(new DietPlanMeal(UUID.randomUUID(), LocalTime.NOON, List.of(new DietPlanRecipe(UUID.randomUUID(), "Meal", 1)))))).toList());
+        return new DietPlanProjection(id, type, owner, active, start, 15, java.util.stream.IntStream.rangeClosed(1, 15).mapToObj(day -> new DietPlanDay(UUID.randomUUID(), day, 1, List.of(new DietPlanMeal(UUID.randomUUID(), MealType.LUNCH, LocalTime.NOON, List.of(new DietPlanRecipe(UUID.randomUUID(), "Meal", 1)))))).toList());
     }
 }

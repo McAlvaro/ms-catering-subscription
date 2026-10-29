@@ -45,6 +45,6 @@ public class PatientRegistrationFixture {
                 Instant.parse("2026-10-27T12:00:00Z"),
                 "MsPatientsConsulCore",
                 "test-correlation-" + UUID.randomUUID(),
-                new PatientRegisteredData(patientId));
+                new PatientRegisteredData(patientId, "Test patient"));
     }
 }

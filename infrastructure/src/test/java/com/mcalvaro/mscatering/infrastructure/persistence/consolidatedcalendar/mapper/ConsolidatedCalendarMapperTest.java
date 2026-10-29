@@ -8,6 +8,7 @@ import com.mcalvaro.mscatering.domain.subscription.vo.DeliveryAddress;
 import com.mcalvaro.mscatering.domain.subscription.vo.TimeWindow;
 import com.mcalvaro.mscatering.infrastructure.persistence.consolidatedcalendar.entity.ConsolidatedCalendarJpaEntity;
 import com.mcalvaro.mscatering.infrastructure.persistence.consolidatedcalendar.entity.ConsolidatedLineJpaEntity;
+import com.mcalvaro.mscatering.infrastructure.persistence.consolidatedcalendar.entity.ConsolidatedLineRecipeJpaEntity;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -87,7 +88,7 @@ class ConsolidatedCalendarMapperTest {
             assertThat(line.getAddress().street()).isEqualTo("Oak Avenue");
             assertThat(line.getAddress().number()).isNull();
             assertThat(line.getAddress().city()).isEqualTo("Seville");
-            assertThat(line.getAddress().reference()).isNull();
+            assertThat(line.getAddress().reference()).isEqualTo("Legacy reference");
             assertThat(line.getAddress().phone()).isEqualTo("+34987654321");
             assertThat(line.getTimeWindow().startTime()).isEqualTo(LocalTime.of(12, 0));
             assertThat(line.getTimeWindow().endTime()).isEqualTo(LocalTime.of(14, 0));
@@ -116,9 +117,10 @@ class ConsolidatedCalendarMapperTest {
         ConsolidatedCalendar calendar = ConsolidatedCalendar.create(calendarId, LocalDate.of(2026, 5, 18));
         calendar.addLine(new ConsolidatedLine(UUID.fromString("a3d4481c-8293-48c4-bdfc-bfc2b5a9a73d"), calendarId,
                 UUID.fromString("9a412c7d-19af-4a57-a9a8-0ea4517747bf"),
-                UUID.fromString("980c15b9-6d3c-428f-893a-627208107d83"),
-                UUID.fromString("671b9beb-e4e9-421e-a0e4-224ba1f0dd05"), ServiceType.values()[0], buildAddress(),
-                new TimeWindow(LocalTime.of(9, 0), LocalTime.of(11, 0)), "Leave with reception"));
+                UUID.fromString("980c15b9-6d3c-428f-893a-627208107d83"), "Ada Lovelace",
+                UUID.fromString("671b9beb-e4e9-421e-a0e4-224ba1f0dd05"), 1, ServiceType.values()[0],
+                new DeliveryAddress(UUID.randomUUID(), "Home", "Main Street", "42", "Madrid", "Blue door", 40.4168, -3.7038, "+34123456789"),
+                new TimeWindow(LocalTime.of(9, 0), LocalTime.of(11, 0)), "Leave with reception", List.of(new com.mcalvaro.mscatering.domain.consolidatedcalendar.entity.ConsolidatedRecipeSnapshot(UUID.randomUUID(), "Lunch", LocalTime.of(9, 0), 100))));
         calendar.close("dispatcher@example.com");
         return calendar;
     }
@@ -135,18 +137,29 @@ class ConsolidatedCalendarMapperTest {
         line.setId(UUID.fromString("5bd92248-84aa-4c23-a3ac-0912571331cf"));
         line.setSubscriptionId(UUID.fromString("f4943762-d722-41c3-8bdc-8974af149328"));
         line.setPatientId(UUID.fromString("2ee083a1-8bd2-4c75-82ca-c0c3718bfb12"));
+        line.setPatientName("Ada Lovelace");
         line.setDietPlanId(UUID.fromString("ebaf3703-8d88-4e04-9d4c-cad12fdc266f"));
+        line.setPlanDayNumber(1);
         line.setServiceType(ServiceType.values()[0].name());
+        line.setAddressId(UUID.fromString("e369a443-c970-4d99-89c0-7110d4470204"));
+        line.setAddressAlias("Home");
         line.setAddressStreet("Oak Avenue");
         line.setAddressNumber(null);
         line.setAddressCity("Seville");
-        line.setAddressReference(null);
+        line.setAddressReference("Legacy reference");
         line.setAddressLatitude(null);
         line.setAddressLongitude(null);
         line.setAddressPhone("+34987654321");
         line.setTimeStart("12:00");
         line.setTimeEnd("14:00");
         line.setInstructions(null);
+        ConsolidatedLineRecipeJpaEntity recipe = new ConsolidatedLineRecipeJpaEntity();
+        recipe.setId(UUID.fromString("0d3425b4-643c-4d63-90fd-00dcfe9c8c4e"));
+        recipe.setRecipeId(UUID.fromString("3c9df6b6-152c-4eaa-bf37-7e6d6d7a4cb3"));
+        recipe.setRecipeName("Lunch");
+        recipe.setMealTime("12:00");
+        recipe.setPortionGrams(100);
+        line.setRecipes(List.of(recipe));
         calendar.setLines(List.of(line));
         return calendar;
     }

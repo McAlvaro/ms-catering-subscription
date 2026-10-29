@@ -81,3 +81,16 @@ databaseChangeLog:
             referencedColumnNames: id
             constraintName: fk_del_day_calendar
             onDelete: CASCADE
+  - changeSet:
+      id: 1.1-add-delivery-address-reference
+      author: alvaro
+      changes:
+        - addColumn:
+            tableName: delivery_days
+            columns:
+              - column:
+                  name: address_id
+                  type: binary(16)
+              - column:
+                  name: address_alias
+                  type: varchar(255)

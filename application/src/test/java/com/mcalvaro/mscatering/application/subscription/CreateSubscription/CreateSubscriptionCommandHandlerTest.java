@@ -76,7 +76,7 @@ class CreateSubscriptionCommandHandlerTest {
         when(dietPlanResolver.resolve(command.dietPlanId(), command.patientId(), command.startDate(), command.endDate()))
                 .thenReturn(new DietPlanProjection(command.dietPlanId(), PlanType.BASE, null, true, command.startDate(), 15,
                         IntStream.rangeClosed(1, 15).mapToObj(day -> new com.mcalvaro.mscatering.domain.dietplan.DietPlanDay(UUID.randomUUID(), day, 1,
-                                List.of(new com.mcalvaro.mscatering.domain.dietplan.DietPlanMeal(UUID.randomUUID(), LocalTime.NOON,
+                                List.of(new com.mcalvaro.mscatering.domain.dietplan.DietPlanMeal(UUID.randomUUID(), com.mcalvaro.mscatering.domain.dietplan.MealType.LUNCH, LocalTime.NOON,
                                         List.of(new com.mcalvaro.mscatering.domain.dietplan.DietPlanRecipe(UUID.randomUUID(), "Meal", 1)))))).toList()));
         ArgumentCaptor<Subscription> subscriptionCaptor = ArgumentCaptor.forClass(Subscription.class);
 
@@ -211,7 +211,7 @@ class CreateSubscriptionCommandHandlerTest {
     private DietPlanProjection plan(CreateSubscriptionCommand command, PlanType type, UUID ownerPatientId) {
         return new DietPlanProjection(command.dietPlanId(), type, ownerPatientId, true, command.startDate(), 15,
                 IntStream.rangeClosed(1, 15).mapToObj(day -> new com.mcalvaro.mscatering.domain.dietplan.DietPlanDay(UUID.randomUUID(), day, 1,
-                        List.of(new com.mcalvaro.mscatering.domain.dietplan.DietPlanMeal(UUID.randomUUID(), LocalTime.NOON,
+                        List.of(new com.mcalvaro.mscatering.domain.dietplan.DietPlanMeal(UUID.randomUUID(), com.mcalvaro.mscatering.domain.dietplan.MealType.LUNCH, LocalTime.NOON,
                                 List.of(new com.mcalvaro.mscatering.domain.dietplan.DietPlanRecipe(UUID.randomUUID(), "Meal", 1)))))).toList());
     }
 }

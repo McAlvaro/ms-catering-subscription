@@ -176,10 +176,10 @@ class ConsolidatedCalendarTest {
     }
 
     private ConsolidatedLine newLine(UUID calendarId) {
+        TimeWindow timeWindow = new TimeWindow(LocalTime.of(12, 0), LocalTime.of(14, 0));
         return new ConsolidatedLine(UUID.randomUUID(), calendarId, UUID.randomUUID(), UUID.randomUUID(),
-                UUID.randomUUID(),
-                ServiceType.LUNCH,
-                new DeliveryAddress("Main Street", "10", "Madrid", "Door A", 40.4168, -3.7038, "600000000"),
-                new TimeWindow(LocalTime.of(12, 0), LocalTime.of(14, 0)), "Leave at reception");
+                "Ada", UUID.randomUUID(), 1, ServiceType.LUNCH,
+                new DeliveryAddress(UUID.randomUUID(), "Home", "Main Street", "10", "Madrid", "Door A", 40.4168, -3.7038, "600000000"),
+                timeWindow, "Leave at reception", List.of(new com.mcalvaro.mscatering.domain.consolidatedcalendar.entity.ConsolidatedRecipeSnapshot(UUID.randomUUID(), "Lunch", timeWindow.startTime(), 250)));
     }
 }

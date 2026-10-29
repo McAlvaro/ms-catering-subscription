@@ -30,7 +30,7 @@ class PatientRegistrationInboundAdapterTest {
     private PatientRegistrationInboundAdapter adapter;
 
     @Test
-    void consumesOnlyIdPacienteAndDispatchesThePiiFreeLocalCommand() throws Exception {
+    void consumesOperationalPatientNameAndDispatchesTheLocalCommand() throws Exception {
         PatientRegisteredEvent event = eventWithIgnoredPii();
         ArgumentCaptor<SynchronizePatientReferenceCommand> commandCaptor =
                 ArgumentCaptor.forClass(SynchronizePatientReferenceCommand.class);
@@ -46,12 +46,13 @@ class PatientRegistrationInboundAdapterTest {
         assertThat(command.source()).isEqualTo("MsPatientsConsulCore");
         assertThat(command.correlationId()).isEqualTo(event.correlationId());
         assertThat(command.patientId()).isEqualTo(event.data().patientId());
+        assertThat(command.patientName()).isEqualTo("María Pérez");
         assertThat(command.payloadFingerprint()).isEqualTo(
-                "beeb7b46fefb55a7a970c2ef291e365e53063022d86cf2b817ceb7ea27dea682");
+                "06d825a781a228b9c7bc49978ceadfca60e0c2aa1358d9b79792effb11951285");
         assertThat(command.getClass().getRecordComponents())
                 .extracting(RecordComponent::getName)
                 .containsExactly("eventId", "eventName", "eventVersion", "occurredOn", "source", "correlationId",
-                        "patientId", "payloadFingerprint");
+                         "patientId", "patientName", "payloadFingerprint");
     }
 
     @Test
@@ -73,7 +74,7 @@ class PatientRegistrationInboundAdapterTest {
                 new PatientRegisteredEvent(valid.eventId(), valid.eventName(), valid.eventVersion(), valid.occurredOn(),
                         valid.source(), valid.correlationId(), null),
                 new PatientRegisteredEvent(valid.eventId(), valid.eventName(), valid.eventVersion(), valid.occurredOn(),
-                        valid.source(), valid.correlationId(), new PatientRegisteredData(null)));
+                         valid.source(), valid.correlationId(), new PatientRegisteredData(null, "Ada Lovelace")));
 
         invalidEvents.forEach(event -> assertThatThrownBy(() -> adapter.receive(event))
                 .isInstanceOf(PatientRegistrationContractException.class)
@@ -90,7 +91,7 @@ class PatientRegistrationInboundAdapterTest {
                 Instant.parse("2026-10-27T12:00:00Z"),
                 "MsPatientsConsulCore",
                 "corr-123",
-                new PatientRegisteredData(UUID.fromString("660e8400-e29b-41d4-a716-446655440001")));
+                 new PatientRegisteredData(UUID.fromString("660e8400-e29b-41d4-a716-446655440001"), "Ada Lovelace"));
     }
 
     private PatientRegisteredEvent eventWithIgnoredPii() throws Exception {

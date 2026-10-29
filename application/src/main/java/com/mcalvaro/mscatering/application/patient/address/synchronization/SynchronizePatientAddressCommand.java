@@ -15,6 +15,7 @@ public record SynchronizePatientAddressCommand(
         String correlationId,
         UUID patientId,
         UUID addressId,
+        String alias,
         String street,
         String reference,
         String city,

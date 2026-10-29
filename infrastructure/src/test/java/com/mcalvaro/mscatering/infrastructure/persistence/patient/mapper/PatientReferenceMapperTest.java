@@ -61,13 +61,14 @@ class PatientReferenceMapperTest {
     }
 
     private PatientReference buildPatientReference() {
-        return new PatientReference(UUID.fromString("1b896fcb-dfac-4798-ae62-f0731b9a051b"), false,
+        return new PatientReference(UUID.fromString("1b896fcb-dfac-4798-ae62-f0731b9a051b"), "Ada Lovelace", false,
                 Instant.parse("2026-03-10T09:15:30Z"));
     }
 
     private PatientReferenceJpaEntity buildPatientReferenceJpaEntity() {
         PatientReferenceJpaEntity entity = new PatientReferenceJpaEntity();
         entity.setPatientId(UUID.fromString("4af6eebe-981b-4160-aede-50fa764a41cb"));
+        entity.setPatientName("Ada Lovelace");
         entity.setActive(true);
         entity.setUpdatedAt(Instant.parse("2026-04-11T10:20:30Z"));
         return entity;

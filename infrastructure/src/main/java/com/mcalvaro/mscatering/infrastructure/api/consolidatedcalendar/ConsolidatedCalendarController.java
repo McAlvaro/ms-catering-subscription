@@ -9,6 +9,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.UUID;
@@ -24,10 +25,13 @@ public class ConsolidatedCalendarController {
     }
 
     @PostMapping("/close")
-    public ResponseEntity<UUID> closeCalendar(@RequestBody CloseConsolidatedCalendarRequest request) {
+    @Transactional
+    public ResponseEntity<UUID> closeCalendar(@RequestBody CloseConsolidatedCalendarRequest request,
+            @RequestHeader(value = "X-Correlation-Id", required = false) String correlationId) {
         CloseConsolidatedCalendarCommand command = new CloseConsolidatedCalendarCommand(
                 request.date(),
-                request.closedBy()
+                request.closedBy(),
+                correlationId == null || correlationId.isBlank() ? UUID.randomUUID().toString() : correlationId
         );
         UUID calendarId = pipeline.send(command);
         return ResponseEntity.status(HttpStatus.CREATED).body(calendarId);

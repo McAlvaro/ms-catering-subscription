@@ -23,7 +23,7 @@ class DeliveryAddressResolverTest {
         UUID patientId = UUID.randomUUID();
         UUID addressId = UUID.randomUUID();
         when(repository.findByAddressId(addressId)).thenReturn(Optional.of(new PatientAddressReference(addressId,
-                patientId, "Main Street", "Opposite the park", "Cochabamba", -17.39, -66.15)));
+                patientId, "Home", "Main Street", "Opposite the park", "Cochabamba", -17.39, -66.15)));
 
         var address = resolver.resolve(patientId, addressId);
 
@@ -38,7 +38,7 @@ class DeliveryAddressResolverTest {
         UUID patientId = UUID.randomUUID();
         UUID addressId = UUID.randomUUID();
         when(repository.findByAddressId(addressId)).thenReturn(Optional.of(new PatientAddressReference(addressId,
-                UUID.randomUUID(), "Street", "", "City", 0, 0)));
+                UUID.randomUUID(), "Work", "Street", "", "City", 0, 0)));
 
         assertThatThrownBy(() -> resolver.resolve(patientId, addressId))
                 .isInstanceOf(DomainException.class)

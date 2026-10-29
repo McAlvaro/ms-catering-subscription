@@ -8,9 +8,11 @@ import java.util.UUID;
 public record PatientAddressReference(
         UUID addressId,
         UUID patientId,
+        String alias,
         String street,
         String reference,
         String city,
         double latitude,
         double longitude) {
+
 }

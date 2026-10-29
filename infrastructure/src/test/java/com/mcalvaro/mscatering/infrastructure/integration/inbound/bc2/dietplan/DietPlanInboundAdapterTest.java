@@ -33,14 +33,14 @@ class DietPlanInboundAdapterTest {
         var first = event.data().days().get(0);
         var invalid = new DietPlanInboundAdapter.DietPlanCreatedEvent(event.eventId(), event.eventName(), event.eventVersion(), event.occurredOn(), event.source(), event.correlationId(),
                 new DietPlanInboundAdapter.DietPlanData(event.data().id(), event.data().status(), event.data().effectiveStart(), event.data().durationDays(), event.data().active(),
-                        List.of(new DietPlanInboundAdapter.DietPlanDayData(first.id(), 1, 1, List.of(new DietPlanInboundAdapter.DietPlanMealData(UUID.randomUUID(), "8:00", first.meals().get(0).recipes())))), null, null, null));
+                         List.of(new DietPlanInboundAdapter.DietPlanDayData(first.id(), 1, 1, List.of(new DietPlanInboundAdapter.DietPlanMealData(UUID.randomUUID(), com.mcalvaro.mscatering.domain.dietplan.MealType.BREAKFAST, "8:00", first.meals().get(0).recipes())))), null, null, null));
         assertThatThrownBy(() -> adapter.receiveBase(invalid)).isInstanceOf(DomainException.class).hasFieldOrPropertyWithValue("code", "PROJ-001");
     }
     private DietPlanInboundAdapter.DietPlanCreatedEvent event(String name, boolean personalized) {
         UUID patient = UUID.randomUUID();
         return new DietPlanInboundAdapter.DietPlanCreatedEvent(UUID.randomUUID(), name, "1.0", Instant.now(), "MSNutritionPlanner", "test-correlation",
                 new DietPlanInboundAdapter.DietPlanData(UUID.randomUUID(), "ACTIVO", LocalDate.of(2026, 1, 1), 1, true,
-                        List.of(new DietPlanInboundAdapter.DietPlanDayData(UUID.randomUUID(), 1, 1, List.of(new DietPlanInboundAdapter.DietPlanMealData(UUID.randomUUID(), "08:00", List.of(new DietPlanInboundAdapter.DietPlanRecipeData(UUID.randomUUID(), "Breakfast", 100)))))),
+                         List.of(new DietPlanInboundAdapter.DietPlanDayData(UUID.randomUUID(), 1, 1, List.of(new DietPlanInboundAdapter.DietPlanMealData(UUID.randomUUID(), com.mcalvaro.mscatering.domain.dietplan.MealType.BREAKFAST, "08:00", List.of(new DietPlanInboundAdapter.DietPlanRecipeData(UUID.randomUUID(), "Breakfast", 100)))))),
                         personalized ? UUID.randomUUID() : null, personalized ? patient : null, personalized ? "Changed portions" : null));
     }
 }

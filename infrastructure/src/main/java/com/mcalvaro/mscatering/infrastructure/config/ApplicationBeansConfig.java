@@ -211,7 +211,8 @@ public class ApplicationBeansConfig {
     }
 
     @Bean
-    DailyConsolidator dailyConsolidator(ISubscriptionRepository subscriptionRepository) {
-        return new DefaultDailyConsolidator(subscriptionRepository);
+    DailyConsolidator dailyConsolidator(ISubscriptionRepository subscriptionRepository,
+            IDietPlanProjectionRepository dietPlanRepository, IPatientReferenceRepository patientRepository) {
+        return new DefaultDailyConsolidator(subscriptionRepository, dietPlanRepository, patientRepository);
     }
 }

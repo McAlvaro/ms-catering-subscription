@@ -22,7 +22,7 @@ class PatientRegisteredEventJsonTest {
     private Pipeline pipeline;
 
     @Test
-    void readsTheExternalDataIdPacienteAndIgnoresAdditionalPii() throws Exception {
+    void readsTheExternalOperationalNameAndIgnoresUnneededPii() throws Exception {
         UUID patientId = UUID.randomUUID();
 
         PatientRegisteredEvent event = objectMapper.readValue("""
@@ -46,7 +46,7 @@ class PatientRegisteredEventJsonTest {
                 }
                 """.formatted(patientId), PatientRegisteredEvent.class);
 
-        assertThat(event.data()).isEqualTo(new PatientRegisteredData(patientId));
+        assertThat(event.data()).isEqualTo(new PatientRegisteredData(patientId, "María Pérez"));
     }
 
     @Test

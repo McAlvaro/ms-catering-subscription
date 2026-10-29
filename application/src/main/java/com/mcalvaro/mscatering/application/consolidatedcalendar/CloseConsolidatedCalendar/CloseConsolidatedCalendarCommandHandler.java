@@ -7,6 +7,7 @@ import com.mcalvaro.mscatering.domain.consolidatedcalendar.IConsolidatedCalendar
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.service.DailyConsolidator;
 
 import java.util.UUID;
+import java.time.Instant;
 
 /**
  * Handler for {@link CloseConsolidatedCalendarCommand}.
@@ -39,7 +40,7 @@ public class CloseConsolidatedCalendarCommandHandler
 
         ConsolidatedCalendar calendar = dailyConsolidator.consolidateForDate(command.date());
 
-        calendar.close(command.closedBy());
+        calendar.close(command.closedBy(), command.correlationId(), Instant.now());
 
         calendarRepository.save(calendar);
 

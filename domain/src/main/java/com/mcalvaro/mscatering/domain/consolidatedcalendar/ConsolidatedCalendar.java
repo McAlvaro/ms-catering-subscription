@@ -61,6 +61,10 @@ public class ConsolidatedCalendar extends AggregateRoot {
      * Emits {@link ConsolidatedCalendarClosed}.
      */
     public void close(String closedBy) {
+        close(closedBy, UUID.randomUUID().toString(), Instant.now());
+    }
+
+    public void close(String closedBy, String correlationId, Instant closeTime) {
         if (status != ConsolidateStatus.OPEN) {
             throw ConsolidatedCalendarErrors.calendarAlreadyClosed();
         }
@@ -68,9 +72,10 @@ public class ConsolidatedCalendar extends AggregateRoot {
             throw ConsolidatedCalendarErrors.calendarHasNoLines();
         }
         this.status = ConsolidateStatus.CLOSED;
-        this.closedAt = Instant.now();
+        this.closedAt = closeTime;
         this.closedBy = closedBy;
-        addDomainEvent(new ConsolidatedCalendarClosed(getId(), date, totalDeliveries));
+        addDomainEvent(new ConsolidatedCalendarClosed(UUID.randomUUID(), closeTime, getId(), date, totalDeliveries,
+                correlationId, lines.stream().map(ConsolidatedLine::snapshot).toList()));
     }
 
     public List<ConsolidatedLine> getLines() {

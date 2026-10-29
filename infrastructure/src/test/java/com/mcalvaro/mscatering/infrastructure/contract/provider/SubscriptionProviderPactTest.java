@@ -170,12 +170,13 @@ class SubscriptionProviderPactTest {
         if (!patientReferenceRepository.existsById(patientId)) {
             PatientReferenceJpaEntity patient = new PatientReferenceJpaEntity();
             patient.setPatientId(patientId);
+            patient.setPatientName("Pact patient");
             patient.setActive(true);
             patient.setUpdatedAt(Instant.now());
             patientReferenceRepository.saveAndFlush(patient);
         }
         if (!addressReferenceRepository.existsById(addressId)) {
-            addressReferenceRepository.saveAndFlush(new PatientAddressReferenceJpaEntity(addressId, patientId,
+            addressReferenceRepository.saveAndFlush(new PatientAddressReferenceJpaEntity(addressId, patientId, "Home",
                     "Av. Siempre Viva", "Frente al parque", "Lima", -12.046374, -77.042793));
         }
     }
@@ -188,7 +189,7 @@ class SubscriptionProviderPactTest {
                     new DietPlanInboundAdapter.DietPlanData(planId, "ACTIVO", start, 15, true,
                             java.util.stream.IntStream.rangeClosed(1, 15).mapToObj(day ->
                                     new DietPlanInboundAdapter.DietPlanDayData(UUID.randomUUID(), day, 1,
-                                            List.of(new DietPlanInboundAdapter.DietPlanMealData(UUID.randomUUID(), "12:00",
+                                            List.of(new DietPlanInboundAdapter.DietPlanMealData(UUID.randomUUID(), com.mcalvaro.mscatering.domain.dietplan.MealType.LUNCH, "12:00",
                                                     List.of(new DietPlanInboundAdapter.DietPlanRecipeData(UUID.randomUUID(), "Pact recipe", 100)))))).toList(),
                             null, null, null)));
         } finally {

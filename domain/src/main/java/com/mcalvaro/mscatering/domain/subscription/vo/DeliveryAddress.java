@@ -7,6 +7,8 @@ import com.mcalvaro.mscatering.domain.core.DomainException;
  * Validates that {@code street} and {@code city} are non-blank.
  */
 public record DeliveryAddress(
+        java.util.UUID addressId,
+        String alias,
         String street,
         String number,
         String city,
@@ -14,6 +16,11 @@ public record DeliveryAddress(
         double latitude,
         double longitude,
         String phone) {
+
+    public DeliveryAddress(String street, String number, String city, String reference,
+            double latitude, double longitude, String phone) {
+        this(null, null, street, number, city, reference, latitude, longitude, phone);
+    }
 
     public DeliveryAddress {
         if (street == null || street.isBlank()) {

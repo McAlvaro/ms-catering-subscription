@@ -11,6 +11,8 @@ import com.mcalvaro.mscatering.domain.subscription.vo.TimeWindow;
 import com.mcalvaro.mscatering.domain.subscription.vo.ValidityPeriod;
 import com.mcalvaro.mscatering.infrastructure.BaseIntegrationTest;
 import com.mcalvaro.mscatering.infrastructure.api.consolidatedcalendar.dto.CloseConsolidatedCalendarRequest;
+import com.mcalvaro.mscatering.infrastructure.support.DietPlanProjectionFixture;
+import com.mcalvaro.mscatering.infrastructure.support.PatientRegistrationFixture;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -38,6 +40,8 @@ class CloseConsolidatedCalendarApiIT extends BaseIntegrationTest {
 
     @Autowired
     private ISubscriptionRepository subscriptionRepository;
+    @Autowired private DietPlanProjectionFixture dietPlanProjectionFixture;
+    @Autowired private PatientRegistrationFixture patientRegistrationFixture;
 
     private UUID subscriptionId;
     private UUID patientId;
@@ -50,6 +54,8 @@ class CloseConsolidatedCalendarApiIT extends BaseIntegrationTest {
         patientId = UUID.randomUUID();
         dietPlanId = UUID.randomUUID();
         deliveryDate = LocalDate.now().plusDays(10);
+        patientRegistrationFixture.ingest(patientRegistrationFixture.eventFor(patientId));
+        dietPlanProjectionFixture.ingestActiveBasePlan(dietPlanId, deliveryDate, 15);
         subscriptionRepository.save(buildSubscription());
     }
 
@@ -134,7 +140,7 @@ class CloseConsolidatedCalendarApiIT extends BaseIntegrationTest {
                 "Accepted terms",
                 Instant.now());
         DeliveryPreferences preferences = new DeliveryPreferences(
-                new DeliveryAddress("Main Street", "123", "Madrid", "Reception", 40.4168, -3.7038,
+                new DeliveryAddress(UUID.randomUUID(), "Home", "Main Street", "123", "Madrid", "Reception", 40.4168, -3.7038,
                         "+34123456789"),
                 new TimeWindow(LocalTime.of(12, 0), LocalTime.of(14, 0)),
                 "Ring the doorbell");

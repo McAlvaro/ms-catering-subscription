@@ -82,3 +82,30 @@ databaseChangeLog:
             referencedColumnNames: id
             constraintName: fk_cons_line_calendar
             onDelete: CASCADE
+  - changeSet:
+      id: 1.1-add-closed-delivery-snapshots
+      author: alvaro
+      changes:
+        - addColumn:
+            tableName: consolidated_lines
+            columns:
+              - column: { name: patient_name, type: varchar(255) }
+              - column: { name: plan_day_number, type: int, defaultValueNumeric: 1, constraints: { nullable: false } }
+              - column: { name: address_id, type: binary(16) }
+              - column: { name: address_alias, type: varchar(255) }
+        - createTable:
+            tableName: consolidated_line_recipes
+            columns:
+              - column: { name: id, type: binary(16), constraints: { primaryKey: true, nullable: false } }
+              - column: { name: line_id, type: binary(16), constraints: { nullable: false } }
+              - column: { name: recipe_id, type: binary(16), constraints: { nullable: false } }
+              - column: { name: recipe_name, type: varchar(255), constraints: { nullable: false } }
+              - column: { name: meal_time, type: varchar(5), constraints: { nullable: false } }
+              - column: { name: portion_grams, type: int, constraints: { nullable: false } }
+        - addForeignKeyConstraint:
+            baseTableName: consolidated_line_recipes
+            baseColumnNames: line_id
+            referencedTableName: consolidated_lines
+            referencedColumnNames: id
+            constraintName: fk_consolidated_line_recipe
+            onDelete: CASCADE

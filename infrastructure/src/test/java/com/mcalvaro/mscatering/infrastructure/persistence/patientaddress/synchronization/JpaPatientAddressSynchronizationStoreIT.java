@@ -80,7 +80,7 @@ class JpaPatientAddressSynchronizationStoreIT extends BaseIntegrationTest {
         UUID addressId = UUID.randomUUID();
         PatientAddressRegisteredEvent invalid = new PatientAddressRegisteredEvent(UUID.randomUUID(),
                 "bc1.DireccionClienteRegistrada", "1.0", Instant.now(), "MsPatientsConsulCore", "x".repeat(256),
-                new PatientAddressRegisteredData(UUID.randomUUID(), addressId, "One", "Reference", "City",
+                new PatientAddressRegisteredData(UUID.randomUUID(), addressId, "Home", "One", "Reference", "City",
                         new PatientAddressRegisteredData.Geolocation(0d, 0d)));
 
         assertThatThrownBy(() -> fixture.ingest(invalid)).isInstanceOf(DataIntegrityViolationException.class);
@@ -91,7 +91,7 @@ class JpaPatientAddressSynchronizationStoreIT extends BaseIntegrationTest {
     private PatientAddressRegisteredEvent event(UUID eventId, UUID patientId, UUID addressId, String street) {
         return new PatientAddressRegisteredEvent(eventId, "bc1.DireccionClienteRegistrada", "1.0",
                 Instant.parse("2026-10-27T12:00:00Z"), "MsPatientsConsulCore", "correlation-" + eventId,
-                new PatientAddressRegisteredData(patientId, addressId, street, "Reference", "City",
+                new PatientAddressRegisteredData(patientId, addressId, "Home", street, "Reference", "City",
                         new PatientAddressRegisteredData.Geolocation(-17.39, -66.15)));
     }
 }

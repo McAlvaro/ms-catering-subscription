@@ -45,7 +45,7 @@ class PatientAddressRegistrationInboundAdapterTest {
     private PatientAddressRegisteredEvent event(double latitude, double longitude) {
         return new PatientAddressRegisteredEvent(UUID.randomUUID(), "bc1.DireccionClienteRegistrada", "1.0",
                 Instant.parse("2026-10-27T12:00:00Z"), "MsPatientsConsulCore", "correlation",
-                new PatientAddressRegisteredData(UUID.randomUUID(), UUID.randomUUID(), "Main Street", "Near park",
+                new PatientAddressRegisteredData(UUID.randomUUID(), UUID.randomUUID(), "Home", "Main Street", "Near park",
                         "Cochabamba", new PatientAddressRegisteredData.Geolocation(latitude, longitude)));
     }
 }

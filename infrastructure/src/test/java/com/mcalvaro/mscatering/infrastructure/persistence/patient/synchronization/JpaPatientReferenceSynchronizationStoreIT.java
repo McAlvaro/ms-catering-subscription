@@ -61,7 +61,7 @@ class JpaPatientReferenceSynchronizationStoreIT extends BaseIntegrationTest {
         UUID eventId = UUID.randomUUID();
         UUID patientId = UUID.randomUUID();
         PatientRegisteredEvent event = eventFromJson(eventId, patientId, "Ana Uno", "ana@example.com");
-        PatientRegisteredEvent piiOnlyChange = eventFromJson(eventId, patientId, "Ana Dos", "ana.dos@example.com");
+        PatientRegisteredEvent piiOnlyChange = eventFromJson(eventId, patientId, "Ana Uno", "ana.dos@example.com");
         long referencesBefore = patientReferenceRepository.count();
         long receiptsBefore = receiptRepository.count();
 
@@ -77,7 +77,7 @@ class JpaPatientReferenceSynchronizationStoreIT extends BaseIntegrationTest {
     void recordsSemanticDuplicateWithoutProjectionOverwriteWhenIgnoredPiiChanges() throws Exception {
         UUID patientId = UUID.randomUUID();
         PatientRegisteredEvent first = eventFromJson(UUID.randomUUID(), patientId, "Ana Uno", "ana@example.com");
-        PatientRegisteredEvent duplicate = eventFromJson(UUID.randomUUID(), patientId, "Ana Dos", "ana.dos@example.com");
+        PatientRegisteredEvent duplicate = eventFromJson(UUID.randomUUID(), patientId, "Ana Uno", "ana.dos@example.com");
         long receiptsBefore = receiptRepository.count();
 
         fixture.ingest(first);
@@ -111,7 +111,7 @@ class JpaPatientReferenceSynchronizationStoreIT extends BaseIntegrationTest {
         fixture.ingest(first);
         PatientRegisteredEvent conflict = new PatientRegisteredEvent(
                 first.eventId(), first.eventName(), first.eventVersion(), first.occurredOn(), first.source(),
-                first.correlationId(), new PatientRegisteredData(UUID.randomUUID()));
+                first.correlationId(), new PatientRegisteredData(UUID.randomUUID(), "Conflicting patient"));
 
         assertSynchronizationConflict(conflict);
 

@@ -100,6 +100,6 @@ class DefaultSubscriptionDuplicationValidatorTest {
     }
 
     private PatientReference buildPatient(UUID patientId, boolean active) {
-        return new PatientReference(patientId, active, Instant.now());
+        return new PatientReference(patientId, "Ada Lovelace", active, Instant.now());
     }
 }

@@ -56,5 +56,13 @@ databaseChangeLog:
             tableName: patient_address_references
             indexName: idx_patient_address_references_patient_id
             columns:
-              - column:
-                  name: patient_id
+               - column:
+                   name: patient_id
+  - changeSet:
+      id: 1.1-add-address-alias-for-operational-snapshots
+      author: alvaro
+      changes:
+        - addColumn:
+            tableName: patient_address_references
+            columns:
+              - column: { name: alias, type: varchar(255) }
