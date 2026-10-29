@@ -16,6 +16,9 @@ public class PatientReferenceJpaEntity {
     @Column(name = "patient_id", updatable = false, nullable = false)
     private UUID patientId;
 
+    @Column(name = "patient_name", nullable = false)
+    private String patientName;
+
     @Column(name = "active", nullable = false)
     private boolean active;
 
@@ -32,6 +35,9 @@ public class PatientReferenceJpaEntity {
     public void setPatientId(UUID patientId) {
         this.patientId = patientId;
     }
+
+    public String getPatientName() { return patientName; }
+    public void setPatientName(String patientName) { this.patientName = patientName; }
 
     public boolean isActive() {
         return active;

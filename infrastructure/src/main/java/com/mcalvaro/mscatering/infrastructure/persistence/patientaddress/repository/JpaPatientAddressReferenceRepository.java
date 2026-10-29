@@ -19,7 +19,7 @@ public class JpaPatientAddressReferenceRepository implements IPatientAddressRefe
     @Override
     public Optional<PatientAddressReference> findByAddressId(UUID addressId) {
         return repository.findById(addressId).map(entity -> new PatientAddressReference(entity.getAddressId(),
-                entity.getPatientId(), entity.getStreet(), entity.getReference(), entity.getCity(),
+                entity.getPatientId(), entity.getAlias(), entity.getStreet(), entity.getReference(), entity.getCity(),
                 entity.getLatitude(), entity.getLongitude()));
     }
 }

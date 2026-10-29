@@ -57,6 +57,7 @@ public class JpaPatientReferenceSynchronizationStore implements PatientReference
     private PatientReferenceJpaEntity newPatientReference(SynchronizePatientReferenceCommand command) {
         PatientReferenceJpaEntity reference = new PatientReferenceJpaEntity();
         reference.setPatientId(command.patientId());
+        reference.setPatientName(command.patientName());
         reference.setActive(true);
         reference.setUpdatedAt(command.occurredOn());
         return reference;

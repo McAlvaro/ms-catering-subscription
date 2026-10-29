@@ -30,6 +30,12 @@ public class DeliveryDayJpaEntity {
     @Column(name = "status", nullable = false, length = 20)
     private String status;
 
+    @Column(name = "address_id")
+    private UUID addressId;
+
+    @Column(name = "address_alias")
+    private String addressAlias;
+
     @Column(name = "address_street", nullable = false)
     private String addressStreet;
 
@@ -102,6 +108,22 @@ public class DeliveryDayJpaEntity {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public UUID getAddressId() {
+        return addressId;
+    }
+
+    public void setAddressId(UUID addressId) {
+        this.addressId = addressId;
+    }
+
+    public String getAddressAlias() {
+        return addressAlias;
+    }
+
+    public void setAddressAlias(String addressAlias) {
+        this.addressAlias = addressAlias;
     }
 
     public String getAddressStreet() {

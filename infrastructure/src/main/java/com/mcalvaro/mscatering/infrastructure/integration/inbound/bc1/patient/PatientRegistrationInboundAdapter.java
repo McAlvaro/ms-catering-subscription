@@ -30,7 +30,7 @@ public class PatientRegistrationInboundAdapter {
         PatientRegisteredData data = event.data();
         pipeline.send(new SynchronizePatientReferenceCommand(
                 event.eventId(), event.eventName(), event.eventVersion(), event.occurredOn(), event.source(),
-                event.correlationId(), data.patientId(), payloadFingerprint(data)));
+                event.correlationId(), data.patientId(), data.patientName(), payloadFingerprint(data)));
     }
 
     private void validate(PatientRegisteredEvent event) {
@@ -45,7 +45,7 @@ public class PatientRegistrationInboundAdapter {
             invalidContract();
         }
 
-        if (event.data().patientId() == null) {
+        if (event.data().patientId() == null || isBlank(event.data().patientName())) {
             invalidContract();
         }
     }
@@ -55,7 +55,7 @@ public class PatientRegistrationInboundAdapter {
     }
 
     private String payloadFingerprint(PatientRegisteredData data) {
-        return sha256(data.patientId().toString());
+        return sha256(data.patientId().toString(), data.patientName());
     }
 
     private String sha256(String... values) {

@@ -7,6 +7,10 @@ import jakarta.persistence.Column;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.CascadeType;
+import java.util.ArrayList;
+import java.util.List;
 
 import java.util.UUID;
 
@@ -27,12 +31,20 @@ public class ConsolidatedLineJpaEntity {
 
     @Column(name = "patient_id", nullable = false)
     private UUID patientId;
+    @Column(name = "patient_name", nullable = false)
+    private String patientName;
 
     @Column(name = "diet_plan_id", nullable = false)
     private UUID dietPlanId;
+    @Column(name = "plan_day_number", nullable = false)
+    private int planDayNumber;
 
     @Column(name = "service_type", nullable = false, length = 50)
     private String serviceType;
+    @Column(name = "address_id", nullable = false)
+    private UUID addressId;
+    @Column(name = "address_alias", nullable = false)
+    private String addressAlias;
 
     // DeliveryAddress
     @Column(name = "address_street", nullable = false)
@@ -65,6 +77,9 @@ public class ConsolidatedLineJpaEntity {
 
     @Column(name = "instructions")
     private String instructions;
+
+    @OneToMany(mappedBy = "line", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ConsolidatedLineRecipeJpaEntity> recipes = new ArrayList<>();
 
     public ConsolidatedLineJpaEntity() {
     }
@@ -100,6 +115,8 @@ public class ConsolidatedLineJpaEntity {
     public void setPatientId(UUID patientId) {
         this.patientId = patientId;
     }
+    public String getPatientName() { return patientName; }
+    public void setPatientName(String value) { patientName = value; }
 
     public UUID getDietPlanId() {
         return dietPlanId;
@@ -108,6 +125,8 @@ public class ConsolidatedLineJpaEntity {
     public void setDietPlanId(UUID dietPlanId) {
         this.dietPlanId = dietPlanId;
     }
+    public int getPlanDayNumber() { return planDayNumber; }
+    public void setPlanDayNumber(int value) { planDayNumber = value; }
 
     public String getServiceType() {
         return serviceType;
@@ -116,6 +135,10 @@ public class ConsolidatedLineJpaEntity {
     public void setServiceType(String serviceType) {
         this.serviceType = serviceType;
     }
+    public UUID getAddressId() { return addressId; }
+    public void setAddressId(UUID value) { addressId = value; }
+    public String getAddressAlias() { return addressAlias; }
+    public void setAddressAlias(String value) { addressAlias = value; }
 
     public String getAddressStreet() {
         return addressStreet;
@@ -195,5 +218,10 @@ public class ConsolidatedLineJpaEntity {
 
     public void setInstructions(String instructions) {
         this.instructions = instructions;
+    }
+    public List<ConsolidatedLineRecipeJpaEntity> getRecipes() { return recipes; }
+    public void setRecipes(List<ConsolidatedLineRecipeJpaEntity> value) {
+        recipes.clear();
+        value.forEach(recipe -> { recipe.setLine(this); recipes.add(recipe); });
     }
 }

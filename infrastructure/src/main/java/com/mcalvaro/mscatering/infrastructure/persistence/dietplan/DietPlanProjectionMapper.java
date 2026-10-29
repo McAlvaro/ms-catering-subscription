@@ -18,7 +18,7 @@ public class DietPlanProjectionMapper {
         return new DietPlanProjection(entity.getId(), PlanType.valueOf(entity.getPlanType()), entity.getOwnerPatientId(),
                 entity.isActive(), entity.getEffectiveStart(), entity.getDurationDays(),
                 entity.getDays().stream().map(day -> new DietPlanDay(day.getId(), day.getDayNumber(), day.getMealCount(),
-                        day.getMeals().stream().map(meal -> new DietPlanMeal(meal.getId(), LocalTime.parse(meal.getMealTime()),
+                        day.getMeals().stream().map(meal -> new DietPlanMeal(meal.getId(), MealType.valueOf(meal.getMealType()), LocalTime.parse(meal.getMealTime()),
                                 meal.getRecipes().stream().map(recipe -> new DietPlanRecipe(recipe.getRecipeId(), recipe.getRecipeName(), recipe.getPortionGrams())).toList())).toList())).toList());
     }
     private DietPlanDayJpaEntity day(DietPlanDay day) {
@@ -26,7 +26,7 @@ public class DietPlanProjectionMapper {
         entity.setMeals(day.meals().stream().map(this::meal).toList()); return entity;
     }
     private DietPlanMealJpaEntity meal(DietPlanMeal meal) {
-        DietPlanMealJpaEntity entity = new DietPlanMealJpaEntity(); entity.setId(meal.id()); entity.setMealTime(meal.time().toString());
+        DietPlanMealJpaEntity entity = new DietPlanMealJpaEntity(); entity.setId(meal.id()); entity.setMealType(meal.type().name()); entity.setMealTime(meal.time().toString());
         entity.setRecipes(meal.recipes().stream().map(this::recipe).toList()); return entity;
     }
     private DietPlanRecipeJpaEntity recipe(DietPlanRecipe recipe) {

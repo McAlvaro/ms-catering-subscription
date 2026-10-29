@@ -153,6 +153,8 @@ public class SubscriptionMapper {
         jpa.setId(domain.getId());
         jpa.setDate(domain.getDate());
         jpa.setStatus(domain.getStatus().name());
+        jpa.setAddressId(domain.getAddress().addressId());
+        jpa.setAddressAlias(domain.getAddress().alias());
         jpa.setAddressStreet(domain.getAddress().street());
         jpa.setAddressNumber(domain.getAddress().number());
         jpa.setAddressCity(domain.getAddress().city());
@@ -175,7 +177,7 @@ public class SubscriptionMapper {
         setField(DeliveryDay.class, day, "date", jpa.getDate());
         setField(DeliveryDay.class, day, "status", DeliveryDayStatus.valueOf(jpa.getStatus()));
 
-        DeliveryAddress address = new DeliveryAddress(
+        DeliveryAddress address = new DeliveryAddress(jpa.getAddressId(), jpa.getAddressAlias(),
                 jpa.getAddressStreet(), jpa.getAddressNumber(), jpa.getAddressCity(), jpa.getAddressReference(),
                 jpa.getAddressLatitude() != null ? jpa.getAddressLatitude() : 0.0,
                 jpa.getAddressLongitude() != null ? jpa.getAddressLongitude() : 0.0,

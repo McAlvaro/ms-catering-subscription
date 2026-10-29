@@ -12,6 +12,7 @@ public class PatientReferenceMapper {
 
         PatientReferenceJpaEntity jpa = new PatientReferenceJpaEntity();
         jpa.setPatientId(domain.patientId());
+        jpa.setPatientName(domain.patientName());
         jpa.setActive(domain.active());
         jpa.setUpdatedAt(domain.updatedAt());
         return jpa;
@@ -22,6 +23,7 @@ public class PatientReferenceMapper {
 
         return new PatientReference(
                 jpa.getPatientId(),
+                jpa.getPatientName(),
                 jpa.isActive(),
                 jpa.getUpdatedAt()
         );

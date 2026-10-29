@@ -7,5 +7,6 @@ import java.util.UUID;
 
 /** The minimal portion of BC1 event data consumed by BC3. */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record PatientRegisteredData(@JsonProperty("idPaciente") UUID patientId) {
+public record PatientRegisteredData(@JsonProperty("idPaciente") UUID patientId,
+        @JsonProperty("nombreCompleto") String patientName) {
 }

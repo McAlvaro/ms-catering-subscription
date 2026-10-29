@@ -16,6 +16,8 @@ public class PatientAddressReferenceJpaEntity {
     private UUID addressId;
     @Column(name = "patient_id", nullable = false, updatable = false)
     private UUID patientId;
+    @Column(name = "alias", nullable = false)
+    private String alias;
     @Column(name = "street", nullable = false)
     private String street;
     @Column(name = "reference", nullable = false)
@@ -30,10 +32,11 @@ public class PatientAddressReferenceJpaEntity {
     public PatientAddressReferenceJpaEntity() {
     }
 
-    public PatientAddressReferenceJpaEntity(UUID addressId, UUID patientId, String street, String reference,
+    public PatientAddressReferenceJpaEntity(UUID addressId, UUID patientId, String alias, String street, String reference,
             String city, double latitude, double longitude) {
         this.addressId = addressId;
         this.patientId = patientId;
+        this.alias = alias;
         this.street = street;
         this.reference = reference;
         this.city = city;
@@ -48,6 +51,8 @@ public class PatientAddressReferenceJpaEntity {
     public UUID getPatientId() {
         return patientId;
     }
+
+    public String getAlias() { return alias; }
 
     public String getStreet() {
         return street;

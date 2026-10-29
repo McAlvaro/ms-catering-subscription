@@ -46,7 +46,7 @@ public class JpaPatientAddressSynchronizationStore implements PatientAddressSync
         if (addressRepository.existsById(command.addressId())) {
             throw conflict("Address identity already has different canonical content");
         }
-        addressRepository.save(new PatientAddressReferenceJpaEntity(command.addressId(), command.patientId(),
+        addressRepository.save(new PatientAddressReferenceJpaEntity(command.addressId(), command.patientId(), command.alias(),
                 command.street(), command.reference(), command.city(), command.latitude(), command.longitude()));
         receiptRepository.saveAndFlush(receipt(command, eventFingerprint));
     }

@@ -28,7 +28,7 @@ public class PatientAddressRegistrationInboundAdapter {
         validate(event);
         PatientAddressRegisteredData data = event.data();
         pipeline.send(new SynchronizePatientAddressCommand(event.eventId(), event.eventName(), event.eventVersion(),
-                event.occurredOn(), event.source(), event.correlationId(), data.patientId(), data.addressId(),
+                event.occurredOn(), event.source(), event.correlationId(), data.patientId(), data.addressId(), data.alias(),
                 data.street(), data.reference(), data.city(), data.geolocation().latitude(),
                 data.geolocation().longitude(), payloadFingerprint(data)));
     }
@@ -40,7 +40,7 @@ public class PatientAddressRegistrationInboundAdapter {
             invalidContract();
         }
         PatientAddressRegisteredData data = event.data();
-        if (data.patientId() == null || data.addressId() == null || blank(data.street()) || blank(data.reference())
+        if (data.patientId() == null || data.addressId() == null || blank(data.alias()) || blank(data.street()) || blank(data.reference())
                 || blank(data.city())
                 || data.geolocation() == null || !coordinate(data.geolocation().latitude(), -90, 90)
                 || !coordinate(data.geolocation().longitude(), -180, 180)) {
@@ -57,7 +57,7 @@ public class PatientAddressRegistrationInboundAdapter {
     }
 
     private String payloadFingerprint(PatientAddressRegisteredData data) {
-        return sha256(data.patientId().toString(), data.addressId().toString(), data.street(),
+        return sha256(data.patientId().toString(), data.addressId().toString(), data.alias(), data.street(),
                 data.reference(), data.city(), data.geolocation().latitude().toString(),
                 data.geolocation().longitude().toString());
     }

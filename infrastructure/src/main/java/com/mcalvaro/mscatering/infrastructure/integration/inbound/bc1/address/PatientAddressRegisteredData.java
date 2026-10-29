@@ -12,10 +12,11 @@ import java.util.UUID;
 public record PatientAddressRegisteredData(
         @JsonProperty("idPaciente") UUID patientId,
         @JsonProperty("idDireccion") UUID addressId,
+        @JsonProperty("alias") String alias,
         @JsonProperty("direccion") String street,
         @JsonProperty("referencia") String reference,
         @JsonProperty("ciudad") String city,
-        @JsonProperty("geolocalizacion") Geolocation geolocation) {
+             @JsonProperty("geolocalizacion") Geolocation geolocation) {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Geolocation(

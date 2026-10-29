@@ -40,8 +40,8 @@ public class DietPlanInboundAdapter {
         return new DietPlanDay(day.id(), day.dayNumber(), day.mealCount(), day.meals().stream().map(this::meal).toList());
     }
     private DietPlanMeal meal(DietPlanMealData meal) {
-        if (meal == null || meal.id() == null || meal.time() == null || !meal.time().matches("(?:[01]\\d|2[0-3]):[0-5]\\d") || meal.recipes() == null) invalid();
-        return new DietPlanMeal(meal.id(), LocalTime.parse(meal.time()), meal.recipes().stream().map(this::recipe).toList());
+        if (meal == null || meal.id() == null || meal.type() == null || meal.time() == null || !meal.time().matches("(?:[01]\\d|2[0-3]):[0-5]\\d") || meal.recipes() == null) invalid();
+        return new DietPlanMeal(meal.id(), meal.type(), LocalTime.parse(meal.time()), meal.recipes().stream().map(this::recipe).toList());
     }
     private DietPlanRecipe recipe(DietPlanRecipeData recipe) {
         if (recipe == null || recipe.recipeId() == null || blank(recipe.name()) || recipe.portionGrams() <= 0) invalid();
@@ -49,7 +49,7 @@ public class DietPlanInboundAdapter {
     }
     private String fingerprint(DietPlanData data, PlanType type) {
         List<String> values = new ArrayList<>(List.of(type.name(), data.id().toString(), String.valueOf(data.status()), data.effectiveStart().toString(), String.valueOf(data.durationDays()), String.valueOf(data.active()), String.valueOf(data.basePlanId()), String.valueOf(data.patientId()), String.valueOf(data.changeDescription())));
-        data.days().stream().sorted(Comparator.comparingInt(DietPlanDayData::dayNumber)).forEach(day -> { values.add(day.id().toString()); values.add(String.valueOf(day.dayNumber())); values.add(String.valueOf(day.mealCount())); day.meals().stream().sorted(Comparator.comparing(DietPlanMealData::time)).forEach(meal -> { values.add(meal.id().toString()); values.add(meal.time()); meal.recipes().stream().sorted(Comparator.comparing(recipe -> recipe.recipeId().toString())).forEach(recipe -> { values.add(recipe.recipeId().toString()); values.add(recipe.name()); values.add(String.valueOf(recipe.portionGrams())); }); }); });
+        data.days().stream().sorted(Comparator.comparingInt(DietPlanDayData::dayNumber)).forEach(day -> { values.add(day.id().toString()); values.add(String.valueOf(day.dayNumber())); values.add(String.valueOf(day.mealCount())); day.meals().stream().sorted(Comparator.comparing(DietPlanMealData::time)).forEach(meal -> { values.add(meal.id().toString()); values.add(meal.type().name()); values.add(meal.time()); meal.recipes().stream().sorted(Comparator.comparing(recipe -> recipe.recipeId().toString())).forEach(recipe -> { values.add(recipe.recipeId().toString()); values.add(recipe.name()); values.add(String.valueOf(recipe.portionGrams())); }); }); });
         return sha256(values.toArray(String[]::new));
     }
     private boolean blank(String value) { return value == null || value.isBlank(); }
@@ -63,6 +63,7 @@ public class DietPlanInboundAdapter {
             @JsonProperty("idPlanBase") UUID basePlanId, @JsonProperty("idPaciente") UUID patientId, @JsonProperty("descripcionCambios") String changeDescription) { }
     public record DietPlanDayData(UUID id, @JsonProperty("numOrden") int dayNumber, @JsonProperty("nroTiemposComida") int mealCount,
             @JsonProperty("tiemposDeComida") List<DietPlanMealData> meals) { }
-    public record DietPlanMealData(UUID id, @JsonProperty("hora") String time, @JsonProperty("recetas") List<DietPlanRecipeData> recipes) { }
+    public record DietPlanMealData(UUID id, @JsonProperty("tipoComida") MealType type, @JsonProperty("hora") String time, @JsonProperty("recetas") List<DietPlanRecipeData> recipes) {
+    }
     public record DietPlanRecipeData(@JsonProperty("idReceta") UUID recipeId, @JsonProperty("nombre") String name, @JsonProperty("porcionGramos") int portionGrams) { }
 }
