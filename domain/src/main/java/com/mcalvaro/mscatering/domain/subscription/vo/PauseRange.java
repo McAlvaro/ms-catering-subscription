@@ -9,7 +9,6 @@ import java.time.LocalDate;
  * <p>
  * Validates:
  * <ul>
- * <li>{@code startDate} is at least 48 hours (2 days) in the future.</li>
  * <li>{@code startDate} is before or equal to {@code endDate}.</li>
  * </ul>
  */
@@ -18,10 +17,6 @@ public record PauseRange(LocalDate startDate, LocalDate endDate) {
     public PauseRange {
         if (startDate == null || endDate == null) {
             throw new DomainException("VO-013", "PauseRange: startDate and endDate must not be null.");
-        }
-        if (!startDate.isAfter(LocalDate.now().plusDays(1))) {
-            throw new DomainException("SUB-001",
-                    "Pause must be requested at least 48 hours in advance.");
         }
         if (startDate.isAfter(endDate)) {
             throw new DomainException("VO-014", "PauseRange: startDate must be before or equal to endDate.");

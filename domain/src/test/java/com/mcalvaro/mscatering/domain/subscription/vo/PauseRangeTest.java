@@ -58,17 +58,18 @@ class PauseRangeTest {
     }
 
     @Test
-    @DisplayName("Should throw DomainException SUB-001 when pause starts with less than two days notice")
-    void shouldThrowDomainExceptionWhenPauseStartsWithLessThanTwoDaysNotice() {
+    @DisplayName("Should create a structurally valid historical range for durable event rehydration")
+    void shouldCreateHistoricalPauseRangeForDurableEventRehydration() {
         // Arrange
-        LocalDate start = LocalDate.now().plusDays(1);
-        LocalDate end = start.plusDays(2);
+        LocalDate start = LocalDate.of(2024, 2, 10);
+        LocalDate end = LocalDate.of(2024, 2, 12);
 
-        // Act & Assert
-        assertThatThrownBy(() -> new PauseRange(start, end))
-                .isInstanceOf(DomainException.class)
-                .hasFieldOrPropertyWithValue("code", "SUB-001")
-                .hasMessageContaining("at least 48 hours in advance");
+        // Act
+        PauseRange range = new PauseRange(start, end);
+
+        // Assert
+        assertThat(range).isEqualTo(new PauseRange(start, end));
+        assertThat(range.durationDays()).isEqualTo(3);
     }
 
     @ParameterizedTest

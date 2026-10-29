@@ -107,6 +107,23 @@ class SubscriptionTest {
     }
 
     @Test
+    @DisplayName("Should reject a newly requested pause with less than forty-eight hours notice")
+    void shouldRejectNewPauseWhenStartDoesNotHaveRequiredNotice() {
+        // Arrange
+        LocalDate today = LocalDate.now();
+        Subscription subscription = buildSubscription(today);
+        PauseRange range = new PauseRange(today.plusDays(1), today.plusDays(2));
+        subscription.clearDomainEvents();
+
+        // Act & Assert
+        assertThatThrownBy(() -> subscription.pause(range, "Too soon"))
+                .isInstanceOf(DomainException.class)
+                .hasFieldOrPropertyWithValue("code", "SUB-001");
+        assertThat(subscription.getStatus()).isEqualTo(SubscriptionStatus.ACTIVE);
+        assertThat(subscription.getDomainEvents()).isEmpty();
+    }
+
+    @Test
     @DisplayName("Should update preferences and process delivery outcomes when delivery identifiers exist")
     void shouldUpdatePreferencesAndProcessDeliveryOutcomesWhenDaysExist() {
         // Arrange

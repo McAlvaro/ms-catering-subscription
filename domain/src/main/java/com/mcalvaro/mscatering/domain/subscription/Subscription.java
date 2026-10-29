@@ -144,6 +144,7 @@ public class Subscription extends AggregateRoot {
             throw SubscriptionErrors.subscriptionNotActive();
         }
         requireCorrelationId(correlationId);
+        ensureAtLeast48Hours(range.startDate());
         if (!contract.period().contains(range.startDate()) || !contract.period().contains(range.endDate())) {
             throw SubscriptionErrors.pauseRangeOutsideValidity();
         }
