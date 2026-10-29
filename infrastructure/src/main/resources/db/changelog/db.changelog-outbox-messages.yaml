@@ -1,0 +1,105 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1.0-create-outbox-messages
+      author: alvaro
+      changes:
+        - createTable:
+            tableName: outbox_messages
+            columns:
+              - column:
+                  name: id
+                  type: binary(16)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: type
+                  type: varchar(128)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: content
+                  type: clob
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created
+                  type: datetime(6)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: processed
+                  type: boolean
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+              - column:
+                  name: processed_on
+                  type: datetime(6)
+              - column:
+                  name: attempt_count
+                  type: int
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+              - column:
+                  name: last_error
+                  type: clob
+              - column:
+                  name: available_at
+                  type: datetime(6)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: locked_until
+                  type: datetime(6)
+              - column:
+                  name: locked_by
+                  type: varchar(128)
+              - column:
+                  name: correlation_id
+                  type: varchar(255)
+              - column:
+                  name: trace_id
+                  type: varchar(64)
+              - column:
+                  name: span_id
+                  type: varchar(32)
+        - sql:
+            sql: ALTER TABLE outbox_messages ADD CONSTRAINT chk_outbox_attempt_count CHECK (attempt_count >= 0)
+        - sql:
+            sql: ALTER TABLE outbox_messages ADD CONSTRAINT chk_outbox_processed_on CHECK ((processed = FALSE AND processed_on IS NULL) OR (processed = TRUE AND processed_on IS NOT NULL))
+        - sql:
+            sql: ALTER TABLE outbox_messages ADD CONSTRAINT chk_outbox_lock_pair CHECK ((locked_until IS NULL AND locked_by IS NULL) OR (locked_until IS NOT NULL AND locked_by IS NOT NULL))
+        - sql:
+            sql: ALTER TABLE outbox_messages ADD CONSTRAINT chk_outbox_available_at CHECK (available_at >= created)
+        - sql:
+            sql: ALTER TABLE outbox_messages ADD CONSTRAINT chk_outbox_processed_unlocked CHECK (processed = FALSE OR locked_until IS NULL)
+        - createIndex:
+            tableName: outbox_messages
+            indexName: idx_outbox_pending_available
+            columns:
+              - column:
+                  name: processed
+              - column:
+                  name: available_at
+              - column:
+                  name: created
+              - column:
+                  name: id
+        - createIndex:
+            tableName: outbox_messages
+            indexName: idx_outbox_locks
+            columns:
+              - column:
+                  name: processed
+              - column:
+                  name: locked_until
+        - createIndex:
+            tableName: outbox_messages
+            indexName: idx_outbox_processed_cleanup
+            columns:
+              - column:
+                  name: processed
+              - column:
+                  name: processed_on

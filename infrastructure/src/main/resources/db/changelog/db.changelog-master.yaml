@@ -21,3 +21,5 @@ databaseChangeLog:
       file: db/changelog/db.changelog-consolidated-calendars.yaml
   - include:
       file: db/changelog/db.changelog-consolidated-lines.yaml
+  - include:
+      file: db/changelog/db.changelog-outbox-messages.yaml
