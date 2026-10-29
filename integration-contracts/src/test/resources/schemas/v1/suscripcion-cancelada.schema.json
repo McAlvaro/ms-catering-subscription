@@ -1,0 +1,64 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://ms-catering-subscription.example/schemas/outbox/v1/suscripcion-cancelada.schema.json",
+    "title": "bc3.SuscripcionCancelada v1",
+    "allOf": [
+        {
+            "$ref": "integration-event-envelope.schema.json"
+        },
+        {
+            "type": "object",
+            "properties": {
+                "eventName": {
+                    "const": "bc3.SuscripcionCancelada"
+                },
+                "data": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                        "idSuscripcion",
+                        "idPaciente",
+                        "idPlan",
+                        "tipoBaja",
+                        "motivo",
+                        "fechaEfectiva",
+                        "entregasPendientesAnuladas"
+                    ],
+                    "properties": {
+                        "idSuscripcion": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "idPaciente": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "idPlan": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "tipoBaja": {
+                            "type": "string",
+                            "enum": [
+                                "MANUAL",
+                                "VENCIMIENTO"
+                            ]
+                        },
+                        "motivo": {
+                            "type": "string",
+                            "minLength": 1
+                        },
+                        "fechaEfectiva": {
+                            "type": "string",
+                            "format": "date"
+                        },
+                        "entregasPendientesAnuladas": {
+                            "type": "integer",
+                            "minimum": 0
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}

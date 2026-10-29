@@ -1,0 +1,86 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://ms-catering-subscription.example/schemas/outbox/v1/suscripcion-creada.schema.json",
+    "title": "bc3.SuscripcionCreada v1",
+    "allOf": [
+        {
+            "$ref": "integration-event-envelope.schema.json"
+        },
+        {
+            "type": "object",
+            "properties": {
+                "eventName": {
+                    "const": "bc3.SuscripcionCreada"
+                },
+                "data": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                        "idSuscripcion",
+                        "idPaciente",
+                        "idPlan",
+                        "tipoPlan",
+                        "duracionDias",
+                        "fechaInicio",
+                        "fechaFin",
+                        "evaluacionesIncluidas",
+                        "montoFacturado",
+                        "moneda",
+                        "nroFactura"
+                    ],
+                    "properties": {
+                        "idSuscripcion": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "idPaciente": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "idPlan": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "tipoPlan": {
+                            "type": "string",
+                            "enum": [
+                                "BASE",
+                                "PERSONALIZADO"
+                            ]
+                        },
+                        "duracionDias": {
+                            "type": "integer",
+                            "minimum": 1
+                        },
+                        "fechaInicio": {
+                            "type": "string",
+                            "format": "date"
+                        },
+                        "fechaFin": {
+                            "type": "string",
+                            "format": "date"
+                        },
+                        "evaluacionesIncluidas": {
+                            "type": "integer",
+                            "minimum": 0
+                        },
+                        "montoFacturado": {
+                            "type": "number",
+                            "minimum": 0
+                        },
+                        "moneda": {
+                            "const": "BOB"
+                        },
+                        "nroFactura": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "minLength": 1
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}

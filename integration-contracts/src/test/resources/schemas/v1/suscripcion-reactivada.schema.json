@@ -1,0 +1,46 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://ms-catering-subscription.example/schemas/outbox/v1/suscripcion-reactivada.schema.json",
+    "title": "bc3.SuscripcionReactivada v1",
+    "allOf": [
+        {
+            "$ref": "integration-event-envelope.schema.json"
+        },
+        {
+            "type": "object",
+            "properties": {
+                "eventName": {
+                    "const": "bc3.SuscripcionReactivada"
+                },
+                "data": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                        "idSuscripcion",
+                        "idPaciente",
+                        "fechaReactivacion",
+                        "fechaFin"
+                    ],
+                    "properties": {
+                        "idSuscripcion": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "idPaciente": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "fechaReactivacion": {
+                            "type": "string",
+                            "format": "date"
+                        },
+                        "fechaFin": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}
