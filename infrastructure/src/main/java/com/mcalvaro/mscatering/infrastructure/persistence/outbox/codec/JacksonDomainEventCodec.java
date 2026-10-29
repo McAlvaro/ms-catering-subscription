@@ -56,6 +56,10 @@ public final class JacksonDomainEventCodec {
     private static final Map<String, Class<? extends DomainEvent>> CLASS_BY_TYPE = TYPE_BY_CLASS.entrySet().stream()
             .collect(Collectors.toUnmodifiableMap(Map.Entry::getValue, Map.Entry::getKey));
 
+    public boolean supports(DomainEvent event) {
+        return event != null && TYPE_BY_CLASS.containsKey(event.getClass());
+    }
+
     public EncodedDomainEvent encode(DomainEvent event) {
         if (event == null) {
             throw new IllegalArgumentException("Domain event must not be null");

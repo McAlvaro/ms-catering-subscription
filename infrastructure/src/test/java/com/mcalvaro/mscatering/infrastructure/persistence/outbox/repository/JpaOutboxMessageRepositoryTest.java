@@ -27,6 +27,9 @@ class JpaOutboxMessageRepositoryTest extends BaseIntegrationTest {
     @Autowired
     private DataSource dataSource;
 
+    @Autowired
+    private SpringDataOutboxMessageRepository springDataRepository;
+
     @Test
     void persistsEveryFieldAndReadsOnlyAvailableUnlockedPendingMessagesInDeterministicOrder() {
         OutboxMessage first = pending("00000000-0000-0000-0000-000000000001", NOW.minusSeconds(30), NOW.minusSeconds(1),
@@ -71,6 +74,21 @@ class JpaOutboxMessageRepositoryTest extends BaseIntegrationTest {
         assertThatNullPointerException().isThrownBy(() -> repository.findPendingAvailable(null, 1));
         assertThatThrownBy(() -> repository.findPendingAvailable(NOW, 0))
                 .hasMessageContaining("Limit must be greater than zero");
+    }
+
+    @Test
+    void rejectsDuplicateIdsWithoutChangingTheOriginalMessageOrCreatingAnotherRow() {
+        OutboxMessage original = pending("00000000-0000-0000-0000-000000000007", NOW, NOW, null, null, 0, null);
+        OutboxMessage replacement = new OutboxMessage(original.id(), "replacement.type", "{\"replacement\":true}",
+                NOW.plusSeconds(1), false, null, 2, "replacement error", NOW.plusSeconds(1), null, null,
+                "replacement-correlation", null, null);
+
+        repository.save(original);
+
+        assertThatThrownBy(() -> repository.save(replacement)).isInstanceOf(RuntimeException.class);
+
+        assertThat(repository.findById(original.id())).contains(original);
+        assertThat(springDataRepository.count()).isEqualTo(1);
     }
 
     @Test

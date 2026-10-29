@@ -8,6 +8,10 @@ import java.util.UUID;
 /** Application port for durable outbox storage. */
 public interface OutboxMessageRepository {
 
+    /**
+     * Inserts a new message. Implementations must reject duplicate message IDs
+     * rather than updating an existing row.
+     */
     void save(OutboxMessage message);
 
     Optional<OutboxMessage> findById(UUID id);

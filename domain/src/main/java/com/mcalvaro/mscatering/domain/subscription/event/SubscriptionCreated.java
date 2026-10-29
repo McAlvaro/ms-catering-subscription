@@ -1,6 +1,6 @@
 package com.mcalvaro.mscatering.domain.subscription.event;
 
-import com.mcalvaro.mscatering.domain.core.DomainEvent;
+import com.mcalvaro.mscatering.domain.core.CorrelatedDomainEvent;
 import com.mcalvaro.mscatering.domain.subscription.vo.ContractCode;
 import com.mcalvaro.mscatering.domain.dietplan.PlanType;
 
@@ -23,7 +23,7 @@ public record SubscriptionCreated(
         int durationDays,
         List<UUID> evaluationIds,
         BigDecimal totalPrice,
-        String correlationId) implements DomainEvent {
+        String correlationId) implements CorrelatedDomainEvent {
 
     public SubscriptionCreated(UUID subscriptionId, UUID patientId, ContractCode contractCode) {
         this(UUID.randomUUID(), Instant.now(), subscriptionId, patientId, contractCode, null, null,

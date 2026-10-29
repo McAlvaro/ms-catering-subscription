@@ -8,6 +8,7 @@ import com.mcalvaro.mscatering.domain.dietplan.PlanType;
 import com.mcalvaro.mscatering.domain.subscription.event.SubscriptionCancelled;
 import com.mcalvaro.mscatering.domain.subscription.event.SubscriptionCompleted;
 import com.mcalvaro.mscatering.domain.subscription.event.SubscriptionCreated;
+import com.mcalvaro.mscatering.domain.subscription.event.DeliveryConfirmed;
 import com.mcalvaro.mscatering.domain.subscription.event.SubscriptionPaused;
 import com.mcalvaro.mscatering.domain.subscription.event.SubscriptionReactivated;
 import com.mcalvaro.mscatering.domain.subscription.vo.ContractCode;
@@ -77,6 +78,20 @@ class JacksonDomainEventCodecTest {
         assertThatIllegalArgumentException().isThrownBy(() -> codec.encode(
                 new UnsupportedEvent(UUID.fromString("00000000-0000-0000-0000-000000000099"), FIXED_INSTANT)))
                 .withMessage("Unsupported domain event class: %s", UnsupportedEvent.class.getName());
+    }
+
+    @ParameterizedTest
+    @MethodSource("registeredEvents")
+    void supportsOnlyEveryRegisteredExactEventClass(String ignoredType, DomainEvent event) {
+        assertThat(codec.supports(event)).isTrue();
+    }
+
+    @Test
+    void doesNotSupportInternalOrNullEvents() {
+        assertThat(codec.supports(new DeliveryConfirmed(
+                UUID.fromString("00000000-0000-0000-0000-000000000002"),
+                UUID.fromString("00000000-0000-0000-0000-000000000003")))).isFalse();
+        assertThat(codec.supports(null)).isFalse();
     }
 
     @Test

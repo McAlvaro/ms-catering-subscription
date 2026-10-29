@@ -3,6 +3,7 @@ package com.mcalvaro.mscatering.infrastructure.persistence.outbox.repository;
 import com.mcalvaro.mscatering.application.outbox.OutboxMessage;
 import com.mcalvaro.mscatering.application.outbox.OutboxMessageRepository;
 import com.mcalvaro.mscatering.infrastructure.persistence.outbox.mapper.OutboxMessageMapper;
+import jakarta.persistence.EntityManager;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
@@ -15,19 +16,21 @@ import java.util.UUID;
 @Repository
 public class JpaOutboxMessageRepository implements OutboxMessageRepository {
 
+    private final EntityManager entityManager;
     private final SpringDataOutboxMessageRepository springDataRepository;
     private final OutboxMessageMapper mapper;
 
-    public JpaOutboxMessageRepository(SpringDataOutboxMessageRepository springDataRepository,
+    public JpaOutboxMessageRepository(EntityManager entityManager, SpringDataOutboxMessageRepository springDataRepository,
             OutboxMessageMapper mapper) {
+        this.entityManager = entityManager;
         this.springDataRepository = springDataRepository;
         this.mapper = mapper;
     }
 
     @Override
     public void save(OutboxMessage message) {
-        springDataRepository
-                .save(mapper.toJpaEntity(Objects.requireNonNull(message, "Outbox message must not be null")));
+        entityManager.persist(mapper.toJpaEntity(Objects.requireNonNull(message, "Outbox message must not be null")));
+        entityManager.flush();
     }
 
     @Override
