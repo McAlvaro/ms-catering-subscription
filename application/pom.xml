@@ -23,6 +23,11 @@
             <artifactId>domain</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.mcalvaro</groupId>
+            <artifactId>integration-contracts</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
         <!-- Mediador de comandos/queries ligero (equivalente a MediatR en .NET) -->
         <dependency>
