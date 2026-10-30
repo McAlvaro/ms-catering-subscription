@@ -5,7 +5,11 @@ import com.mcalvaro.mscatering.domain.consolidatedcalendar.ConsolidatedCalendar;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.IConsolidatedCalendarRepository;
 import com.mcalvaro.mscatering.infrastructure.persistence.consolidatedcalendar.entity.ConsolidatedCalendarJpaEntity;
 import com.mcalvaro.mscatering.infrastructure.persistence.consolidatedcalendar.mapper.ConsolidatedCalendarMapper;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.support.ScopeNotActiveException;
 import org.springframework.stereotype.Repository;
+import org.springframework.web.context.request.RequestContextHolder;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -16,14 +20,15 @@ public class JpaConsolidatedCalendarRepository implements IConsolidatedCalendarR
 
     private final SpringDataConsolidatedCalendarRepository springRepository;
     private final ConsolidatedCalendarMapper mapper;
-    private final DomainEventDispatcher dispatcher;
+    private final ObjectProvider<DomainEventDispatcher> dispatcherProvider;
 
+    @Autowired
     public JpaConsolidatedCalendarRepository(SpringDataConsolidatedCalendarRepository springRepository,
-            ConsolidatedCalendarMapper mapper,
-            DomainEventDispatcher dispatcher) {
+                                            ConsolidatedCalendarMapper mapper,
+                                            ObjectProvider<DomainEventDispatcher> dispatcherProvider) {
         this.springRepository = springRepository;
         this.mapper = mapper;
-        this.dispatcher = dispatcher;
+        this.dispatcherProvider = dispatcherProvider;
     }
 
     @Override
@@ -40,6 +45,20 @@ public class JpaConsolidatedCalendarRepository implements IConsolidatedCalendarR
     public void save(ConsolidatedCalendar calendar) {
         ConsolidatedCalendarJpaEntity jpaEntity = mapper.toJpaEntity(calendar);
         springRepository.save(jpaEntity);
-        dispatcher.register(calendar);
+        registerDomainEventsIfAvailable(calendar);
+    }
+
+    private void registerDomainEventsIfAvailable(ConsolidatedCalendar calendar) {
+        if (dispatcherProvider == null) return;
+        try {
+            if (RequestContextHolder.getRequestAttributes() != null) {
+                DomainEventDispatcher dispatcher = dispatcherProvider.getIfAvailable();
+                if (dispatcher != null) {
+                    dispatcher.register(calendar);
+                }
+            }
+        } catch (ScopeNotActiveException | IllegalStateException ignored) {
+            // Request scope not active on current thread (e.g. Kafka consumer)
+        }
     }
 }

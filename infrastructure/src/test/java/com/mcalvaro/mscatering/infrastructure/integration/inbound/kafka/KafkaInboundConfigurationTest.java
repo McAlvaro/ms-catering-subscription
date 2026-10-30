@@ -1,8 +1,9 @@
 package com.mcalvaro.mscatering.infrastructure.integration.inbound.kafka;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mcalvaro.mscatering.infrastructure.integration.inbound.bc1.address.PatientAddressRegistrationInboundAdapter;
 import com.mcalvaro.mscatering.infrastructure.integration.inbound.bc1.patient.PatientRegistrationInboundAdapter;
 import com.mcalvaro.mscatering.infrastructure.integration.inbound.bc2.dietplan.DietPlanInboundAdapter;
+import com.mcalvaro.mscatering.infrastructure.integration.inbound.bc5.delivery.DeliveryInboundAdapter;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
@@ -22,6 +23,8 @@ class KafkaInboundConfigurationTest {
             assertThat(context).hasNotFailed();
             assertThat(context).doesNotHaveBean(PatientRegistrationKafkaListener.class);
             assertThat(context).doesNotHaveBean(DietPlanKafkaListener.class);
+            assertThat(context).doesNotHaveBean(PatientAddressRegistrationKafkaListener.class);
+            assertThat(context).doesNotHaveBean(DeliveryKafkaListener.class);
         });
     }
 
@@ -31,6 +34,8 @@ class KafkaInboundConfigurationTest {
             assertThat(context).hasNotFailed();
             assertThat(context).doesNotHaveBean(PatientRegistrationKafkaListener.class);
             assertThat(context).doesNotHaveBean(DietPlanKafkaListener.class);
+            assertThat(context).doesNotHaveBean(PatientAddressRegistrationKafkaListener.class);
+            assertThat(context).doesNotHaveBean(DeliveryKafkaListener.class);
         });
     }
 
@@ -50,6 +55,22 @@ class KafkaInboundConfigurationTest {
         });
     }
 
+    @Test
+    void enabledKafkaRegistersPatientAddressRegistrationKafkaListener() {
+        contextRunner.withPropertyValues("app.kafka.enabled=true").run(context -> {
+            assertThat(context).hasNotFailed();
+            assertThat(context).hasSingleBean(PatientAddressRegistrationKafkaListener.class);
+        });
+    }
+
+    @Test
+    void enabledKafkaRegistersDeliveryKafkaListener() {
+        contextRunner.withPropertyValues("app.kafka.enabled=true").run(context -> {
+            assertThat(context).hasNotFailed();
+            assertThat(context).hasSingleBean(DeliveryKafkaListener.class);
+        });
+    }
+
     @Configuration(proxyBeanMethods = false)
     static class InboundDependencies {
         @Bean
@@ -60,6 +81,16 @@ class KafkaInboundConfigurationTest {
         @Bean
         DietPlanInboundAdapter dietPlanInboundAdapter() {
             return mock(DietPlanInboundAdapter.class);
+        }
+
+        @Bean
+        PatientAddressRegistrationInboundAdapter patientAddressRegistrationInboundAdapter() {
+            return mock(PatientAddressRegistrationInboundAdapter.class);
+        }
+
+        @Bean
+        DeliveryInboundAdapter deliveryInboundAdapter() {
+            return mock(DeliveryInboundAdapter.class);
         }
     }
 }

@@ -91,9 +91,13 @@ app:
     topics:
       patient-registered: ${KAFKA_PATIENT_TOPIC:bc1.pacientes.eventos}
       diet-plan: ${KAFKA_PLAN_TOPIC:bc2.planes.eventos}
+      address-registered: ${KAFKA_ADDRESS_TOPIC:bc1.pacientes.eventos}
+      delivery: ${KAFKA_DELIVERY_TOPIC:bc5.logistica.eventos}
     consumer:
       group-id: ${KAFKA_PATIENT_GROUP_ID:ms-catering-bc1-patient-consumer}
       diet-plan-group-id: ${KAFKA_PLAN_GROUP_ID:ms-catering-bc2-plan-consumer}
+      address-group-id: ${KAFKA_ADDRESS_GROUP_ID:ms-catering-bc1-address-consumer}
+      delivery-group-id: ${KAFKA_DELIVERY_GROUP_ID:ms-catering-bc5-delivery-consumer}
 
 outbox:
   provider: ${OUTBOX_PROVIDER:kafka}
