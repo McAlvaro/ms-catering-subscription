@@ -9,6 +9,7 @@ WORKDIR /build
 
 COPY pom.xml .
 COPY domain/pom.xml         domain/pom.xml
+COPY integration-contracts/pom.xml integration-contracts/pom.xml
 COPY application/pom.xml    application/pom.xml
 COPY infrastructure/pom.xml infrastructure/pom.xml
 
@@ -22,13 +23,14 @@ FROM dependency-cache AS builder
 
 # Copiar el código fuente completo.
 COPY domain/src         domain/src
+COPY integration-contracts/src integration-contracts/src
 COPY application/src    application/src
 COPY infrastructure/src infrastructure/src
 
 # Compilar y empaquetar.
 # -pl infrastructure = compilar solo el módulo que genera el JAR ejecutable.
 # -am -> compila también los módulos de los que depende
-#       (domain y application).
+#       (domain, integration-contracts y application).
 RUN mvn package -pl infrastructure -am -B -e -DskipTests
 
 
