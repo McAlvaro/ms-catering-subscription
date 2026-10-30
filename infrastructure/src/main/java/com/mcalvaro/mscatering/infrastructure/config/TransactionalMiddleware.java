@@ -4,6 +4,8 @@ import an.awesome.pipelinr.Command;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.support.ScopeNotActiveException;
+import org.springframework.web.context.request.RequestContextHolder;
 
 import com.mcalvaro.mscatering.application.abstractions.DomainEventDispatcher;
 
@@ -30,8 +32,21 @@ public class TransactionalMiddleware implements Command.Middleware {
 
         R result = next.invoke();
 
-        dispatcherProvider.getObject().dispatch();
+        dispatchDomainEventsIfAvailable();
 
         return result;
+    }
+
+    private void dispatchDomainEventsIfAvailable() {
+        if (RequestContextHolder.getRequestAttributes() != null) {
+            try {
+                DomainEventDispatcher dispatcher = dispatcherProvider.getIfAvailable();
+                if (dispatcher != null) {
+                    dispatcher.dispatch();
+                }
+            } catch (ScopeNotActiveException | IllegalStateException ignored) {
+                // Request scope is not active or available for current thread
+            }
+        }
     }
 }

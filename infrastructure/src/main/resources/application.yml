@@ -14,6 +14,11 @@ spring:
       properties:
         "[enable.idempotence]": true
         "[max.block.ms]": 5000
+    consumer:
+      group-id: ${KAFKA_PATIENT_GROUP_ID:ms-catering-bc1-patient-consumer}
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
 
   # ── MySQL ──────────────────────────────────────────────────────────
   datasource:
@@ -83,6 +88,12 @@ app:
   kafka:
     enabled: ${KAFKA_ENABLED:false}
     topic: bc3.catering.eventos
+    topics:
+      patient-registered: ${KAFKA_PATIENT_TOPIC:bc1.pacientes.eventos}
+      diet-plan: ${KAFKA_PLAN_TOPIC:bc2.planes.eventos}
+    consumer:
+      group-id: ${KAFKA_PATIENT_GROUP_ID:ms-catering-bc1-patient-consumer}
+      diet-plan-group-id: ${KAFKA_PLAN_GROUP_ID:ms-catering-bc2-plan-consumer}
 
 outbox:
   provider: ${OUTBOX_PROVIDER:kafka}
