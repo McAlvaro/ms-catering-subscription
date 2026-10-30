@@ -5,6 +5,16 @@ spring:
   application:
     name: ms-catering-subscription
 
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      acks: all
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      properties:
+        "[enable.idempotence]": true
+        "[max.block.ms]": 5000
+
   # ── MySQL ──────────────────────────────────────────────────────────
   datasource:
     url: jdbc:mysql://127.0.0.1:3325/ms_catering_subscription?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
@@ -69,9 +79,14 @@ management:
     health:
       show-details: never # "always" útil en dev, "never" seguro en prod
 
+app:
+  kafka:
+    enabled: ${KAFKA_ENABLED:false}
+    topic: bc3.catering.eventos
+
 outbox:
-  provider: none
-  relay-enabled: false
+  provider: ${OUTBOX_PROVIDER:kafka}
+  relay-enabled: "${OUTBOX_RELAY_ENABLED:${KAFKA_ENABLED:false}}"
   poll-interval: 5s
   batch-size: 20
   lease-duration: 1m

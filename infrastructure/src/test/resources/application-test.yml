@@ -42,3 +42,12 @@ management:
   health:
     consul:
       enabled: false
+
+app:
+  kafka:
+    enabled: false
+    topic: bc3.catering.eventos
+
+outbox:
+  provider: none
+  relay-enabled: false
