@@ -17,4 +17,10 @@ public interface OutboxMessageRepository {
     Optional<OutboxMessage> findById(UUID id);
 
     List<OutboxMessage> findPendingAvailable(Instant now, int limit);
+
+    Optional<OutboxMessage> tryClaim(UUID id, Instant now, Instant leaseUntil, String lockToken);
+
+    boolean markProcessedIfOwned(UUID id, String lockToken, Instant processedOn);
+
+    boolean rescheduleAfterFailureIfOwned(UUID id, String lockToken, Instant availableAt, String lastError);
 }

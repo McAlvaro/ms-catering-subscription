@@ -68,3 +68,12 @@ management:
   endpoint:
     health:
       show-details: never # "always" útil en dev, "never" seguro en prod
+
+outbox:
+  provider: none
+  relay-enabled: false
+  poll-interval: 5s
+  batch-size: 20
+  lease-duration: 1m
+  initial-backoff: 5s
+  max-backoff: 5m
