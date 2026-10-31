@@ -42,11 +42,11 @@ public class DietPlanInboundAdapter {
                 || (type == PlanType.PERSONALIZED && (blank(data.basePlanId()) || blank(data.patientId()) || blank(data.changeDescription())))) invalid();
     }
     private DietPlanDay day(DietPlanDayData day) {
-        if (day == null || day.id() == null || day.mealCount() <= 0 || day.meals() == null) invalid();
+        if (day == null || blank(day.id()) || day.mealCount() <= 0 || day.meals() == null) invalid();
         return new DietPlanDay(day.id(), day.dayNumber(), day.mealCount(), day.meals().stream().map(this::meal).toList());
     }
     private DietPlanMeal meal(DietPlanMealData meal) {
-        if (meal == null || meal.id() == null || meal.type() == null || meal.time() == null || !meal.time().matches("(?:[01]\\d|2[0-3]):[0-5]\\d") || meal.recipes() == null) invalid();
+        if (meal == null || blank(meal.id()) || meal.time() == null || !meal.time().matches("(?:[01]\\d|2[0-3]):[0-5]\\d") || meal.recipes() == null) invalid();
         return new DietPlanMeal(meal.id(), meal.type(), LocalTime.parse(meal.time()), meal.recipes().stream().map(this::recipe).toList());
     }
     private DietPlanRecipe recipe(DietPlanRecipeData recipe) {
@@ -55,7 +55,21 @@ public class DietPlanInboundAdapter {
     }
     private String fingerprint(DietPlanData data, PlanType type) {
         List<String> values = new ArrayList<>(List.of(type.name(), String.valueOf(data.id()), String.valueOf(data.status()), data.effectiveStart().toString(), String.valueOf(data.durationDays()), String.valueOf(data.active()), String.valueOf(data.basePlanId()), String.valueOf(data.patientId()), String.valueOf(data.changeDescription())));
-        data.days().stream().sorted(Comparator.comparingInt(DietPlanDayData::dayNumber)).forEach(day -> { values.add(day.id().toString()); values.add(String.valueOf(day.dayNumber())); values.add(String.valueOf(day.mealCount())); day.meals().stream().sorted(Comparator.comparing(DietPlanMealData::time)).forEach(meal -> { values.add(meal.id().toString()); values.add(meal.type().name()); values.add(meal.time()); meal.recipes().stream().sorted(Comparator.comparing(recipe -> String.valueOf(recipe.recipeId()))).forEach(recipe -> { values.add(String.valueOf(recipe.recipeId())); values.add(recipe.name()); values.add(String.valueOf(recipe.portionGrams())); }); }); });
+        data.days().stream().sorted(Comparator.comparingInt(DietPlanDayData::dayNumber)).forEach(day -> {
+            values.add(day.id());
+            values.add(String.valueOf(day.dayNumber()));
+            values.add(String.valueOf(day.mealCount()));
+            day.meals().stream().sorted(Comparator.comparing(DietPlanMealData::time)).forEach(meal -> {
+                values.add(meal.id());
+                if (meal.type() != null) values.add(meal.type().name());
+                values.add(meal.time());
+                meal.recipes().stream().sorted(Comparator.comparing(recipe -> String.valueOf(recipe.recipeId()))).forEach(recipe -> {
+                    values.add(String.valueOf(recipe.recipeId()));
+                    values.add(recipe.name());
+                    values.add(String.valueOf(recipe.portionGrams()));
+                });
+            });
+        });
         return sha256(values.toArray(String[]::new));
     }
     private boolean blank(String value) { return value == null || value.isBlank(); }
@@ -67,9 +81,9 @@ public class DietPlanInboundAdapter {
     public record DietPlanData(String id, @JsonProperty("estadoPlan") String status, @JsonProperty("fechaInicioVigencia") java.time.LocalDate effectiveStart,
             @JsonProperty("duracionDias") int durationDays, @JsonProperty("activo") boolean active, @JsonProperty("dias") List<DietPlanDayData> days,
             @JsonProperty("idPlanBase") String basePlanId, @JsonProperty("idPaciente") String patientId, @JsonProperty("descripcionCambios") String changeDescription) { }
-    public record DietPlanDayData(UUID id, @JsonProperty("numOrden") int dayNumber, @JsonProperty("nroTiemposComida") int mealCount,
+    public record DietPlanDayData(String id, @JsonProperty("numOrden") int dayNumber, @JsonProperty("nroTiemposComida") int mealCount,
             @JsonProperty("tiemposDeComida") List<DietPlanMealData> meals) { }
-    public record DietPlanMealData(UUID id, @JsonProperty("tipoComida") MealType type, @JsonProperty("hora") String time, @JsonProperty("recetas") List<DietPlanRecipeData> recipes) {
+    public record DietPlanMealData(String id, @JsonProperty("tipoComida") MealType type, @JsonProperty("hora") String time, @JsonProperty("recetas") List<DietPlanRecipeData> recipes) {
     }
     public record DietPlanRecipeData(@JsonProperty("idReceta") String recipeId, @JsonProperty("nombre") String name, @JsonProperty("porcionGramos") int portionGrams) { }
 }

@@ -33,15 +33,39 @@ class DietPlanInboundAdapterTest {
         var first = event.data().days().get(0);
         var invalid = new DietPlanInboundAdapter.DietPlanCreatedEvent(event.eventId(), event.eventName(), event.eventVersion(), event.occurredOn(), event.source(), event.correlationId(),
                 new DietPlanInboundAdapter.DietPlanData(event.data().id(), event.data().status(), event.data().effectiveStart(), event.data().durationDays(), event.data().active(),
-                         List.of(new DietPlanInboundAdapter.DietPlanDayData(first.id(), 1, 1, List.of(new DietPlanInboundAdapter.DietPlanMealData(UUID.randomUUID(), com.mcalvaro.mscatering.domain.dietplan.MealType.BREAKFAST, "8:00", first.meals().get(0).recipes())))), null, null, null));
+                         List.of(new DietPlanInboundAdapter.DietPlanDayData(first.id(), 1, 1, List.of(new DietPlanInboundAdapter.DietPlanMealData(UUID.randomUUID().toString(), com.mcalvaro.mscatering.domain.dietplan.MealType.BREAKFAST, "8:00", first.meals().get(0).recipes())))), null, null, null));
         assertThatThrownBy(() -> adapter.receiveBase(invalid)).isInstanceOf(DomainException.class).hasFieldOrPropertyWithValue("code", "PROJ-001");
     }
+
+    @Test
+    void mapsCanonicalPlanWithoutTipoComidaAndWithStringIds() {
+        DietPlanInboundAdapter.DietPlanCreatedEvent event = new DietPlanInboundAdapter.DietPlanCreatedEvent(
+                UUID.randomUUID(), "bc2.PlanBaseCreado", "1.0", Instant.now(), "MSNutritionPlanner", "test-gary-canonical",
+                new DietPlanInboundAdapter.DietPlanData("PLAN-2001", "ACTIVO", LocalDate.of(2026, 11, 1), 1, true,
+                        List.of(new DietPlanInboundAdapter.DietPlanDayData("DIA-3001", 1, 1,
+                                List.of(new DietPlanInboundAdapter.DietPlanMealData("TC-9001", null, "08:00",
+                                        List.of(new DietPlanInboundAdapter.DietPlanRecipeData("REC-5001", "Avena con manzana", 250)))))),
+                        null, null, null));
+
+        adapter.receiveBase(event);
+
+        var captured = org.mockito.ArgumentCaptor.forClass(SynchronizeDietPlanCommand.class);
+        verify(pipeline).send(captured.capture());
+        var plan = captured.getValue().plan();
+        assertThat(plan.id().value()).isEqualTo("PLAN-2001");
+        assertThat(plan.days().get(0).id()).isEqualTo("DIA-3001");
+        var meal = plan.days().get(0).meals().get(0);
+        assertThat(meal.id()).isEqualTo("TC-9001");
+        assertThat(meal.type()).isNull();
+        assertThat(captured.getValue().payloadFingerprint()).hasSize(64);
+    }
+
     private DietPlanInboundAdapter.DietPlanCreatedEvent event(String name, boolean personalized) {
         String patient = "PAC-" + UUID.randomUUID();
         String basePlanId = "PLAN-" + UUID.randomUUID();
         return new DietPlanInboundAdapter.DietPlanCreatedEvent(UUID.randomUUID(), name, "1.0", Instant.now(), "MSNutritionPlanner", "test-correlation",
                 new DietPlanInboundAdapter.DietPlanData("PLAN-" + UUID.randomUUID(), "ACTIVO", LocalDate.of(2026, 1, 1), 1, true,
-                         List.of(new DietPlanInboundAdapter.DietPlanDayData(UUID.randomUUID(), 1, 1, List.of(new DietPlanInboundAdapter.DietPlanMealData(UUID.randomUUID(), com.mcalvaro.mscatering.domain.dietplan.MealType.BREAKFAST, "08:00", List.of(new DietPlanInboundAdapter.DietPlanRecipeData("REC-" + UUID.randomUUID(), "Breakfast", 100)))))),
+                         List.of(new DietPlanInboundAdapter.DietPlanDayData(UUID.randomUUID().toString(), 1, 1, List.of(new DietPlanInboundAdapter.DietPlanMealData(UUID.randomUUID().toString(), com.mcalvaro.mscatering.domain.dietplan.MealType.BREAKFAST, "08:00", List.of(new DietPlanInboundAdapter.DietPlanRecipeData("REC-" + UUID.randomUUID(), "Breakfast", 100)))))),
                         personalized ? basePlanId : null, personalized ? patient : null, personalized ? "Changed portions" : null));
     }
 }

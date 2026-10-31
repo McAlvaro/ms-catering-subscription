@@ -38,19 +38,43 @@ class DietPlanProjectionTest {
     @Test
     void rejectsMealsScheduledAtTheSameTimeOnOneDay() {
         LocalTime breakfastTime = LocalTime.of(8, 0);
-        DietPlanMeal breakfast = new DietPlanMeal(UUID.randomUUID(), MealType.BREAKFAST, breakfastTime,
+        DietPlanMeal breakfast = new DietPlanMeal(UUID.randomUUID().toString(), MealType.BREAKFAST, breakfastTime,
                 List.of(new DietPlanRecipe(RecipeId.generate(), "Breakfast", 250)));
-        DietPlanMeal duplicateBreakfast = new DietPlanMeal(UUID.randomUUID(), MealType.BREAKFAST, breakfastTime,
+        DietPlanMeal duplicateBreakfast = new DietPlanMeal(UUID.randomUUID().toString(), MealType.BREAKFAST, breakfastTime,
                 List.of(new DietPlanRecipe(RecipeId.generate(), "Second breakfast", 200)));
 
-        assertThatThrownBy(() -> new DietPlanDay(UUID.randomUUID(), 1, 2, List.of(breakfast, duplicateBreakfast)))
+        assertThatThrownBy(() -> new DietPlanDay(UUID.randomUUID().toString(), 1, 2, List.of(breakfast, duplicateBreakfast)))
                 .isInstanceOf(DomainException.class)
                 .hasFieldOrPropertyWithValue("code", "PROJ-001");
     }
 
+    @Test
+    void allowsStringIdsAndNullableMealType() {
+        DietPlanMeal meal = new DietPlanMeal("TC-9001", LocalTime.of(8, 0),
+                List.of(new DietPlanRecipe(RecipeId.generate(), "Avena", 250)));
+        assertThat(meal.id()).isEqualTo("TC-9001");
+        assertThat(meal.type()).isNull();
+
+        DietPlanDay day = new DietPlanDay("DIA-3001", 1, 1, List.of(meal));
+        assertThat(day.id()).isEqualTo("DIA-3001");
+        assertThat(day.meals()).hasSize(1);
+    }
+
+    @Test
+    void rejectsBlankIds() {
+        assertThatThrownBy(() -> new DietPlanMeal("  ", LocalTime.of(8, 0),
+                List.of(new DietPlanRecipe(RecipeId.generate(), "Avena", 250))))
+                .isInstanceOf(DomainException.class);
+
+        DietPlanMeal validMeal = new DietPlanMeal("TC-1", LocalTime.of(8, 0),
+                List.of(new DietPlanRecipe(RecipeId.generate(), "Avena", 250)));
+        assertThatThrownBy(() -> new DietPlanDay("", 1, 1, List.of(validMeal)))
+                .isInstanceOf(DomainException.class);
+    }
+
     private DietPlanDay day(int number) {
-        return new DietPlanDay(UUID.randomUUID(), number, 1,
-                List.of(new DietPlanMeal(UUID.randomUUID(), MealType.BREAKFAST, LocalTime.of(8, 0),
+        return new DietPlanDay(UUID.randomUUID().toString(), number, 1,
+                List.of(new DietPlanMeal(UUID.randomUUID().toString(), MealType.BREAKFAST, LocalTime.of(8, 0),
                         List.of(new DietPlanRecipe(RecipeId.generate(), "Breakfast", 250)))));
     }
 }

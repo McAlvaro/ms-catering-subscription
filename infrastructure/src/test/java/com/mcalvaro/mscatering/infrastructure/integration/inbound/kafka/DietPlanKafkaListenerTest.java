@@ -151,13 +151,13 @@ class DietPlanKafkaListenerTest {
         assertThat(data.days()).hasSize(1);
 
         DietPlanInboundAdapter.DietPlanDayData day = data.days().get(0);
-        assertThat(day.id()).isEqualTo(UUID.fromString("33333333-3333-3333-3333-333333333333"));
+        assertThat(day.id()).isEqualTo("33333333-3333-3333-3333-333333333333");
         assertThat(day.dayNumber()).isEqualTo(1);
         assertThat(day.mealCount()).isEqualTo(1);
         assertThat(day.meals()).hasSize(1);
 
         DietPlanInboundAdapter.DietPlanMealData meal = day.meals().get(0);
-        assertThat(meal.id()).isEqualTo(UUID.fromString("44444444-4444-4444-4444-444444444444"));
+        assertThat(meal.id()).isEqualTo("44444444-4444-4444-4444-444444444444");
         assertThat(meal.type()).isEqualTo(MealType.BREAKFAST);
         assertThat(meal.time()).isEqualTo("08:00");
         assertThat(meal.recipes()).hasSize(1);
@@ -342,5 +342,62 @@ class DietPlanKafkaListenerTest {
 
         assertThatCode(() -> customListener.onMessage(jsonWithUnknownFields)).doesNotThrowAnyException();
         verify(inboundAdapter).receiveBase(any());
+    }
+
+    @Test
+    @DisplayName("Consumes canonical PlanBaseCreado without tipoComida and with string IDs DIA-3001 and TC-9001")
+    void consumesCanonicalGaryPlanJsonWithoutTipoComidaAndWithStringIds() {
+        String canonicalGaryJson = """
+                {
+                  "eventId": "11111111-1111-1111-1111-111111111111",
+                  "eventName": "bc2.PlanBaseCreado",
+                  "eventVersion": "1.0",
+                  "occurredOn": "2026-10-27T12:00:00Z",
+                  "source": "MSNutritionPlanner",
+                  "correlationId": "corr-bc2-001",
+                  "data": {
+                    "id": "PLAN-2001",
+                    "estadoPlan": "ACTIVO",
+                    "fechaInicioVigencia": "2026-11-01",
+                    "duracionDias": 1,
+                    "activo": true,
+                    "dias": [
+                      {
+                        "id": "DIA-3001",
+                        "numOrden": 1,
+                        "nroTiemposComida": 1,
+                        "tiemposDeComida": [
+                          {
+                            "id": "TC-9001",
+                            "hora": "08:00",
+                            "recetas": [
+                              {
+                                "idReceta": "REC-5001",
+                                "nombre": "Avena con manzana",
+                                "porcionGramos": 250
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+                """;
+
+        assertThatCode(() -> listener.onMessage(canonicalGaryJson)).doesNotThrowAnyException();
+
+        ArgumentCaptor<DietPlanInboundAdapter.DietPlanCreatedEvent> captor =
+                ArgumentCaptor.forClass(DietPlanInboundAdapter.DietPlanCreatedEvent.class);
+        verify(inboundAdapter).receiveBase(captor.capture());
+
+        DietPlanInboundAdapter.DietPlanCreatedEvent event = captor.getValue();
+        DietPlanInboundAdapter.DietPlanData data = event.data();
+        assertThat(data.id()).isEqualTo("PLAN-2001");
+        DietPlanInboundAdapter.DietPlanDayData day = data.days().get(0);
+        assertThat(day.id()).isEqualTo("DIA-3001");
+        DietPlanInboundAdapter.DietPlanMealData meal = day.meals().get(0);
+        assertThat(meal.id()).isEqualTo("TC-9001");
+        assertThat(meal.type()).isNull();
     }
 }

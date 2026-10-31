@@ -7,6 +7,7 @@ import com.mcalvaro.mscatering.integration.contracts.IntegrationEvent;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.kafka.core.KafkaTemplate;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
@@ -36,6 +37,7 @@ public final class KafkaIntegrationEventPublisher implements IntegrationEventPub
         KafkaIntegrationEventRouter.Route route = router.route(event);
         String json = serialize(event);
         ProducerRecord<String, String> record = new ProducerRecord<>(route.topic(), route.key(), json);
+        record.headers().add("eventName", event.eventName().getBytes(StandardCharsets.UTF_8));
         try {
             kafkaTemplate.send(record).get(acknowledgementTimeout.toMillis(), TimeUnit.MILLISECONDS);
         } catch (ExecutionException exception) {

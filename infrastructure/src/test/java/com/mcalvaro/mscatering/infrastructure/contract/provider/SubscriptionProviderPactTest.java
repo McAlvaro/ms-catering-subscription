@@ -194,8 +194,8 @@ class SubscriptionProviderPactTest {
                     "bc2.PlanBaseCreado", "1.0", Instant.now(), "MSNutritionPlanner", "pact-plan-" + UUID.randomUUID(),
                     new DietPlanInboundAdapter.DietPlanData(planId, "ACTIVO", start, 15, true,
                             java.util.stream.IntStream.rangeClosed(1, 15).mapToObj(day ->
-                                    new DietPlanInboundAdapter.DietPlanDayData(UUID.randomUUID(), day, 1,
-                                            List.of(new DietPlanInboundAdapter.DietPlanMealData(UUID.randomUUID(), com.mcalvaro.mscatering.domain.dietplan.MealType.LUNCH, "12:00",
+                                    new DietPlanInboundAdapter.DietPlanDayData(UUID.randomUUID().toString(), day, 1,
+                                            List.of(new DietPlanInboundAdapter.DietPlanMealData(UUID.randomUUID().toString(), com.mcalvaro.mscatering.domain.dietplan.MealType.LUNCH, "12:00",
                                                     List.of(new DietPlanInboundAdapter.DietPlanRecipeData("REC-" + UUID.randomUUID(), "Pact recipe", 100)))))).toList(),
                             null, null, null)));
         } finally {

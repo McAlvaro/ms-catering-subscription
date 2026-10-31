@@ -35,12 +35,12 @@ public class DietPlanProjectionMapper {
                 entity.getEffectiveStart(),
                 entity.getDurationDays(),
                 entity.getDays().stream().map(day -> new DietPlanDay(
-                        UUID.fromString(day.getId()),
+                        day.getId(),
                         day.getDayNumber(),
                         day.getMealCount(),
                         day.getMeals().stream().map(meal -> new DietPlanMeal(
-                                UUID.fromString(meal.getId()),
-                                MealType.valueOf(meal.getMealType()),
+                                meal.getId(),
+                                meal.getMealType() != null ? MealType.valueOf(meal.getMealType()) : null,
                                 LocalTime.parse(meal.getMealTime()),
                                 meal.getRecipes().stream().map(recipe -> new DietPlanRecipe(
                                         RecipeId.of(recipe.getRecipeId()),
@@ -54,7 +54,7 @@ public class DietPlanProjectionMapper {
 
     private DietPlanDayJpaEntity day(DietPlanDay day) {
         DietPlanDayJpaEntity entity = new DietPlanDayJpaEntity();
-        entity.setId(day.id().toString());
+        entity.setId(day.id());
         entity.setDayNumber(day.dayNumber());
         entity.setMealCount(day.mealCount());
         entity.setMeals(day.meals().stream().map(this::meal).toList());
@@ -63,8 +63,8 @@ public class DietPlanProjectionMapper {
 
     private DietPlanMealJpaEntity meal(DietPlanMeal meal) {
         DietPlanMealJpaEntity entity = new DietPlanMealJpaEntity();
-        entity.setId(meal.id().toString());
-        entity.setMealType(meal.type().name());
+        entity.setId(meal.id());
+        entity.setMealType(meal.type() != null ? meal.type().name() : "LUNCH");
         entity.setMealTime(meal.time().toString());
         entity.setRecipes(meal.recipes().stream().map(this::recipe).toList());
         return entity;

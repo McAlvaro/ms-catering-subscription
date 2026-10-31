@@ -28,7 +28,7 @@
     "occurredOn": {
       "type": "string",
       "format": "date-time",
-      "pattern": "Z$"
+      "pattern": "(Z|[-+]\\d{2}:\\d{2})$"
     },
     "source": {
       "const": "MsCateringSubscription"

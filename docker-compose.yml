@@ -79,7 +79,7 @@ services:
       EUREKA_PREFER_IP_ADDRESS: ${EUREKA_PREFER_IP_ADDRESS:-true}
       KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-localhost:9092}
       KAFKA_PATIENT_TOPIC: ${KAFKA_PATIENT_TOPIC:-bc1.pacientes.eventos}
-      KAFKA_PLAN_TOPIC: ${KAFKA_PLAN_TOPIC:-bc2.planes.eventos}
+      KAFKA_PLAN_TOPIC: ${KAFKA_PLAN_TOPIC:-bc2.nutricion.eventos}
       KAFKA_DELIVERY_TOPIC: ${KAFKA_DELIVERY_TOPIC:-bc5.logistica.eventos}
 
     ports:

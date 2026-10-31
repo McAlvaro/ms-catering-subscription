@@ -23,6 +23,7 @@ public interface IntegrationEvent {
     }
 
     @JsonProperty("occurredOn")
+    @com.fasterxml.jackson.annotation.JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ssXXX", timezone = "America/La_Paz")
     Instant occurredOn();
 
     @JsonProperty("source")

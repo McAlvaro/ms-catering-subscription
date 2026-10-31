@@ -21,8 +21,8 @@ public class DietPlanProjectionFixture {
     private DietPlanInboundAdapter.DietPlanCreatedEvent event(String id, LocalDate start, int duration) {
         return new DietPlanInboundAdapter.DietPlanCreatedEvent(UUID.randomUUID(), "bc2.PlanBaseCreado", "1.0", Instant.now(), "MSNutritionPlanner", "test-plan-" + UUID.randomUUID(),
                 new DietPlanInboundAdapter.DietPlanData(id, "ACTIVO", start, duration, true,
-                        IntStream.rangeClosed(1, duration).mapToObj(day -> new DietPlanInboundAdapter.DietPlanDayData(UUID.randomUUID(), day, 1,
-                                List.of(new DietPlanInboundAdapter.DietPlanMealData(UUID.randomUUID(), com.mcalvaro.mscatering.domain.dietplan.MealType.LUNCH, "12:00", List.of(new DietPlanInboundAdapter.DietPlanRecipeData("REC-" + UUID.randomUUID(), "Test recipe", 100)))))).toList(),
+                        IntStream.rangeClosed(1, duration).mapToObj(day -> new DietPlanInboundAdapter.DietPlanDayData(UUID.randomUUID().toString(), day, 1,
+                                List.of(new DietPlanInboundAdapter.DietPlanMealData(UUID.randomUUID().toString(), com.mcalvaro.mscatering.domain.dietplan.MealType.LUNCH, "12:00", List.of(new DietPlanInboundAdapter.DietPlanRecipeData("REC-" + UUID.randomUUID(), "Test recipe", 100)))))).toList(),
                         null, null, null));
     }
 }

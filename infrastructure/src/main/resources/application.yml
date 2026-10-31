@@ -83,7 +83,7 @@ app:
     topic: bc3.catering.eventos
     topics:
       patient-registered: ${KAFKA_PATIENT_TOPIC:bc1.pacientes.eventos}
-      diet-plan: ${KAFKA_PLAN_TOPIC:bc2.planes.eventos}
+      diet-plan: ${KAFKA_PLAN_TOPIC:bc2.nutricion.eventos}
       address-registered: ${KAFKA_ADDRESS_TOPIC:bc1.pacientes.eventos}
       delivery: ${KAFKA_DELIVERY_TOPIC:bc5.logistica.eventos}
     consumer:

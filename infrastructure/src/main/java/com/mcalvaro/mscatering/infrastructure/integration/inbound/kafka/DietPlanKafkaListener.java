@@ -39,7 +39,7 @@ public class DietPlanKafkaListener {
     }
 
     @KafkaListener(
-            topics = "${app.kafka.topics.diet-plan:bc2.planes.eventos}",
+            topics = "${app.kafka.topics.diet-plan:bc2.nutricion.eventos}",
             groupId = "${app.kafka.consumer.diet-plan-group-id:ms-catering-bc2-plan-consumer}"
     )
     public void onMessage(String payload) {

@@ -13,6 +13,7 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -41,7 +42,7 @@ class KafkaIntegrationEventPublisherTest {
     }
 
     @Test
-    void waitsForAcknowledgementAndSendsTheCompleteHeaderlessContractJson() throws Exception {
+    void waitsForAcknowledgementAndSendsTheCompleteContractJsonWithEventNameHeader() throws Exception {
         when(kafkaTemplate.send(any(ProducerRecord.class))).thenReturn(CompletableFuture.completedFuture(mock(SendResult.class)));
 
         publisher.publish(KafkaIntegrationEventFixtures.created());
@@ -51,7 +52,9 @@ class KafkaIntegrationEventPublisherTest {
         ProducerRecord<String, String> record = records.getValue();
         assertThat(record.topic()).isEqualTo("bc3.catering.eventos");
         assertThat(record.key()).isEqualTo(KafkaIntegrationEventFixtures.SUBSCRIPTION_ID);
-        assertThat(record.headers()).isEmpty();
+        assertThat(record.headers().lastHeader("eventName")).isNotNull();
+        assertThat(new String(record.headers().lastHeader("eventName").value(), StandardCharsets.UTF_8))
+                .isEqualTo(KafkaIntegrationEventFixtures.created().eventName());
         JsonNode json = mapper.readTree(record.value());
         assertThat(json.has("eventId")).isTrue();
         assertThat(json.has("eventName")).isTrue();
