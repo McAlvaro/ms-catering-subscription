@@ -4,7 +4,7 @@
 # PRE-REQUISITOS:
 #   - Docker Engine >= 24 y Docker Compose V2 instalados
 #   - Imagen de la app disponible (local o en Docker Hub):
-#       alv641/ms-catering-subscription:1.0.2
+#       alv641/ms-catering-subscription:1.1.1
 #
 # USO:
 #   1. Copiar el archivo de variables de entorno:
@@ -60,7 +60,7 @@ services:
       start_period: 30s
 
   app:
-    image: ${APP_IMAGE:-alv641/ms-catering-subscription:1.1.0}
+    image: ${APP_IMAGE:-alv641/ms-catering-subscription:1.1.1}
     container_name: ms-catering-app
     restart: unless-stopped
 

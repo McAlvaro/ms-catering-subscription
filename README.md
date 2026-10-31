@@ -108,8 +108,9 @@ A continuación se presentan los diagramas de clases del modelo de dominio. Dich
 
 | Tag      | Estado      | URL                                                      | Descripción |
 | :------- | :---------- | :------------------------------------------------------- | :---------- |
-| `1.1.0`  | **Nueva**   | https://hub.docker.com/r/alv641/ms-catering-subscription | Netflix Eureka Client, Kafka Consumers/Producers e IDs compactos (8 chars). |
-| `latest` | **Actual**  | https://hub.docker.com/r/alv641/ms-catering-subscription | Apunta a la última versión estable (`1.1.0`). |
+| `1.1.1`  | **Nueva**   | https://hub.docker.com/r/alv641/ms-catering-subscription | Alineación de contrato BC2 (IDs String, tipoComida opcional, topic bc2.nutricion.eventos), cabecera eventName y timestamp con offset -04:00. |
+| `latest` | **Actual**  | https://hub.docker.com/r/alv641/ms-catering-subscription | Apunta a la última versión estable (`1.1.1`). |
+| `1.1.0`  | Estable     | https://hub.docker.com/r/alv641/ms-catering-subscription | Netflix Eureka Client, Kafka Consumers/Producers e IDs compactos (8 chars). |
 | `1.0.2`  | Anterior    | https://hub.docker.com/r/alv641/ms-catering-subscription | Versión inicial monolítica con base de datos MySQL. |
 
 Para descargar la última versión:
