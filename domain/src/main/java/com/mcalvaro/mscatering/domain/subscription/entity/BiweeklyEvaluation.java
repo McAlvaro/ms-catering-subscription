@@ -1,25 +1,26 @@
 package com.mcalvaro.mscatering.domain.subscription.entity;
 
 import com.mcalvaro.mscatering.domain.core.Entity;
+import com.mcalvaro.mscatering.domain.core.id.EvaluationId;
+import com.mcalvaro.mscatering.domain.core.id.PatientId;
 import com.mcalvaro.mscatering.domain.subscription.enums.EvaluationStatus;
 
 import java.time.LocalDate;
-import java.util.UUID;
 
 /**
  * Entity representing a bi-weekly body evaluation appointment
  * (EvaluacionQuincenal). Automatically generated when a subscription
  * is created: 1 evaluation for 15-day plans, 2 for 30-day plans.
  */
-public class BiweeklyEvaluation extends Entity {
+public class BiweeklyEvaluation extends Entity<EvaluationId> {
 
-    private final UUID patientId;
+    private final PatientId patientId;
     private final int evaluationNumber;
     private final LocalDate scheduledDate;
     private EvaluationStatus status;
     private LocalDate completedDate;
 
-    public BiweeklyEvaluation(UUID id, UUID patientId, int evaluationNumber,
+    public BiweeklyEvaluation(EvaluationId id, PatientId patientId, int evaluationNumber,
             LocalDate scheduledDate) {
         super(id);
         this.patientId = patientId;
@@ -37,7 +38,7 @@ public class BiweeklyEvaluation extends Entity {
         this.status = EvaluationStatus.CANCELLED;
     }
 
-    public UUID getPatientId() {
+    public PatientId getPatientId() {
         return patientId;
     }
 

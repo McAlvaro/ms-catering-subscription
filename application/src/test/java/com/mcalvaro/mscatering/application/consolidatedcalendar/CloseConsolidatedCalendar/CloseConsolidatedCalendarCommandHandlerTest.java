@@ -6,6 +6,7 @@ import com.mcalvaro.mscatering.domain.consolidatedcalendar.entity.ConsolidatedLi
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.entity.ConsolidatedRecipeSnapshot;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.service.DailyConsolidator;
 import com.mcalvaro.mscatering.domain.core.DomainException;
+import com.mcalvaro.mscatering.domain.core.id.*;
 import com.mcalvaro.mscatering.domain.subscription.enums.ServiceType;
 import com.mcalvaro.mscatering.domain.subscription.vo.DeliveryAddress;
 import com.mcalvaro.mscatering.domain.subscription.vo.TimeWindow;
@@ -19,7 +20,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -61,7 +61,7 @@ class CloseConsolidatedCalendarCommandHandlerTest {
         when(dailyConsolidator.consolidateForDate(targetDate)).thenReturn(calendar);
 
         // Act
-        UUID returnedId = handler.handle(command);
+        ConsolidatedCalendarId returnedId = handler.handle(command);
 
         // Assert – the handler must return the calendar's own ID
         assertThat(returnedId).isEqualTo(calendar.getId());
@@ -95,7 +95,7 @@ class CloseConsolidatedCalendarCommandHandlerTest {
         CloseConsolidatedCalendarCommand command = new CloseConsolidatedCalendarCommand(targetDate, "admin");
 
         // Return an EMPTY calendar (no lines added) — close() will throw CAL-002
-        ConsolidatedCalendar emptyCalendar = ConsolidatedCalendar.create(UUID.randomUUID(), targetDate);
+        ConsolidatedCalendar emptyCalendar = ConsolidatedCalendar.create(ConsolidatedCalendarId.generate(), targetDate);
         when(dailyConsolidator.consolidateForDate(targetDate)).thenReturn(emptyCalendar);
 
         // Act & Assert
@@ -118,13 +118,13 @@ class CloseConsolidatedCalendarCommandHandlerTest {
      * object.
      */
     private ConsolidatedCalendar buildCalendarWithOneLine(LocalDate date) {
-        ConsolidatedCalendar calendar = ConsolidatedCalendar.create(UUID.randomUUID(), date);
+        ConsolidatedCalendar calendar = ConsolidatedCalendar.create(ConsolidatedCalendarId.generate(), date);
 
-        ConsolidatedLine line = new ConsolidatedLine(UUID.randomUUID(), calendar.getId(), UUID.randomUUID(),
-                UUID.randomUUID(), "Ada", UUID.randomUUID(), 1, ServiceType.LUNCH,
-                new DeliveryAddress(UUID.randomUUID(), "Home", "Main", null, "Madrid", "Desk", 0, 0, null),
+        ConsolidatedLine line = new ConsolidatedLine(ConsolidatedLineId.generate(), calendar.getId(), SubscriptionId.generate(),
+                PatientId.generate(), "Ada", DietPlanId.generate(), 1, ServiceType.LUNCH,
+                new DeliveryAddress(AddressId.generate(), "Home", "Main", null, "Madrid", "Desk", 0, 0, null),
                 new TimeWindow(LocalTime.NOON, LocalTime.of(14, 0)), null,
-                List.of(new ConsolidatedRecipeSnapshot(UUID.randomUUID(), "Lunch", LocalTime.NOON, 100)));
+                List.of(new ConsolidatedRecipeSnapshot(RecipeId.generate(), "Lunch", LocalTime.NOON, 100)));
         calendar.addLine(line);
 
         return calendar;

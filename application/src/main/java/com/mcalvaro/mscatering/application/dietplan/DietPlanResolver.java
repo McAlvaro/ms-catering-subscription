@@ -1,11 +1,12 @@
 package com.mcalvaro.mscatering.application.dietplan;
 
 import com.mcalvaro.mscatering.domain.core.DomainException;
+import com.mcalvaro.mscatering.domain.core.id.DietPlanId;
+import com.mcalvaro.mscatering.domain.core.id.PatientId;
 import com.mcalvaro.mscatering.domain.dietplan.DietPlanProjection;
 import com.mcalvaro.mscatering.domain.dietplan.IDietPlanProjectionRepository;
 
 import java.time.LocalDate;
-import java.util.UUID;
 
 /** Resolves immutable BC2 snapshots before a BC3 subscription is constructed. */
 public class DietPlanResolver {
@@ -15,7 +16,7 @@ public class DietPlanResolver {
         this.plans = plans;
     }
 
-    public DietPlanProjection resolve(UUID planId, UUID patientId, LocalDate start, LocalDate end) {
+    public DietPlanProjection resolve(DietPlanId planId, PatientId patientId, LocalDate start, LocalDate end) {
         DietPlanProjection plan = plans.findById(planId)
                 .orElseThrow(() -> failure("PLAN-001", "Diet plan was not found"));
         if (!plan.active()) {

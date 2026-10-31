@@ -10,15 +10,14 @@ import jakarta.persistence.FetchType;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.UUID;
 
 @Entity
 @Table(name = "delivery_days")
 public class DeliveryDayJpaEntity {
 
     @Id
-    @Column(name = "id", updatable = false, nullable = false)
-    private UUID id;
+    @Column(name = "id", updatable = false, nullable = false, length = 64)
+    private String id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "calendar_id", nullable = false)
@@ -30,8 +29,8 @@ public class DeliveryDayJpaEntity {
     @Column(name = "status", nullable = false, length = 20)
     private String status;
 
-    @Column(name = "address_id")
-    private UUID addressId;
+    @Column(name = "address_id", length = 64)
+    private String addressId;
 
     @Column(name = "address_alias")
     private String addressAlias;
@@ -78,11 +77,11 @@ public class DeliveryDayJpaEntity {
     public DeliveryDayJpaEntity() {
     }
 
-    public UUID getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -110,11 +109,11 @@ public class DeliveryDayJpaEntity {
         this.status = status;
     }
 
-    public UUID getAddressId() {
+    public String getAddressId() {
         return addressId;
     }
 
-    public void setAddressId(UUID addressId) {
+    public void setAddressId(String addressId) {
         this.addressId = addressId;
     }
 

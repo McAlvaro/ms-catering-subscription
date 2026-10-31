@@ -1,6 +1,9 @@
 package com.mcalvaro.mscatering.domain.subscription.entity;
 
 import com.mcalvaro.mscatering.domain.core.Entity;
+import com.mcalvaro.mscatering.domain.core.id.DeliveryCalendarId;
+import com.mcalvaro.mscatering.domain.core.id.DeliveryDayId;
+import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
 import com.mcalvaro.mscatering.domain.subscription.enums.DeliveryDayStatus;
 import com.mcalvaro.mscatering.domain.subscription.vo.PauseRange;
 import com.mcalvaro.mscatering.domain.subscription.vo.DeliveryAddress;
@@ -12,19 +15,18 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 /**
  * Entity that manages the full collection of delivery days for a subscription
  * period (CalendarioDeEntregas).
  */
-public class DeliveryCalendar extends Entity {
+public class DeliveryCalendar extends Entity<DeliveryCalendarId> {
 
-    private final UUID subscriptionId;
+    private final SubscriptionId subscriptionId;
     private ValidityPeriod period;
     private final List<DeliveryDay> deliveryDays = new ArrayList<>();
 
-    public DeliveryCalendar(UUID id, UUID subscriptionId, ValidityPeriod period) {
+    public DeliveryCalendar(DeliveryCalendarId id, SubscriptionId subscriptionId, ValidityPeriod period) {
         super(id);
         this.subscriptionId = subscriptionId;
         this.period = period;
@@ -71,7 +73,7 @@ public class DeliveryCalendar extends Entity {
     public void extendTo(ValidityPeriod newPeriod, DeliveryAddress address, TimeWindow timeWindow, String instructions) {
         LocalDate previousEnd = period.endDate();
         for (LocalDate day : previousEnd.plusDays(1).datesUntil(newPeriod.endDate().plusDays(1)).toList()) {
-            deliveryDays.add(new DeliveryDay(UUID.randomUUID(), day, address, timeWindow, instructions));
+            deliveryDays.add(new DeliveryDay(DeliveryDayId.generate(), day, address, timeWindow, instructions));
         }
         period = newPeriod;
     }
@@ -103,7 +105,7 @@ public class DeliveryCalendar extends Entity {
                 || day.getStatus() == DeliveryDayStatus.FAILED;
     }
 
-    public Optional<DeliveryDay> findDayById(UUID dayId) {
+    public Optional<DeliveryDay> findDayById(DeliveryDayId dayId) {
         return deliveryDays.stream()
                 .filter(d -> d.getId().equals(dayId))
                 .findFirst();
@@ -114,7 +116,7 @@ public class DeliveryCalendar extends Entity {
      * el día indicado (por ej. si se marcara como NO_ENTREGA). Implementa la regla
      * INV-05.
      */
-    public boolean hasActiveDaysAfterExcluding(UUID dayId) {
+    public boolean hasActiveDaysAfterExcluding(DeliveryDayId dayId) {
         return deliveryDays.stream()
                 .filter(d -> !d.getId().equals(dayId))
                 .anyMatch(d -> d.getStatus() == DeliveryDayStatus.SCHEDULED
@@ -133,7 +135,7 @@ public class DeliveryCalendar extends Entity {
         return Collections.unmodifiableList(deliveryDays);
     }
 
-    public UUID getSubscriptionId() {
+    public SubscriptionId getSubscriptionId() {
         return subscriptionId;
     }
 

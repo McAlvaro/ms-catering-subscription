@@ -140,7 +140,7 @@ class DietPlanKafkaListenerTest {
 
         DietPlanInboundAdapter.DietPlanData data = event.data();
         assertThat(data).isNotNull();
-        assertThat(data.id()).isEqualTo(UUID.fromString("22222222-2222-2222-2222-222222222222"));
+        assertThat(data.id()).isEqualTo("22222222-2222-2222-2222-222222222222");
         assertThat(data.status()).isEqualTo("ACTIVO");
         assertThat(data.effectiveStart()).isEqualTo(LocalDate.of(2026, 11, 1));
         assertThat(data.durationDays()).isEqualTo(7);
@@ -163,7 +163,7 @@ class DietPlanKafkaListenerTest {
         assertThat(meal.recipes()).hasSize(1);
 
         DietPlanInboundAdapter.DietPlanRecipeData recipe = meal.recipes().get(0);
-        assertThat(recipe.recipeId()).isEqualTo(UUID.fromString("55555555-5555-5555-5555-555555555555"));
+        assertThat(recipe.recipeId()).isEqualTo("55555555-5555-5555-5555-555555555555");
         assertThat(recipe.name()).isEqualTo("Avena con manzana");
         assertThat(recipe.portionGrams()).isEqualTo(250);
     }
@@ -188,9 +188,9 @@ class DietPlanKafkaListenerTest {
 
         DietPlanInboundAdapter.DietPlanData data = event.data();
         assertThat(data).isNotNull();
-        assertThat(data.id()).isEqualTo(UUID.fromString("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"));
-        assertThat(data.basePlanId()).isEqualTo(UUID.fromString("22222222-2222-2222-2222-222222222222"));
-        assertThat(data.patientId()).isEqualTo(UUID.fromString("cccccccc-cccc-cccc-cccc-cccccccccccc"));
+        assertThat(data.id()).isEqualTo("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        assertThat(data.basePlanId()).isEqualTo("22222222-2222-2222-2222-222222222222");
+        assertThat(data.patientId()).isEqualTo("cccccccc-cccc-cccc-cccc-cccccccccccc");
         assertThat(data.changeDescription()).isEqualTo("Ajuste de porciones por actividad física");
         assertThat(data.days()).hasSize(1);
     }

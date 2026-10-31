@@ -3,6 +3,7 @@ package com.mcalvaro.mscatering.infrastructure.persistence.consolidatedcalendar.
 import com.mcalvaro.mscatering.application.abstractions.DomainEventDispatcher;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.ConsolidatedCalendar;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.IConsolidatedCalendarRepository;
+import com.mcalvaro.mscatering.domain.core.id.ConsolidatedCalendarId;
 import com.mcalvaro.mscatering.infrastructure.persistence.consolidatedcalendar.entity.ConsolidatedCalendarJpaEntity;
 import com.mcalvaro.mscatering.infrastructure.persistence.consolidatedcalendar.mapper.ConsolidatedCalendarMapper;
 import org.springframework.beans.factory.ObjectProvider;
@@ -13,7 +14,6 @@ import org.springframework.web.context.request.RequestContextHolder;
 
 import java.time.LocalDate;
 import java.util.Optional;
-import java.util.UUID;
 
 @Repository
 public class JpaConsolidatedCalendarRepository implements IConsolidatedCalendarRepository {
@@ -32,8 +32,8 @@ public class JpaConsolidatedCalendarRepository implements IConsolidatedCalendarR
     }
 
     @Override
-    public Optional<ConsolidatedCalendar> findById(UUID id) {
-        return springRepository.findById(id).map(mapper::toDomain);
+    public Optional<ConsolidatedCalendar> findById(ConsolidatedCalendarId id) {
+        return springRepository.findById(id.value()).map(mapper::toDomain);
     }
 
     @Override

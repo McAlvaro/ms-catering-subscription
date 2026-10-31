@@ -15,10 +15,10 @@ import java.util.UUID;
 
 final class KafkaIntegrationEventFixtures {
     static final UUID EVENT_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
-    static final UUID SUBSCRIPTION_ID = UUID.fromString("00000000-0000-0000-0000-000000000002");
-    static final UUID PATIENT_ID = UUID.fromString("00000000-0000-0000-0000-000000000003");
-    static final UUID PLAN_ID = UUID.fromString("00000000-0000-0000-0000-000000000004");
-    static final UUID CALENDAR_ID = UUID.fromString("00000000-0000-0000-0000-000000000005");
+    static final String SUBSCRIPTION_ID = "SUS-00000000-0000-0000-0000-000000000002";
+    static final String PATIENT_ID = "PAC-00000000-0000-0000-0000-000000000003";
+    static final String PLAN_ID = "PLAN-00000000-0000-0000-0000-000000000004";
+    static final String CALENDAR_ID = "CAL-00000000-0000-0000-0000-000000000005";
     static final Instant OCCURRED_ON = Instant.parse("2026-10-29T12:00:00Z");
 
     private KafkaIntegrationEventFixtures() {
@@ -57,13 +57,13 @@ final class KafkaIntegrationEventFixtures {
         return new ConsolidatedCalendarClosedIntegrationEvent(EVENT_ID, OCCURRED_ON, "correlation",
                 new ConsolidatedCalendarClosedIntegrationEvent.Data(CALENDAR_ID, LocalDate.of(2026, 10, 29), OCCURRED_ON, 1,
                         List.of(new ConsolidatedCalendarClosedIntegrationEvent.Delivery(
-                                UUID.fromString("00000000-0000-0000-0000-000000000006"), SUBSCRIPTION_ID, PATIENT_ID,
+                                "LINE-00000000-0000-0000-0000-000000000006", SUBSCRIPTION_ID, PATIENT_ID,
                                 "Ana", PLAN_ID, 1,
                                 new ConsolidatedCalendarClosedIntegrationEvent.Address(
-                                        UUID.fromString("00000000-0000-0000-0000-000000000007"), "Casa", "Calle 1",
+                                        "DIR-00000000-0000-0000-0000-000000000007", "Casa", "Calle 1",
                                         "Referencia", "Santa Cruz", -17.78, -63.18),
                                 List.of(new ConsolidatedCalendarClosedIntegrationEvent.Recipe(
-                                        UUID.fromString("00000000-0000-0000-0000-000000000008"), "Sopa", "08:30",
+                                        "REC-00000000-0000-0000-0000-000000000008", "Sopa", "08:30",
                                         new BigDecimal("250")))))));
     }
 }

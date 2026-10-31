@@ -45,7 +45,7 @@ public class PatientRegistrationInboundAdapter {
             invalidContract();
         }
 
-        if (event.data().patientId() == null || isBlank(event.data().patientName())) {
+        if (isBlank(event.data().patientId()) || isBlank(event.data().patientName())) {
             invalidContract();
         }
     }
@@ -55,7 +55,7 @@ public class PatientRegistrationInboundAdapter {
     }
 
     private String payloadFingerprint(PatientRegisteredData data) {
-        return sha256(data.patientId().toString(), data.patientName());
+        return sha256(data.patientId(), data.patientName());
     }
 
     private String sha256(String... values) {

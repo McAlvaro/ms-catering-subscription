@@ -27,15 +27,15 @@
                     "properties": {
                         "idSuscripcion": {
                             "type": "string",
-                            "format": "uuid"
+                            "minLength": 1
                         },
                         "idPaciente": {
                             "type": "string",
-                            "format": "uuid"
+                            "minLength": 1
                         },
                         "idPlan": {
                             "type": "string",
-                            "format": "uuid"
+                            "minLength": 1
                         },
                         "tipoBaja": {
                             "type": "string",

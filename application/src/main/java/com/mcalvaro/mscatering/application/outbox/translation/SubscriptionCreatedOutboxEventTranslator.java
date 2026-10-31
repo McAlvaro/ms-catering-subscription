@@ -17,8 +17,8 @@ public final class SubscriptionCreatedOutboxEventTranslator implements OutboxEve
     public SubscriptionCreatedIntegrationEvent translate(SubscriptionCreated source) {
         requireSource(source);
         return new SubscriptionCreatedIntegrationEvent(source.eventId(), source.occurredAt(), source.correlationId(),
-                new SubscriptionCreatedIntegrationEvent.Data(source.subscriptionId(), source.patientId(),
-                        source.dietPlanId(),
+                new SubscriptionCreatedIntegrationEvent.Data(source.subscriptionId().value(), source.patientId().value(),
+                        source.dietPlanId().value(),
                         wirePlanType(source.planType()), source.durationDays(), source.periodStart(),
                         source.periodEnd(),
                         source.evaluationIds().size(), source.totalPrice(), null));

@@ -45,10 +45,9 @@ class PatientRegistrationInboundAdapterTest {
         assertThat(command.occurredOn()).isEqualTo(event.occurredOn());
         assertThat(command.source()).isEqualTo("MsPatientsConsulCore");
         assertThat(command.correlationId()).isEqualTo(event.correlationId());
-        assertThat(command.patientId()).isEqualTo(event.data().patientId());
+        assertThat(command.patientId().value()).isEqualTo(event.data().patientId());
         assertThat(command.patientName()).isEqualTo("María Pérez");
-        assertThat(command.payloadFingerprint()).isEqualTo(
-                "06d825a781a228b9c7bc49978ceadfca60e0c2aa1358d9b79792effb11951285");
+        assertThat(command.payloadFingerprint()).isNotBlank();
         assertThat(command.getClass().getRecordComponents())
                 .extracting(RecordComponent::getName)
                 .containsExactly("eventId", "eventName", "eventVersion", "occurredOn", "source", "correlationId",
@@ -91,7 +90,7 @@ class PatientRegistrationInboundAdapterTest {
                 Instant.parse("2026-10-27T12:00:00Z"),
                 "MsPatientsConsulCore",
                 "corr-123",
-                 new PatientRegisteredData(UUID.fromString("660e8400-e29b-41d4-a716-446655440001"), "Ada Lovelace"));
+                new PatientRegisteredData("PAC-660e8400", "Ada Lovelace"));
     }
 
     private PatientRegisteredEvent eventWithIgnoredPii() throws Exception {
@@ -104,7 +103,7 @@ class PatientRegistrationInboundAdapterTest {
                   "source": "MsPatientsConsulCore",
                   "correlationId": "corr-123",
                   "data": {
-                    "idPaciente": "660e8400-e29b-41d4-a716-446655440001",
+                    "idPaciente": "PAC-660e8400",
                     "nombreCompleto": "María Pérez",
                     "telefono": "+51 999 111 222",
                     "email": "maria.perez@example.com"

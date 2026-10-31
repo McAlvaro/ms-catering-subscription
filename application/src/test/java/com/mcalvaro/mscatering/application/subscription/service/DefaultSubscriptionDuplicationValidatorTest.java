@@ -1,6 +1,7 @@
 package com.mcalvaro.mscatering.application.subscription.service;
 
 import com.mcalvaro.mscatering.domain.core.DomainException;
+import com.mcalvaro.mscatering.domain.core.id.PatientId;
 import com.mcalvaro.mscatering.domain.patient.IPatientReferenceRepository;
 import com.mcalvaro.mscatering.domain.patient.PatientReference;
 import com.mcalvaro.mscatering.domain.subscription.ISubscriptionRepository;
@@ -13,7 +14,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -38,7 +38,7 @@ class DefaultSubscriptionDuplicationValidatorTest {
     @DisplayName("Should throw DomainException SUB-014 when the patient does not exist")
     void shouldThrowDomainExceptionWhenPatientDoesNotExist() {
         // Arrange
-        UUID patientId = UUID.randomUUID();
+        PatientId patientId = PatientId.generate();
         when(patientRepository.findById(patientId)).thenReturn(Optional.empty());
 
         // Act & Assert
@@ -54,7 +54,7 @@ class DefaultSubscriptionDuplicationValidatorTest {
     @DisplayName("Should throw DomainException SUB-015 when the patient is inactive")
     void shouldThrowDomainExceptionWhenPatientIsInactive() {
         // Arrange
-        UUID patientId = UUID.randomUUID();
+        PatientId patientId = PatientId.generate();
         when(patientRepository.findById(patientId)).thenReturn(Optional.of(buildPatient(patientId, false)));
 
         // Act & Assert
@@ -70,7 +70,7 @@ class DefaultSubscriptionDuplicationValidatorTest {
     @DisplayName("Should throw DomainException SUB-013 when the patient has an active or paused subscription")
     void shouldThrowDomainExceptionWhenPatientHasAnActiveOrPausedSubscription() {
         // Arrange
-        UUID patientId = UUID.randomUUID();
+        PatientId patientId = PatientId.generate();
         when(patientRepository.findById(patientId)).thenReturn(Optional.of(buildPatient(patientId, true)));
         when(subscriptionRepository.hasActiveOrPausedSubscription(patientId)).thenReturn(true);
 
@@ -87,7 +87,7 @@ class DefaultSubscriptionDuplicationValidatorTest {
     @DisplayName("Should allow validation when the patient is active and has no duplicate subscription")
     void shouldAllowValidationWhenPatientIsActiveAndHasNoDuplicateSubscription() {
         // Arrange
-        UUID patientId = UUID.randomUUID();
+        PatientId patientId = PatientId.generate();
         when(patientRepository.findById(patientId)).thenReturn(Optional.of(buildPatient(patientId, true)));
         when(subscriptionRepository.hasActiveOrPausedSubscription(patientId)).thenReturn(false);
 
@@ -99,7 +99,7 @@ class DefaultSubscriptionDuplicationValidatorTest {
         verify(subscriptionRepository, times(1)).hasActiveOrPausedSubscription(patientId);
     }
 
-    private PatientReference buildPatient(UUID patientId, boolean active) {
+    private PatientReference buildPatient(PatientId patientId, boolean active) {
         return new PatientReference(patientId, "Ada Lovelace", active, Instant.now());
     }
 }

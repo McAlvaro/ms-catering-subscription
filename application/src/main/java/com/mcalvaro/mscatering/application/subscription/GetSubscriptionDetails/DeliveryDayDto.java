@@ -2,13 +2,12 @@ package com.mcalvaro.mscatering.application.subscription.GetSubscriptionDetails;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.UUID;
 
 /**
  * DTO for a single delivery day in the subscription calendar.
  */
 public record DeliveryDayDto(
-        UUID id,
+        String id,
         LocalDate date,
         String status,
         String street,

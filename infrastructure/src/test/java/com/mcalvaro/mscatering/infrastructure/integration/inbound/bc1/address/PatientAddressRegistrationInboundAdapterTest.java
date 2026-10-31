@@ -31,7 +31,7 @@ class PatientAddressRegistrationInboundAdapterTest {
         var captor = ArgumentCaptor.forClass(SynchronizePatientAddressCommand.class);
         verify(pipeline).send(captor.capture());
         assertThat(captor.getValue().street()).isEqualTo("Main Street");
-        assertThat(captor.getValue().addressId()).isEqualTo(event.data().addressId());
+        assertThat(captor.getValue().addressId().value()).isEqualTo(event.data().addressId());
     }
 
     @Test
@@ -45,7 +45,7 @@ class PatientAddressRegistrationInboundAdapterTest {
     private PatientAddressRegisteredEvent event(double latitude, double longitude) {
         return new PatientAddressRegisteredEvent(UUID.randomUUID(), "bc1.DireccionClienteRegistrada", "1.0",
                 Instant.parse("2026-10-27T12:00:00Z"), "MsPatientsConsulCore", "correlation",
-                new PatientAddressRegisteredData(UUID.randomUUID(), UUID.randomUUID(), "Home", "Main Street", "Near park",
+                new PatientAddressRegisteredData("PAC-" + UUID.randomUUID(), "DIR-" + UUID.randomUUID(), "Home", "Main Street", "Near park",
                         "Cochabamba", new PatientAddressRegisteredData.Geolocation(latitude, longitude)));
     }
 }

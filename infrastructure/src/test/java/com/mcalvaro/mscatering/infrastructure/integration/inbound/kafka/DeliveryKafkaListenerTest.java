@@ -111,11 +111,11 @@ class DeliveryKafkaListenerTest {
 
         DeliveryConfirmedData data = event.data();
         assertThat(data).isNotNull();
-        assertThat(data.idEntrega()).isEqualTo(UUID.fromString("22222222-2222-2222-2222-222222222222"));
-        assertThat(data.idPaquete()).isEqualTo(UUID.fromString("33333333-3333-3333-3333-333333333333"));
-        assertThat(data.idCalendarioDia()).isEqualTo(UUID.fromString("44444444-4444-4444-4444-444444444444"));
-        assertThat(data.idSuscripcion()).isEqualTo(UUID.fromString("55555555-5555-5555-5555-555555555555"));
-        assertThat(data.idPaciente()).isEqualTo(UUID.fromString("66666666-6666-6666-6666-666666666666"));
+        assertThat(data.idEntrega()).isEqualTo("22222222-2222-2222-2222-222222222222");
+        assertThat(data.idPaquete()).isEqualTo("33333333-3333-3333-3333-333333333333");
+        assertThat(data.idCalendarioDia()).isEqualTo("44444444-4444-4444-4444-444444444444");
+        assertThat(data.idSuscripcion()).isEqualTo("55555555-5555-5555-5555-555555555555");
+        assertThat(data.idPaciente()).isEqualTo("66666666-6666-6666-6666-666666666666");
         assertThat(data.fechaHoraEntrega()).isEqualTo("2026-10-30T14:28:10Z");
         assertThat(data.recibidoPor()).isEqualTo("Carlos Gomez");
         assertThat(data.evidenciaFotoUrl()).isEqualTo("https://storage.nurti.com/evidencias/foto1.jpg");
@@ -143,11 +143,11 @@ class DeliveryKafkaListenerTest {
 
         DeliveryFailedData data = event.data();
         assertThat(data).isNotNull();
-        assertThat(data.idEntrega()).isEqualTo(UUID.fromString("aaaaaaaa-1111-1111-1111-111111111111"));
-        assertThat(data.idPaquete()).isEqualTo(UUID.fromString("bbbbbbbb-2222-2222-2222-222222222222"));
-        assertThat(data.idCalendarioDia()).isEqualTo(UUID.fromString("cccccccc-3333-3333-3333-333333333333"));
-        assertThat(data.idSuscripcion()).isEqualTo(UUID.fromString("55555555-5555-5555-5555-555555555555"));
-        assertThat(data.idPaciente()).isEqualTo(UUID.fromString("66666666-6666-6666-6666-666666666666"));
+        assertThat(data.idEntrega()).isEqualTo("aaaaaaaa-1111-1111-1111-111111111111");
+        assertThat(data.idPaquete()).isEqualTo("bbbbbbbb-2222-2222-2222-222222222222");
+        assertThat(data.idCalendarioDia()).isEqualTo("cccccccc-3333-3333-3333-333333333333");
+        assertThat(data.idSuscripcion()).isEqualTo("55555555-5555-5555-5555-555555555555");
+        assertThat(data.idPaciente()).isEqualTo("66666666-6666-6666-6666-666666666666");
         assertThat(data.fechaEntrega()).isEqualTo(LocalDate.of(2026, 10, 30));
         assertThat(data.intentosRealizados()).isEqualTo(2);
         assertThat(data.motivoFinal()).isEqualTo("Paciente no se encontraba en el domicilio");
@@ -300,8 +300,8 @@ class DeliveryKafkaListenerTest {
         ArgumentCaptor<DeliveryConfirmedEvent> captor = ArgumentCaptor.forClass(DeliveryConfirmedEvent.class);
         verify(inboundAdapter).receiveConfirmed(captor.capture());
         DeliveryConfirmedData data = captor.getValue().data();
-        assertThat(data.idEntrega()).isEqualTo(UUID.fromString("22222222-2222-2222-2222-222222222222"));
-        assertThat(data.idPaquete()).isEqualTo(UUID.fromString("33333333-3333-3333-3333-333333333333"));
-        assertThat(data.idCalendarioDia()).isEqualTo(UUID.fromString("44444444-4444-4444-4444-444444444444"));
+        assertThat(data.idEntrega()).isEqualTo("22222222-2222-2222-2222-222222222222");
+        assertThat(data.idPaquete()).isEqualTo("33333333-3333-3333-3333-333333333333");
+        assertThat(data.idCalendarioDia()).isEqualTo("44444444-4444-4444-4444-444444444444");
     }
 }

@@ -8,18 +8,18 @@ databaseChangeLog:
             columns:
               - column:
                   name: id
-                  type: binary(16)
+                  type: varchar(64)
                   constraints:
                     primaryKey: true
                     nullable: false
               - column:
                   name: patient_id
-                  type: binary(16)
+                  type: varchar(64)
                   constraints:
                     nullable: false
               - column:
                   name: diet_plan_id
-                  type: binary(16)
+                  type: varchar(64)
                   constraints:
                     nullable: false
               - column:

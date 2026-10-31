@@ -13,15 +13,14 @@ import jakarta.persistence.FetchType;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Entity
 @Table(name = "delivery_calendars")
 public class DeliveryCalendarJpaEntity {
 
     @Id
-    @Column(name = "id", updatable = false, nullable = false)
-    private UUID id;
+    @Column(name = "id", updatable = false, nullable = false, length = 64)
+    private String id;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subscription_id", nullable = false)
@@ -39,11 +38,11 @@ public class DeliveryCalendarJpaEntity {
     public DeliveryCalendarJpaEntity() {
     }
 
-    public UUID getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(String id) {
         this.id = id;
     }
 

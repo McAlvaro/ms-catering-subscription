@@ -1,5 +1,10 @@
 package com.mcalvaro.mscatering.application.subscription.MarkEvaluationCompleted;
 
+import com.mcalvaro.mscatering.domain.core.id.AddressId;
+import com.mcalvaro.mscatering.domain.core.id.DietPlanId;
+import com.mcalvaro.mscatering.domain.core.id.EvaluationId;
+import com.mcalvaro.mscatering.domain.core.id.PatientId;
+import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
 import com.mcalvaro.mscatering.domain.subscription.ISubscriptionRepository;
 import com.mcalvaro.mscatering.domain.subscription.Subscription;
 import com.mcalvaro.mscatering.domain.subscription.entity.BiweeklyEvaluation;
@@ -23,7 +28,6 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -47,7 +51,7 @@ class MarkEvaluationCompletedCommandHandlerTest {
     void shouldMarkEvaluationCompletedAndSaveSubscriptionWhenEvaluationExists() {
         // Arrange
         Subscription subscription = buildSubscription();
-        BiweeklyEvaluation evaluation = new BiweeklyEvaluation(UUID.randomUUID(), subscription.getPatientId(), 1, LocalDate.of(2099, 1, 15));
+        BiweeklyEvaluation evaluation = new BiweeklyEvaluation(EvaluationId.generate(), subscription.getPatientId(), 1, LocalDate.of(2099, 1, 15));
         subscription.scheduleEvaluations(List.of(evaluation));
         MarkEvaluationCompletedCommand command = new MarkEvaluationCompletedCommand(subscription.getId(), evaluation.getId(), LocalDate.of(2099, 1, 16));
         when(subscriptionRepository.findById(command.subscriptionId())).thenReturn(Optional.of(subscription));
@@ -66,7 +70,7 @@ class MarkEvaluationCompletedCommandHandlerTest {
     @DisplayName("Should throw an exception and not save when the subscription is absent")
     void shouldThrowExceptionAndNotSaveWhenSubscriptionIsAbsent() {
         // Arrange
-        MarkEvaluationCompletedCommand command = new MarkEvaluationCompletedCommand(UUID.randomUUID(), UUID.randomUUID(), LocalDate.of(2099, 1, 16));
+        MarkEvaluationCompletedCommand command = new MarkEvaluationCompletedCommand(SubscriptionId.generate(), EvaluationId.generate(), LocalDate.of(2099, 1, 16));
         when(subscriptionRepository.findById(command.subscriptionId())).thenReturn(Optional.empty());
 
         // Act & Assert
@@ -80,7 +84,7 @@ class MarkEvaluationCompletedCommandHandlerTest {
     void shouldPropagateAggregateExceptionAndNotSaveWhenEvaluationIsUnknown() {
         // Arrange
         Subscription subscription = buildSubscription();
-        MarkEvaluationCompletedCommand command = new MarkEvaluationCompletedCommand(subscription.getId(), UUID.randomUUID(), LocalDate.of(2099, 1, 16));
+        MarkEvaluationCompletedCommand command = new MarkEvaluationCompletedCommand(subscription.getId(), EvaluationId.generate(), LocalDate.of(2099, 1, 16));
         when(subscriptionRepository.findById(command.subscriptionId())).thenReturn(Optional.of(subscription));
 
         // Act & Assert
@@ -90,7 +94,8 @@ class MarkEvaluationCompletedCommandHandlerTest {
 
     private Subscription buildSubscription() {
         LocalDate startDate = LocalDate.of(2099, 1, 1);
-        DeliveryAddress address = new DeliveryAddress("Main Street", "10", "Madrid", "Door A", 40.4168, -3.7038, "600000000");
-        return Subscription.create(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), new ServiceContract(UUID.randomUUID(), com.mcalvaro.mscatering.domain.dietplan.PlanType.BASE, new ValidityPeriod(startDate, startDate.plusDays(14)), ServiceType.FULL, new BigDecimal("250.00"), "Terms accepted", Instant.parse("2025-01-01T10:00:00Z")), new DeliveryPreferences(address, new TimeWindow(LocalTime.of(9, 0), LocalTime.of(11, 0)), "Leave at reception"), 1);
+        DeliveryAddress address = new DeliveryAddress(AddressId.generate(), "Main Street", "10", "Madrid", "Door A", 40.4168, -3.7038, "600000000");
+        DietPlanId planId = DietPlanId.generate();
+        return Subscription.create(SubscriptionId.generate(), PatientId.generate(), planId, new ServiceContract(planId, com.mcalvaro.mscatering.domain.dietplan.PlanType.BASE, new ValidityPeriod(startDate, startDate.plusDays(14)), ServiceType.FULL, new BigDecimal("250.00"), "Terms accepted", Instant.parse("2025-01-01T10:00:00Z")), new DeliveryPreferences(address, new TimeWindow(LocalTime.of(9, 0), LocalTime.of(11, 0)), "Leave at reception"), 1);
     }
 }

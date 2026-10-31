@@ -5,12 +5,14 @@ import java.util.*;
 
 @Entity @Table(name = "diet_plan_meals")
 public class DietPlanMealJpaEntity {
-    @Id private UUID id;
+    @Id
+    @Column(name = "id", length = 64)
+    private String id;
     @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "day_id", nullable = false) private DietPlanDayJpaEntity day;
     @Column(name = "meal_time", nullable = false) private String mealTime;
     @Column(name = "meal_type", nullable = false) private String mealType;
     @OneToMany(mappedBy = "meal", cascade = CascadeType.ALL, orphanRemoval = true) private List<DietPlanRecipeJpaEntity> recipes = new ArrayList<>();
-    public UUID getId() { return id; } public void setId(UUID value) { id = value; }
+    public String getId() { return id; } public void setId(String value) { id = value; }
     public void setDay(DietPlanDayJpaEntity value) { day = value; }
     public String getMealTime() { return mealTime; } public void setMealTime(String value) { mealTime = value; }
     public String getMealType() { return mealType; } public void setMealType(String value) { mealType = value; }

@@ -28,9 +28,9 @@ public record SubscriptionCreatedIntegrationEvent(UUID eventId, Instant occurred
     }
 
     public record Data(
-            @JsonProperty("idSuscripcion") UUID subscriptionId,
-            @JsonProperty("idPaciente") UUID patientId,
-            @JsonProperty("idPlan") UUID planId,
+            @JsonProperty("idSuscripcion") String subscriptionId,
+            @JsonProperty("idPaciente") String patientId,
+            @JsonProperty("idPlan") String planId,
             @JsonProperty("tipoPlan") String planType,
             @JsonProperty("duracionDias") int durationDays,
             @JsonProperty("fechaInicio") LocalDate startDate,
@@ -39,9 +39,9 @@ public record SubscriptionCreatedIntegrationEvent(UUID eventId, Instant occurred
             @JsonProperty("montoFacturado") BigDecimal invoicedAmount,
             @JsonProperty("nroFactura") @JsonInclude(JsonInclude.Include.ALWAYS) String invoiceNumber) {
         public Data {
-            ContractAssertions.required(subscriptionId, "subscriptionId");
-            ContractAssertions.required(patientId, "patientId");
-            ContractAssertions.required(planId, "planId");
+            ContractAssertions.text(subscriptionId, "subscriptionId");
+            ContractAssertions.text(patientId, "patientId");
+            ContractAssertions.text(planId, "planId");
             if (!"BASE".equals(planType) && !"PERSONALIZADO".equals(planType)) {
                 throw new IllegalArgumentException("planType must be BASE or PERSONALIZADO");
             }

@@ -40,9 +40,9 @@ class SpringDataSubscriptionRepositoryTest {
 
     private SubscriptionJpaEntity subscription(String status) {
         SubscriptionJpaEntity entity = new SubscriptionJpaEntity();
-        entity.setId(UUID.randomUUID());
-        entity.setPatientId(UUID.randomUUID());
-        entity.setDietPlanId(UUID.randomUUID());
+        entity.setId("SUS-" + UUID.randomUUID());
+        entity.setPatientId("PAC-" + UUID.randomUUID());
+        entity.setDietPlanId("PLAN-" + UUID.randomUUID());
         entity.setPlanType("BASE");
         entity.setContractCode("NTC-2026-" + UUID.randomUUID().toString().substring(0, 8));
         entity.setStatus(status);

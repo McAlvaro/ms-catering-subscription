@@ -12,17 +12,17 @@ import java.util.stream.IntStream;
 public class DietPlanProjectionFixture {
     private final DietPlanInboundAdapter adapter;
     @Autowired public DietPlanProjectionFixture(DietPlanInboundAdapter adapter) { this.adapter = adapter; }
-    public UUID ingestActiveBasePlan(LocalDate start, int durationDays) {
-        UUID id = UUID.randomUUID();
+    public String ingestActiveBasePlan(LocalDate start, int durationDays) {
+        String id = "PLAN-" + UUID.randomUUID();
         adapter.receiveBase(event(id, start, durationDays));
         return id;
     }
-    public void ingestActiveBasePlan(UUID id, LocalDate start, int durationDays) { adapter.receiveBase(event(id, start, durationDays)); }
-    private DietPlanInboundAdapter.DietPlanCreatedEvent event(UUID id, LocalDate start, int duration) {
+    public void ingestActiveBasePlan(String id, LocalDate start, int durationDays) { adapter.receiveBase(event(id, start, durationDays)); }
+    private DietPlanInboundAdapter.DietPlanCreatedEvent event(String id, LocalDate start, int duration) {
         return new DietPlanInboundAdapter.DietPlanCreatedEvent(UUID.randomUUID(), "bc2.PlanBaseCreado", "1.0", Instant.now(), "MSNutritionPlanner", "test-plan-" + UUID.randomUUID(),
                 new DietPlanInboundAdapter.DietPlanData(id, "ACTIVO", start, duration, true,
                         IntStream.rangeClosed(1, duration).mapToObj(day -> new DietPlanInboundAdapter.DietPlanDayData(UUID.randomUUID(), day, 1,
-                                List.of(new DietPlanInboundAdapter.DietPlanMealData(UUID.randomUUID(), com.mcalvaro.mscatering.domain.dietplan.MealType.LUNCH, "12:00", List.of(new DietPlanInboundAdapter.DietPlanRecipeData(UUID.randomUUID(), "Test recipe", 100)))))).toList(),
+                                List.of(new DietPlanInboundAdapter.DietPlanMealData(UUID.randomUUID(), com.mcalvaro.mscatering.domain.dietplan.MealType.LUNCH, "12:00", List.of(new DietPlanInboundAdapter.DietPlanRecipeData("REC-" + UUID.randomUUID(), "Test recipe", 100)))))).toList(),
                         null, null, null));
     }
 }

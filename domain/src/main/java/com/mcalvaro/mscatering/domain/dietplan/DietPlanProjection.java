@@ -1,16 +1,17 @@
 package com.mcalvaro.mscatering.domain.dietplan;
 
 import com.mcalvaro.mscatering.domain.core.DomainException;
+import com.mcalvaro.mscatering.domain.core.id.DietPlanId;
+import com.mcalvaro.mscatering.domain.core.id.PatientId;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /** Immutable, local BC2 plan snapshot. It intentionally contains no BC3-only data. */
-public record DietPlanProjection(UUID id, PlanType type, UUID ownerPatientId, boolean active,
+public record DietPlanProjection(DietPlanId id, PlanType type, PatientId ownerPatientId, boolean active,
         LocalDate effectiveStart, int durationDays, List<DietPlanDay> days) {
     public DietPlanProjection {
         days = days == null ? List.of() : List.copyOf(days);
@@ -24,7 +25,7 @@ public record DietPlanProjection(UUID id, PlanType type, UUID ownerPatientId, bo
         }
     }
 
-    public Optional<UUID> ownerPatient() {
+    public Optional<PatientId> ownerPatient() {
         return Optional.ofNullable(ownerPatientId);
     }
 

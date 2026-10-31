@@ -1,6 +1,10 @@
 package com.mcalvaro.mscatering.infrastructure.api.subscription;
 
 import com.mcalvaro.mscatering.application.subscription.PauseSubscription.PauseSubscriptionCommand;
+import com.mcalvaro.mscatering.domain.core.id.AddressId;
+import com.mcalvaro.mscatering.domain.core.id.DietPlanId;
+import com.mcalvaro.mscatering.domain.core.id.PatientId;
+import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
 import com.mcalvaro.mscatering.domain.subscription.ISubscriptionRepository;
 import com.mcalvaro.mscatering.domain.subscription.Subscription;
 import com.mcalvaro.mscatering.domain.subscription.enums.ServiceType;
@@ -20,11 +24,11 @@ class PauseSubscriptionApiIT extends BaseIntegrationTest {
     private static final String URL = "/api/subscriptions/{id}/pause";
     @Autowired
     private ISubscriptionRepository subscriptionRepository;
-    private UUID subscriptionId;
+    private SubscriptionId subscriptionId;
 
     @BeforeEach
     void setUp() {
-        subscriptionId = UUID.randomUUID();
+        subscriptionId = SubscriptionId.of("SUS-" + UUID.randomUUID());
         subscriptionRepository.save(buildValidCommand());
     }
 
@@ -37,7 +41,7 @@ class PauseSubscriptionApiIT extends BaseIntegrationTest {
             // Arrange
             String body = buildValidCommandJson(LocalDate.now().plusDays(12), LocalDate.now().plusDays(14));
             // Act & Assert
-            mockMvc.perform(post(URL, subscriptionId).contentType(MediaType.APPLICATION_JSON).content(body))
+            mockMvc.perform(post(URL, subscriptionId.value()).contentType(MediaType.APPLICATION_JSON).content(body))
                     .andExpect(status().isOk());
         }
 
@@ -49,7 +53,7 @@ class PauseSubscriptionApiIT extends BaseIntegrationTest {
             String body = buildValidCommandJson(LocalDate.now().plusDays(12), LocalDate.now().plusDays(14));
 
             // Act & Assert
-            mockMvc.perform(post(URL, subscriptionId).header("X-Correlation-Id", correlationId)
+            mockMvc.perform(post(URL, subscriptionId.value()).header("X-Correlation-Id", correlationId)
                     .contentType(MediaType.APPLICATION_JSON).content(body))
                     .andExpect(status().isOk())
                     .andExpect(header().string("X-Correlation-Id", correlationId));
@@ -64,7 +68,7 @@ class PauseSubscriptionApiIT extends BaseIntegrationTest {
             String body = buildValidCommandJson(LocalDate.now().plusDays(12), LocalDate.now().plusDays(14));
 
             // Act & Assert
-            String generatedCorrelationId = mockMvc.perform(post(URL, subscriptionId).header("X-Correlation-Id", "   ")
+            String generatedCorrelationId = mockMvc.perform(post(URL, subscriptionId.value()).header("X-Correlation-Id", "   ")
                     .contentType(MediaType.APPLICATION_JSON).content(body))
                     .andExpect(status().isOk())
                     .andExpect(header().exists("X-Correlation-Id"))
@@ -81,7 +85,7 @@ class PauseSubscriptionApiIT extends BaseIntegrationTest {
             String body = buildValidCommandJson(LocalDate.now().plusDays(12), LocalDate.now().plusDays(14));
 
             // Act & Assert
-            String generatedCorrelationId = mockMvc.perform(post(URL, subscriptionId)
+            String generatedCorrelationId = mockMvc.perform(post(URL, subscriptionId.value())
                     .contentType(MediaType.APPLICATION_JSON).content(body))
                     .andExpect(status().isOk())
                     .andExpect(header().exists("X-Correlation-Id"))
@@ -101,7 +105,7 @@ class PauseSubscriptionApiIT extends BaseIntegrationTest {
             // Arrange
             String body = buildValidCommandJson(LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
             // Act & Assert
-            mockMvc.perform(post(URL, subscriptionId).contentType(MediaType.APPLICATION_JSON).content(body))
+            mockMvc.perform(post(URL, subscriptionId.value()).contentType(MediaType.APPLICATION_JSON).content(body))
                     .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("SUB-001"));
         }
 
@@ -112,7 +116,7 @@ class PauseSubscriptionApiIT extends BaseIntegrationTest {
             LocalDate date = LocalDate.now().plusDays(13);
             String body = buildValidCommandJson(date, date.minusDays(1));
             // Act & Assert
-            mockMvc.perform(post(URL, subscriptionId).contentType(MediaType.APPLICATION_JSON).content(body))
+            mockMvc.perform(post(URL, subscriptionId.value()).contentType(MediaType.APPLICATION_JSON).content(body))
                     .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("VO-014"));
         }
 
@@ -126,7 +130,7 @@ class PauseSubscriptionApiIT extends BaseIntegrationTest {
             subscriptionRepository.save(pausedSubscription);
             String body = buildValidCommandJson(LocalDate.now().plusDays(6), LocalDate.now().plusDays(8));
             // Act & Assert
-            mockMvc.perform(post(URL, subscriptionId).contentType(MediaType.APPLICATION_JSON).content(body))
+            mockMvc.perform(post(URL, subscriptionId.value()).contentType(MediaType.APPLICATION_JSON).content(body))
                     .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("SUB-003"));
         }
     }
@@ -141,23 +145,21 @@ class PauseSubscriptionApiIT extends BaseIntegrationTest {
             String body = buildValidCommandJson(LocalDate.now().plusDays(12), LocalDate.now().plusDays(14))
                     .replaceFirst("\"startDate\"\\s*:\\s*\"[^\"]+\"", "\"startDate\":\"invalid\"");
             // Act & Assert
-            mockMvc.perform(post(URL, subscriptionId).contentType(MediaType.APPLICATION_JSON).content(body))
+            mockMvc.perform(post(URL, subscriptionId.value()).contentType(MediaType.APPLICATION_JSON).content(body))
                     .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("INVALID_PAYLOAD"));
         }
     }
 
     private Subscription buildValidCommand() {
         LocalDate start = LocalDate.now().plusDays(10);
-        return Subscription.create(subscriptionId, UUID.randomUUID(), UUID.randomUUID(),
-                new ServiceContract(UUID.randomUUID(), com.mcalvaro.mscatering.domain.dietplan.PlanType.BASE, new ValidityPeriod(start, start.plusDays(14)), ServiceType.FULL,
+        PatientId patientId = PatientId.of("PAC-" + UUID.randomUUID());
+        DietPlanId dietPlanId = DietPlanId.of("PLAN-" + UUID.randomUUID());
+        return Subscription.create(subscriptionId, patientId, dietPlanId,
+                new ServiceContract(dietPlanId, com.mcalvaro.mscatering.domain.dietplan.PlanType.BASE, new ValidityPeriod(start, start.plusDays(14)), ServiceType.FULL,
                         new BigDecimal("250"), "Terms", Instant.now()),
-                new DeliveryPreferences(new DeliveryAddress("Main", "1", "Lima", null, 0, 0, "1"),
+                new DeliveryPreferences(new DeliveryAddress(AddressId.of("DIR-" + UUID.randomUUID()), "Home", "Main", "1", "Lima", null, 0, 0, "1"),
                         new TimeWindow(LocalTime.NOON, LocalTime.of(14, 0)), null),
                 1);
-    }
-
-    private Subscription buildValidCommand(UUID ignored, int planDays) {
-        return buildValidCommand();
     }
 
     private String buildValidCommandJson(LocalDate start, LocalDate end) throws Exception {

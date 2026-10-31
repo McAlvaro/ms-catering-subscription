@@ -1,6 +1,7 @@
 package com.mcalvaro.mscatering.domain.subscription.entity;
 
 import com.mcalvaro.mscatering.domain.core.DomainException;
+import com.mcalvaro.mscatering.domain.core.id.DeliveryDayId;
 import com.mcalvaro.mscatering.domain.subscription.enums.DeliveryDayStatus;
 import com.mcalvaro.mscatering.domain.subscription.vo.DeliveryAddress;
 import com.mcalvaro.mscatering.domain.subscription.vo.TimeWindow;
@@ -23,7 +24,7 @@ class DeliveryDayTest {
     @DisplayName("Should create a scheduled delivery day with its provided details")
     void shouldCreateScheduledDeliveryDayWhenValidDetailsAreProvided() {
         // Arrange
-        UUID id = UUID.randomUUID();
+        DeliveryDayId id = DeliveryDayId.generate();
         LocalDate date = LocalDate.now().plusDays(4);
         DeliveryAddress address = address("Main Street", "Madrid");
         TimeWindow timeWindow = timeWindow(9, 11);
@@ -67,7 +68,7 @@ class DeliveryDayTest {
         // Arrange
         DeliveryAddress originalAddress = address("Main Street", "Madrid");
         TimeWindow originalTimeWindow = timeWindow(9, 11);
-        DeliveryDay deliveryDay = new DeliveryDay(UUID.randomUUID(), LocalDate.now().plusDays(1), originalAddress,
+        DeliveryDay deliveryDay = new DeliveryDay(DeliveryDayId.generate(), LocalDate.now().plusDays(1), originalAddress,
                 originalTimeWindow, "Original instructions");
 
         // Act & Assert
@@ -105,7 +106,7 @@ class DeliveryDayTest {
         // Arrange
         DeliveryAddress originalAddress = address("Main Street", "Madrid");
         TimeWindow originalTimeWindow = timeWindow(9, 11);
-        DeliveryDay deliveryDay = new DeliveryDay(UUID.randomUUID(), LocalDate.now().plusDays(4), originalAddress,
+        DeliveryDay deliveryDay = new DeliveryDay(DeliveryDayId.generate(), LocalDate.now().plusDays(4), originalAddress,
                 originalTimeWindow, "Leave at reception");
         deliveryDay.pause();
 
@@ -205,12 +206,12 @@ class DeliveryDayTest {
     }
 
     private DeliveryDay newDeliveryDay(LocalDate date) {
-        return new DeliveryDay(UUID.randomUUID(), date, address("Main Street", "Madrid"), timeWindow(9, 11),
+        return new DeliveryDay(DeliveryDayId.generate(), date, address("Main Street", "Madrid"), timeWindow(9, 11),
                 "Leave at reception");
     }
 
     private DeliveryDay deliveryDayWithStatus(DeliveryDayStatus status, DeliveryAddress address, TimeWindow timeWindow) {
-        DeliveryDay deliveryDay = new DeliveryDay(UUID.randomUUID(), LocalDate.now().plusDays(4), address, timeWindow,
+        DeliveryDay deliveryDay = new DeliveryDay(DeliveryDayId.generate(), LocalDate.now().plusDays(4), address, timeWindow,
                 "Leave at reception");
         switch (status) {
             case CONSOLIDATED -> deliveryDay.markAsConsolidated();

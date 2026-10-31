@@ -1,7 +1,5 @@
 package com.mcalvaro.mscatering.domain.core;
 
-import java.util.UUID;
-
 /**
  * Marker abstract class for aggregate roots.
  * <p>
@@ -10,9 +8,9 @@ import java.util.UUID;
  * DDD layer boundary: only {@code AggregateRoot} subclasses may be
  * referenced directly by repositories and application-layer handlers.
  */
-public abstract class AggregateRoot extends Entity {
+public abstract class AggregateRoot<ID extends DomainId> extends Entity<ID> {
 
-    protected AggregateRoot(UUID id) {
+    protected AggregateRoot(ID id) {
         super(id);
     }
 }

@@ -1,12 +1,13 @@
 package com.mcalvaro.mscatering.application.patient.address;
 
 import com.mcalvaro.mscatering.domain.core.DomainException;
+import com.mcalvaro.mscatering.domain.core.id.AddressId;
+import com.mcalvaro.mscatering.domain.core.id.PatientId;
 import com.mcalvaro.mscatering.domain.patient.IPatientAddressReferenceRepository;
 import com.mcalvaro.mscatering.domain.patient.PatientAddressReference;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -20,8 +21,8 @@ class DeliveryAddressResolverTest {
 
     @Test
     void resolvesOnlyAnAddressOwnedByThePatient() {
-        UUID patientId = UUID.randomUUID();
-        UUID addressId = UUID.randomUUID();
+        PatientId patientId = PatientId.generate();
+        AddressId addressId = AddressId.generate();
         when(repository.findByAddressId(addressId)).thenReturn(Optional.of(new PatientAddressReference(addressId,
                 patientId, "Home", "Main Street", "Opposite the park", "Cochabamba", -17.39, -66.15)));
 
@@ -35,10 +36,10 @@ class DeliveryAddressResolverTest {
 
     @Test
     void rejectsMissingAndForeignAddressesWithTheSameDomainError() {
-        UUID patientId = UUID.randomUUID();
-        UUID addressId = UUID.randomUUID();
+        PatientId patientId = PatientId.generate();
+        AddressId addressId = AddressId.generate();
         when(repository.findByAddressId(addressId)).thenReturn(Optional.of(new PatientAddressReference(addressId,
-                UUID.randomUUID(), "Work", "Street", "", "City", 0, 0)));
+                PatientId.generate(), "Work", "Street", "", "City", 0, 0)));
 
         assertThatThrownBy(() -> resolver.resolve(patientId, addressId))
                 .isInstanceOf(DomainException.class)

@@ -24,27 +24,27 @@ public final class ConsolidatedCalendarClosedOutboxEventTranslator
             throw new IntegrationEventTranslationException("ConsolidatedCalendarClosed must not be null");
         return new ConsolidatedCalendarClosedIntegrationEvent(source.eventId(), source.occurredAt(),
                 source.correlationId(),
-                new ConsolidatedCalendarClosedIntegrationEvent.Data(source.calendarId(), source.date(),
+                new ConsolidatedCalendarClosedIntegrationEvent.Data(source.calendarId().value(), source.date(),
                         source.occurredAt(),
                         source.totalDeliveries(), source.deliveries().stream().map(this::delivery).toList()));
     }
 
     private ConsolidatedCalendarClosedIntegrationEvent.Delivery delivery(ConsolidatedDeliverySnapshot source) {
-        return new ConsolidatedCalendarClosedIntegrationEvent.Delivery(source.calendarDayId(), source.subscriptionId(),
-                source.patientId(),
-                source.patientName(), source.dietPlanId(), source.planDayNumber(), address(source.address()),
+        return new ConsolidatedCalendarClosedIntegrationEvent.Delivery(source.calendarDayId().value(), source.subscriptionId().value(),
+                source.patientId().value(),
+                source.patientName(), source.dietPlanId().value(), source.planDayNumber(), address(source.address()),
                 source.recipes().stream().map(this::recipe).toList());
     }
 
     private ConsolidatedCalendarClosedIntegrationEvent.Address address(DeliveryAddress source) {
         String number = source.number() == null ? "" : source.number();
-        return new ConsolidatedCalendarClosedIntegrationEvent.Address(source.addressId(), source.alias(),
+        return new ConsolidatedCalendarClosedIntegrationEvent.Address(source.addressId().value(), source.alias(),
                 (source.street() + " " + number).trim(), source.reference(), source.city(), source.latitude(),
                 source.longitude());
     }
 
     private ConsolidatedCalendarClosedIntegrationEvent.Recipe recipe(ConsolidatedRecipeSnapshot source) {
-        return new ConsolidatedCalendarClosedIntegrationEvent.Recipe(source.recipeId(), source.name(),
+        return new ConsolidatedCalendarClosedIntegrationEvent.Recipe(source.recipeId().value(), source.name(),
                 TIME_FORMAT.format(source.time()),
                 BigDecimal.valueOf(source.portionGrams()));
     }

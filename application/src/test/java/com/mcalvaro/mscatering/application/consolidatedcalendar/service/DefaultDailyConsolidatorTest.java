@@ -3,6 +3,7 @@ package com.mcalvaro.mscatering.application.consolidatedcalendar.service;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.ConsolidatedCalendar;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.entity.ConsolidatedLine;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.enums.ConsolidateStatus;
+import com.mcalvaro.mscatering.domain.core.id.*;
 import com.mcalvaro.mscatering.domain.subscription.ISubscriptionRepository;
 import com.mcalvaro.mscatering.domain.dietplan.IDietPlanProjectionRepository;
 import com.mcalvaro.mscatering.domain.dietplan.*;
@@ -174,12 +175,13 @@ class DefaultDailyConsolidatorTest {
     }
 
     private Subscription buildSubscription(LocalDate startDate) {
-        DeliveryAddress address = new DeliveryAddress(UUID.randomUUID(), "Home",
+        DeliveryAddress address = new DeliveryAddress(AddressId.generate(), "Home",
                 "Main Street", "123", "Madrid", "Reception", 40.4168, -3.7038, "+34123456789");
         TimeWindow timeWindow = new TimeWindow(LocalTime.of(12, 0), LocalTime.of(14, 0));
         DeliveryPreferences preferences = new DeliveryPreferences(address, timeWindow, "Ring the doorbell");
+        DietPlanId planId = DietPlanId.generate();
         ServiceContract contract = new ServiceContract(
-                UUID.randomUUID(),
+                planId,
                 com.mcalvaro.mscatering.domain.dietplan.PlanType.BASE,
                 new ValidityPeriod(startDate, startDate.plusDays(14)),
                 ServiceType.LUNCH,
@@ -187,17 +189,16 @@ class DefaultDailyConsolidatorTest {
                 "Accepted terms",
                 Instant.parse("2026-09-01T10:00:00Z"));
 
-        UUID patientId = UUID.randomUUID();
-        UUID planId = contract.dietPlanId();
+        PatientId patientId = PatientId.generate();
         lenient().when(dietPlanRepository.findById(planId)).thenReturn(java.util.Optional.of(plan(planId, startDate)));
         lenient().when(patientRepository.findById(patientId)).thenReturn(java.util.Optional.of(new PatientReference(patientId, "Ada", true, Instant.now())));
-        return Subscription.create(UUID.randomUUID(), patientId, planId, contract, preferences, 1);
+        return Subscription.create(SubscriptionId.generate(), patientId, planId, contract, preferences, 1);
     }
 
-    private DietPlanProjection plan(UUID id, LocalDate start) {
+    private DietPlanProjection plan(DietPlanId id, LocalDate start) {
         return new DietPlanProjection(id, PlanType.BASE, null, true, start, 15,
-                java.util.stream.IntStream.rangeClosed(1, 15).mapToObj(day -> new DietPlanDay(UUID.randomUUID(), day, 1,
-                        List.of(new DietPlanMeal(UUID.randomUUID(), MealType.LUNCH, LocalTime.NOON,
-                                List.of(new DietPlanRecipe(UUID.randomUUID(), "Lunch", 100)))))).toList());
+                java.util.stream.IntStream.rangeClosed(1, 15).<DietPlanDay>mapToObj(day -> new DietPlanDay(day, 1,
+                        List.of(new DietPlanMeal(MealType.LUNCH, LocalTime.NOON,
+                                List.of(new DietPlanRecipe(RecipeId.generate(), "Lunch", 100)))))).toList());
     }
 }

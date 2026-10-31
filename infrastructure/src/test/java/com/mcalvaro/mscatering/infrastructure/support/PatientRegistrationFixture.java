@@ -22,7 +22,7 @@ public class PatientRegistrationFixture {
         this.patientReferenceRepository = patientReferenceRepository;
     }
 
-    public void ingestEligiblePatient(UUID patientId) {
+    public void ingestEligiblePatient(String patientId) {
         adapter.receive(eventFor(patientId));
     }
 
@@ -30,14 +30,14 @@ public class PatientRegistrationFixture {
         adapter.receive(event);
     }
 
-    public void ingestIneligiblePatient(UUID patientId) {
+    public void ingestIneligiblePatient(String patientId) {
         ingestEligiblePatient(patientId);
         var reference = patientReferenceRepository.findById(patientId).orElseThrow();
         reference.setActive(false);
         patientReferenceRepository.saveAndFlush(reference);
     }
 
-    public PatientRegisteredEvent eventFor(UUID patientId) {
+    public PatientRegisteredEvent eventFor(String patientId) {
         return new PatientRegisteredEvent(
                 UUID.randomUUID(),
                 "bc1.PacienteRegistrado",

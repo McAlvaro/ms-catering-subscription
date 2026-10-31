@@ -4,27 +4,26 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 
 /**
  * Abstract base class for all domain entities.
  * <p>
- * Holds the entity identity ({@code UUID}) and an internal outbox of
+ * Holds the entity identity ({@link DomainId}) and an internal outbox of
  * {@link DomainEvent}s that are queued during state mutations and
  * dispatched by the infrastructure layer (Unit of Work) after the
  * aggregate is persisted.
  */
-public abstract class Entity {
+public abstract class Entity<ID extends DomainId> {
 
-    private final UUID id;
+    private final ID id;
     private final List<DomainEvent> domainEvents = new ArrayList<>();
 
-    protected Entity(UUID id) {
+    protected Entity(ID id) {
         Objects.requireNonNull(id, "Entity id must not be null");
         this.id = id;
     }
 
-    public UUID getId() {
+    public ID getId() {
         return id;
     }
 
@@ -45,7 +44,7 @@ public abstract class Entity {
     public boolean equals(Object o) {
         if (this == o)
             return true;
-        if (!(o instanceof Entity other))
+        if (!(o instanceof Entity<?> other))
             return false;
         return id.equals(other.id);
     }

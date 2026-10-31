@@ -22,14 +22,14 @@ import java.util.List;
 public class SpringDomainEventDispatcher implements DomainEventDispatcher {
 
     private final Pipeline pipeline;
-    private final List<AggregateRoot> aggregates = new ArrayList<>();
+    private final List<AggregateRoot<?>> aggregates = new ArrayList<>();
 
     public SpringDomainEventDispatcher(Pipeline pipeline) {
         this.pipeline = pipeline;
     }
 
     @Override
-    public void register(AggregateRoot aggregate) {
+    public void register(AggregateRoot<?> aggregate) {
         if (!aggregates.contains(aggregate)) {
             aggregates.add(aggregate);
         }
@@ -37,7 +37,7 @@ public class SpringDomainEventDispatcher implements DomainEventDispatcher {
 
     @Override
     public void dispatch() {
-        for (AggregateRoot aggregate : aggregates) {
+        for (AggregateRoot<?> aggregate : aggregates) {
             for (DomainEvent event : aggregate.getDomainEvents()) {
                 pipeline.send(new DomainEventNotification(event));
             }

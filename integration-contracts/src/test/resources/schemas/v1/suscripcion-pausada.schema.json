@@ -27,11 +27,11 @@
                     "properties": {
                         "idSuscripcion": {
                             "type": "string",
-                            "format": "uuid"
+                            "minLength": 1
                         },
                         "idPaciente": {
                             "type": "string",
-                            "format": "uuid"
+                            "minLength": 1
                         },
                         "fechaDesde": {
                             "type": "string",

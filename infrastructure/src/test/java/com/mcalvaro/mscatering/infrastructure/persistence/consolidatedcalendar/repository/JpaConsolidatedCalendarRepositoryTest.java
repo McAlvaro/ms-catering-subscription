@@ -2,6 +2,7 @@ package com.mcalvaro.mscatering.infrastructure.persistence.consolidatedcalendar.
 
 import com.mcalvaro.mscatering.application.abstractions.DomainEventDispatcher;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.ConsolidatedCalendar;
+import com.mcalvaro.mscatering.domain.core.id.ConsolidatedCalendarId;
 import com.mcalvaro.mscatering.infrastructure.persistence.consolidatedcalendar.entity.ConsolidatedCalendarJpaEntity;
 import com.mcalvaro.mscatering.infrastructure.persistence.consolidatedcalendar.mapper.ConsolidatedCalendarMapper;
 import org.junit.jupiter.api.AfterEach;
@@ -123,10 +124,10 @@ class JpaConsolidatedCalendarRepositoryTest {
     @Test
     @DisplayName("Delegates read methods to springRepository correctly")
     void delegatesReadMethods() {
-        UUID id = UUID.randomUUID();
+        ConsolidatedCalendarId id = ConsolidatedCalendarId.of("CAL-" + UUID.randomUUID());
         ConsolidatedCalendar calendar = mock(ConsolidatedCalendar.class);
         ConsolidatedCalendarJpaEntity jpaEntity = mock(ConsolidatedCalendarJpaEntity.class);
-        when(springRepository.findById(id)).thenReturn(Optional.of(jpaEntity));
+        when(springRepository.findById(id.value())).thenReturn(Optional.of(jpaEntity));
         when(mapper.toDomain(jpaEntity)).thenReturn(calendar);
 
         assertThat(repository.findById(id)).contains(calendar);

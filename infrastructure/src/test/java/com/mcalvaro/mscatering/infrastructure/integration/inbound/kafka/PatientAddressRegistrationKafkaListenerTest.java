@@ -72,8 +72,8 @@ class PatientAddressRegistrationKafkaListenerTest {
         assertThat(event.source()).isEqualTo("MsPatientsConsulCore");
         assertThat(event.correlationId()).isEqualTo("corr-123");
         assertThat(event.data()).isNotNull();
-        assertThat(event.data().patientId()).isEqualTo(UUID.fromString("660e8400-e29b-41d4-a716-446655440001"));
-        assertThat(event.data().addressId()).isEqualTo(UUID.fromString("770e8400-e29b-41d4-a716-446655440002"));
+        assertThat(event.data().patientId()).isEqualTo("660e8400-e29b-41d4-a716-446655440001");
+        assertThat(event.data().addressId()).isEqualTo("770e8400-e29b-41d4-a716-446655440002");
         assertThat(event.data().alias()).isEqualTo("Casa");
         assertThat(event.data().street()).isEqualTo("Av. Principal 123");
         assertThat(event.data().reference()).isEqualTo("Frente al parque");

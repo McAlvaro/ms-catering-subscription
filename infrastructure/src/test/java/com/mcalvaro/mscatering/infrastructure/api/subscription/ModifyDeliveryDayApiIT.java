@@ -1,6 +1,11 @@
 package com.mcalvaro.mscatering.infrastructure.api.subscription;
 
 import com.mcalvaro.mscatering.application.subscription.ModifyDeliveryDay.ModifyDeliveryDayCommand;
+import com.mcalvaro.mscatering.domain.core.id.AddressId;
+import com.mcalvaro.mscatering.domain.core.id.DeliveryDayId;
+import com.mcalvaro.mscatering.domain.core.id.DietPlanId;
+import com.mcalvaro.mscatering.domain.core.id.PatientId;
+import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
 import com.mcalvaro.mscatering.domain.subscription.*;
 import com.mcalvaro.mscatering.domain.subscription.enums.ServiceType;
 import com.mcalvaro.mscatering.domain.subscription.vo.*;
@@ -18,12 +23,12 @@ class ModifyDeliveryDayApiIT extends BaseIntegrationTest {
     private static final String URL = "/api/subscriptions/{id}/delivery-days/{dayId}";
     @Autowired
     private ISubscriptionRepository subscriptionRepository;
-    private UUID subscriptionId;
-    private UUID deliveryDayId;
+    private SubscriptionId subscriptionId;
+    private DeliveryDayId deliveryDayId;
 
     @BeforeEach
     void setUp() {
-        subscriptionId = UUID.randomUUID();
+        subscriptionId = SubscriptionId.of("SUS-" + UUID.randomUUID());
         Subscription s = buildValidCommand();
         deliveryDayId = s.getDeliveryCalendar().getDeliveryDays().get(0).getId();
         subscriptionRepository.save(s);
@@ -38,7 +43,7 @@ class ModifyDeliveryDayApiIT extends BaseIntegrationTest {
             String body = buildValidCommandJson("New Street", LocalTime.of(10, 0), LocalTime.of(12, 0));
             // Act & Assert
             mockMvc.perform(
-                    put(URL, subscriptionId, deliveryDayId).contentType(MediaType.APPLICATION_JSON).content(body))
+                    put(URL, subscriptionId.value(), deliveryDayId.value()).contentType(MediaType.APPLICATION_JSON).content(body))
                     .andExpect(status().isOk());
         }
     }
@@ -52,7 +57,7 @@ class ModifyDeliveryDayApiIT extends BaseIntegrationTest {
             String body = buildValidCommandJson("New Street", LocalTime.of(10, 0), LocalTime.of(12, 0));
             // Act & Assert
             mockMvc.perform(
-                    put(URL, subscriptionId, UUID.randomUUID()).contentType(MediaType.APPLICATION_JSON).content(body))
+                    put(URL, subscriptionId.value(), "CD-" + UUID.randomUUID()).contentType(MediaType.APPLICATION_JSON).content(body))
                     .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("SUB-009"));
         }
 
@@ -62,7 +67,7 @@ class ModifyDeliveryDayApiIT extends BaseIntegrationTest {
             String body = buildValidCommandJson(" ", LocalTime.of(10, 0), LocalTime.of(12, 0));
             // Act & Assert
             mockMvc.perform(
-                    put(URL, subscriptionId, deliveryDayId).contentType(MediaType.APPLICATION_JSON).content(body))
+                    put(URL, subscriptionId.value(), deliveryDayId.value()).contentType(MediaType.APPLICATION_JSON).content(body))
                     .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("VO-003"));
         }
 
@@ -72,21 +77,21 @@ class ModifyDeliveryDayApiIT extends BaseIntegrationTest {
             String body = buildValidCommandJson("New Street", LocalTime.of(12, 0), LocalTime.of(10, 0));
             // Act & Assert
             mockMvc.perform(
-                    put(URL, subscriptionId, deliveryDayId).contentType(MediaType.APPLICATION_JSON).content(body))
+                    put(URL, subscriptionId.value(), deliveryDayId.value()).contentType(MediaType.APPLICATION_JSON).content(body))
                     .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("VO-002"));
         }
 
         @Test
         @DisplayName("Should return 400 SUB-002 when delivery is within 48 hours")
         void shouldReturn400WhenDayIsWithin48Hours() throws Exception {// Arrange
-            UUID nearId = UUID.randomUUID();
+            SubscriptionId nearId = SubscriptionId.of("SUS-" + UUID.randomUUID());
             Subscription near = buildSubscription(nearId, LocalDate.now().plusDays(1));
-            UUID nearDayId = near.getDeliveryCalendar().getDeliveryDays().get(0).getId();
+            DeliveryDayId nearDayId = near.getDeliveryCalendar().getDeliveryDays().get(0).getId();
             subscriptionRepository.save(near);
             String body = objectMapper.writeValueAsString(new ModifyDeliveryDayCommand(nearId, nearDayId, "New Street",
                     "2", "Lima", null, 0, 0, "2", LocalTime.of(10, 0), LocalTime.of(12, 0), null));
             // Act & Assert
-            mockMvc.perform(put(URL, nearId, nearDayId).contentType(MediaType.APPLICATION_JSON).content(body))
+            mockMvc.perform(put(URL, nearId.value(), nearDayId.value()).contentType(MediaType.APPLICATION_JSON).content(body))
                     .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("SUB-002"));
         }
 
@@ -99,7 +104,7 @@ class ModifyDeliveryDayApiIT extends BaseIntegrationTest {
             String body = buildValidCommandJson("New Street", LocalTime.of(10, 0), LocalTime.of(12, 0));
             // Act & Assert
             mockMvc.perform(
-                    put(URL, subscriptionId, deliveryDayId).contentType(MediaType.APPLICATION_JSON).content(body))
+                    put(URL, subscriptionId.value(), deliveryDayId.value()).contentType(MediaType.APPLICATION_JSON).content(body))
                     .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("SUB-011"));
         }
     }
@@ -114,7 +119,7 @@ class ModifyDeliveryDayApiIT extends BaseIntegrationTest {
                     .replaceFirst("\"startTime\"\\s*:\\s*\"[^\"]+\"", "\"startTime\":\"invalid\"");
             // Act & Assert
             mockMvc.perform(
-                    put(URL, subscriptionId, deliveryDayId).contentType(MediaType.APPLICATION_JSON).content(body))
+                    put(URL, subscriptionId.value(), deliveryDayId.value()).contentType(MediaType.APPLICATION_JSON).content(body))
                     .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("INVALID_PAYLOAD"));
         }
     }
@@ -123,15 +128,13 @@ class ModifyDeliveryDayApiIT extends BaseIntegrationTest {
         return buildSubscription(subscriptionId, LocalDate.now().plusDays(10));
     }
 
-    private Subscription buildValidCommand(UUID ignored, int planDays) {
-        return buildValidCommand();
-    }
-
-    private Subscription buildSubscription(UUID id, LocalDate start) {
-        return Subscription.create(id, UUID.randomUUID(), UUID.randomUUID(),
-                new ServiceContract(UUID.randomUUID(), com.mcalvaro.mscatering.domain.dietplan.PlanType.BASE, new ValidityPeriod(start, start.plusDays(14)), ServiceType.FULL,
+    private Subscription buildSubscription(SubscriptionId id, LocalDate start) {
+        PatientId patientId = PatientId.of("PAC-" + UUID.randomUUID());
+        DietPlanId dietPlanId = DietPlanId.of("PLAN-" + UUID.randomUUID());
+        return Subscription.create(id, patientId, dietPlanId,
+                new ServiceContract(dietPlanId, com.mcalvaro.mscatering.domain.dietplan.PlanType.BASE, new ValidityPeriod(start, start.plusDays(14)), ServiceType.FULL,
                         new BigDecimal("250"), "Terms", Instant.now()),
-                new DeliveryPreferences(new DeliveryAddress("Main", "1", "Lima", null, 0, 0, "1"),
+                new DeliveryPreferences(new DeliveryAddress(AddressId.of("DIR-" + UUID.randomUUID()), "Home", "Main", "1", "Lima", null, 0, 0, "1"),
                         new TimeWindow(LocalTime.NOON, LocalTime.of(14, 0)), null),
                 1);
     }

@@ -31,9 +31,9 @@ class JpaPatientAddressSynchronizationStoreIT extends BaseIntegrationTest {
 
     @Test
     void permitsMultipleAddressesForOnePatientAndRecordsTheirReceipts() {
-        UUID patientId = UUID.randomUUID();
-        PatientAddressRegisteredEvent first = event(UUID.randomUUID(), patientId, UUID.randomUUID(), "One");
-        PatientAddressRegisteredEvent second = event(UUID.randomUUID(), patientId, UUID.randomUUID(), "Two");
+        String patientId = "PAC-" + UUID.randomUUID();
+        PatientAddressRegisteredEvent first = event(UUID.randomUUID(), patientId, "DIR-" + UUID.randomUUID(), "One");
+        PatientAddressRegisteredEvent second = event(UUID.randomUUID(), patientId, "DIR-" + UUID.randomUUID(), "Two");
 
         fixture.ingest(first);
         fixture.ingest(second);
@@ -45,8 +45,8 @@ class JpaPatientAddressSynchronizationStoreIT extends BaseIntegrationTest {
 
     @Test
     void treatsExactDuplicateAsNoOpAndSemanticDuplicateAsAnotherReceipt() {
-        UUID patientId = UUID.randomUUID();
-        UUID addressId = UUID.randomUUID();
+        String patientId = "PAC-" + UUID.randomUUID();
+        String addressId = "DIR-" + UUID.randomUUID();
         PatientAddressRegisteredEvent first = event(UUID.randomUUID(), patientId, addressId, "One");
         PatientAddressRegisteredEvent semanticDuplicate = event(UUID.randomUUID(), patientId, addressId, "One");
         long receipts = receiptRepository.count();
@@ -61,8 +61,8 @@ class JpaPatientAddressSynchronizationStoreIT extends BaseIntegrationTest {
 
     @Test
     void rejectsChangedContentForTheSameEventOrAddressWithoutOverwrite() {
-        UUID patientId = UUID.randomUUID();
-        UUID addressId = UUID.randomUUID();
+        String patientId = "PAC-" + UUID.randomUUID();
+        String addressId = "DIR-" + UUID.randomUUID();
         PatientAddressRegisteredEvent first = event(UUID.randomUUID(), patientId, addressId, "One");
         fixture.ingest(first);
 
@@ -77,10 +77,10 @@ class JpaPatientAddressSynchronizationStoreIT extends BaseIntegrationTest {
 
     @Test
     void rollsBackAddressWhenReceiptCannotBePersisted() {
-        UUID addressId = UUID.randomUUID();
+        String addressId = "DIR-" + UUID.randomUUID();
         PatientAddressRegisteredEvent invalid = new PatientAddressRegisteredEvent(UUID.randomUUID(),
                 "bc1.DireccionClienteRegistrada", "1.0", Instant.now(), "MsPatientsConsulCore", "x".repeat(256),
-                new PatientAddressRegisteredData(UUID.randomUUID(), addressId, "Home", "One", "Reference", "City",
+                new PatientAddressRegisteredData("PAC-" + UUID.randomUUID(), addressId, "Home", "One", "Reference", "City",
                         new PatientAddressRegisteredData.Geolocation(0d, 0d)));
 
         assertThatThrownBy(() -> fixture.ingest(invalid)).isInstanceOf(DataIntegrityViolationException.class);
@@ -88,7 +88,7 @@ class JpaPatientAddressSynchronizationStoreIT extends BaseIntegrationTest {
         assertThat(receiptRepository.findById(invalid.eventId())).isEmpty();
     }
 
-    private PatientAddressRegisteredEvent event(UUID eventId, UUID patientId, UUID addressId, String street) {
+    private PatientAddressRegisteredEvent event(UUID eventId, String patientId, String addressId, String street) {
         return new PatientAddressRegisteredEvent(eventId, "bc1.DireccionClienteRegistrada", "1.0",
                 Instant.parse("2026-10-27T12:00:00Z"), "MsPatientsConsulCore", "correlation-" + eventId,
                 new PatientAddressRegisteredData(patientId, addressId, "Home", street, "Reference", "City",

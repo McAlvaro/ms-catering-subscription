@@ -3,6 +3,8 @@ package com.mcalvaro.mscatering.infrastructure.integration.inbound.bc5.delivery;
 import an.awesome.pipelinr.Pipeline;
 import com.mcalvaro.mscatering.application.subscription.ConfirmDelivery.ConfirmDeliveryCommand;
 import com.mcalvaro.mscatering.application.subscription.RegisterFailedDelivery.RegisterFailedDeliveryCommand;
+import com.mcalvaro.mscatering.domain.core.id.DeliveryDayId;
+import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
 import com.mcalvaro.mscatering.domain.subscription.ISubscriptionRepository;
 import com.mcalvaro.mscatering.domain.subscription.Subscription;
 import com.mcalvaro.mscatering.domain.subscription.entity.DeliveryDay;
@@ -59,25 +61,26 @@ public class DeliveryInboundAdapter {
         validateConfirmedEnvelope(event);
 
         DeliveryConfirmedData data = event.data();
-        Subscription subscription = subscriptionRepository.findById(data.subscriptionId())
+        SubscriptionId subscriptionId = SubscriptionId.of(data.subscriptionId());
+        Subscription subscription = subscriptionRepository.findById(subscriptionId)
                 .orElseThrow(() -> DeliveryContractException.deliveryDayNotFound(
                         "Subscription not found: " + data.subscriptionId()));
 
         LocalDate deliveryDate = parseConfirmedDate(data.fechaHoraEntrega());
-        UUID resolvedDeliveryDayId = resolveDeliveryDayId(subscription, data.calendarDayId(), deliveryDate);
+        DeliveryDayId resolvedDeliveryDayId = resolveDeliveryDayId(subscription, data.calendarDayId(), deliveryDate);
 
         String payloadFingerprint = confirmedPayloadFingerprint(data, resolvedDeliveryDayId);
         String eventFingerprint = eventFingerprint(event.eventName(), event.eventVersion(),
                 event.occurredOn(), event.source(), event.correlationId(), payloadFingerprint);
 
-        if (isAlreadyProcessed(event.eventId(), eventFingerprint, resolvedDeliveryDayId, payloadFingerprint)) {
+        if (isAlreadyProcessed(event.eventId(), eventFingerprint, resolvedDeliveryDayId.value(), payloadFingerprint)) {
             return;
         }
 
-        pipeline.send(new ConfirmDeliveryCommand(data.subscriptionId(), resolvedDeliveryDayId));
+        pipeline.send(new ConfirmDeliveryCommand(subscriptionId, resolvedDeliveryDayId));
 
         saveReceipt(event.eventId(), event.eventName(), event.eventVersion(), event.occurredOn(),
-                event.source(), event.correlationId(), data.patientId(), resolvedDeliveryDayId,
+                event.source(), event.correlationId(), data.patientId(), resolvedDeliveryDayId.value(),
                 eventFingerprint, payloadFingerprint);
     }
 
@@ -86,24 +89,25 @@ public class DeliveryInboundAdapter {
         validateFailedEnvelope(event);
 
         DeliveryFailedData data = event.data();
-        Subscription subscription = subscriptionRepository.findById(data.subscriptionId())
+        SubscriptionId subscriptionId = SubscriptionId.of(data.subscriptionId());
+        Subscription subscription = subscriptionRepository.findById(subscriptionId)
                 .orElseThrow(() -> DeliveryContractException.deliveryDayNotFound(
                         "Subscription not found: " + data.subscriptionId()));
 
-        UUID resolvedDeliveryDayId = resolveDeliveryDayId(subscription, data.calendarDayId(), data.fechaEntrega());
+        DeliveryDayId resolvedDeliveryDayId = resolveDeliveryDayId(subscription, data.calendarDayId(), data.fechaEntrega());
 
         String payloadFingerprint = failedPayloadFingerprint(data, resolvedDeliveryDayId);
         String eventFingerprint = eventFingerprint(event.eventName(), event.eventVersion(),
                 event.occurredOn(), event.source(), event.correlationId(), payloadFingerprint);
 
-        if (isAlreadyProcessed(event.eventId(), eventFingerprint, resolvedDeliveryDayId, payloadFingerprint)) {
+        if (isAlreadyProcessed(event.eventId(), eventFingerprint, resolvedDeliveryDayId.value(), payloadFingerprint)) {
             return;
         }
 
-        pipeline.send(new RegisterFailedDeliveryCommand(data.subscriptionId(), resolvedDeliveryDayId, data.motivoFinal()));
+        pipeline.send(new RegisterFailedDeliveryCommand(subscriptionId, resolvedDeliveryDayId, data.motivoFinal()));
 
         saveReceipt(event.eventId(), event.eventName(), event.eventVersion(), event.occurredOn(),
-                event.source(), event.correlationId(), data.patientId(), resolvedDeliveryDayId,
+                event.source(), event.correlationId(), data.patientId(), resolvedDeliveryDayId.value(),
                 eventFingerprint, payloadFingerprint);
     }
 
@@ -123,7 +127,7 @@ public class DeliveryInboundAdapter {
         }
 
         DeliveryConfirmedData data = event.data();
-        if (data.idEntrega() == null || data.idSuscripcion() == null || isBlank(data.fechaHoraEntrega())) {
+        if (isBlank(data.idEntrega()) || isBlank(data.idSuscripcion()) || isBlank(data.fechaHoraEntrega())) {
             throw DeliveryContractException.invalid("Missing mandatory fields in DeliveryConfirmedData");
         }
 
@@ -142,15 +146,16 @@ public class DeliveryInboundAdapter {
         }
 
         DeliveryFailedData data = event.data();
-        if (data.idEntrega() == null || data.idSuscripcion() == null || data.fechaEntrega() == null
+        if (isBlank(data.idEntrega()) || isBlank(data.idSuscripcion()) || data.fechaEntrega() == null
                 || isBlank(data.motivoFinal())) {
             throw DeliveryContractException.invalid("Missing mandatory fields in DeliveryFailedData");
         }
     }
 
-    private UUID resolveDeliveryDayId(Subscription subscription, UUID explicitDayId, LocalDate fallbackDate) {
-        if (explicitDayId != null) {
-            Optional<DeliveryDay> day = subscription.getDeliveryCalendar().findDayById(explicitDayId);
+    private DeliveryDayId resolveDeliveryDayId(Subscription subscription, String explicitDayId, LocalDate fallbackDate) {
+        if (explicitDayId != null && !explicitDayId.isBlank()) {
+            DeliveryDayId dayId = DeliveryDayId.of(explicitDayId);
+            Optional<DeliveryDay> day = subscription.getDeliveryCalendar().findDayById(dayId);
             if (day.isPresent()) {
                 return day.get().getId();
             }
@@ -168,7 +173,7 @@ public class DeliveryInboundAdapter {
                         + " for dayId: " + explicitDayId + " or date: " + fallbackDate);
     }
 
-    private boolean isAlreadyProcessed(UUID eventId, String eventFingerprint, UUID deliveryDayId, String payloadFingerprint) {
+    private boolean isAlreadyProcessed(UUID eventId, String eventFingerprint, String deliveryDayId, String payloadFingerprint) {
         var existingReceipt = receiptRepository.findById(eventId);
         if (existingReceipt.isPresent()) {
             if (existingReceipt.get().getEventFingerprint().equals(eventFingerprint)) {
@@ -188,7 +193,7 @@ public class DeliveryInboundAdapter {
     }
 
     private void saveReceipt(UUID eventId, String eventName, String eventVersion, Instant occurredOn,
-                             String source, String correlationId, UUID patientId, UUID deliveryDayId,
+                             String source, String correlationId, String patientId, String deliveryDayId,
                              String eventFingerprint, String payloadFingerprint) {
         ProcessedInboundEventReceiptJpaEntity receipt = new ProcessedInboundEventReceiptJpaEntity(
                 eventId,
@@ -224,24 +229,24 @@ public class DeliveryInboundAdapter {
         }
     }
 
-    private String confirmedPayloadFingerprint(DeliveryConfirmedData data, UUID resolvedDeliveryDayId) {
+    private String confirmedPayloadFingerprint(DeliveryConfirmedData data, DeliveryDayId resolvedDeliveryDayId) {
         return sha256(
                 safeString(data.idEntrega()),
                 safeString(data.idPaquete()),
                 safeString(data.idCalendarioDia()),
-                data.subscriptionId().toString(),
-                resolvedDeliveryDayId.toString(),
+                safeString(data.subscriptionId()),
+                resolvedDeliveryDayId.value(),
                 data.fechaHoraEntrega()
         );
     }
 
-    private String failedPayloadFingerprint(DeliveryFailedData data, UUID resolvedDeliveryDayId) {
+    private String failedPayloadFingerprint(DeliveryFailedData data, DeliveryDayId resolvedDeliveryDayId) {
         return sha256(
                 safeString(data.idEntrega()),
                 safeString(data.idPaquete()),
                 safeString(data.idCalendarioDia()),
-                data.subscriptionId().toString(),
-                resolvedDeliveryDayId.toString(),
+                safeString(data.subscriptionId()),
+                resolvedDeliveryDayId.value(),
                 data.fechaEntrega().toString(),
                 data.motivoFinal()
         );

@@ -7,6 +7,11 @@ import com.mcalvaro.mscatering.application.outbox.OutboxMessageRepository;
 import com.mcalvaro.mscatering.application.subscription.ConfirmDelivery.ConfirmDeliveryCommand;
 import com.mcalvaro.mscatering.application.subscription.CreateSubscription.CreateSubscriptionCommand;
 import com.mcalvaro.mscatering.domain.core.DomainException;
+import com.mcalvaro.mscatering.domain.core.id.AddressId;
+import com.mcalvaro.mscatering.domain.core.id.DeliveryDayId;
+import com.mcalvaro.mscatering.domain.core.id.DietPlanId;
+import com.mcalvaro.mscatering.domain.core.id.PatientId;
+import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
 import com.mcalvaro.mscatering.domain.dietplan.PlanType;
 import com.mcalvaro.mscatering.domain.subscription.ISubscriptionRepository;
 import com.mcalvaro.mscatering.domain.subscription.Subscription;
@@ -97,7 +102,7 @@ class SaveDomainEventToOutboxHandlerIT extends BaseIntegrationTest {
     void persistsOneDecodedSubscriptionCreatedOutboxMessageInTheCreationTransaction() {
         CreatedSubscription created = createSubscriptionThroughPipeline();
 
-        assertThat(subscriptionJpaRepository.findById(created.subscriptionId())).isPresent();
+        assertThat(subscriptionJpaRepository.findById(created.subscriptionId().value())).isPresent();
 
         List<OutboxMessageJpaEntity> rows = subscriptionCreatedRowsFor(created.subscriptionId());
 
@@ -122,7 +127,7 @@ class SaveDomainEventToOutboxHandlerIT extends BaseIntegrationTest {
     void persistsNoOutboxMessageForInternalDeliveryConfirmedEvent() {
         CreatedSubscription created = createSubscriptionThroughPipeline();
         int outboxCountBeforeConfirmation = outboxJpaRepository.findAll().size();
-        UUID deliveryDayId = transactionTemplate.execute(status -> subscriptionRepository.findById(created.subscriptionId())
+        DeliveryDayId deliveryDayId = transactionTemplate.execute(status -> subscriptionRepository.findById(created.subscriptionId())
                 .orElseThrow().getDeliveryCalendar().getDeliveryDays().get(0).getId());
 
         pipeline.send(new ConfirmDeliveryCommand(created.subscriptionId(), deliveryDayId));
@@ -138,7 +143,7 @@ class SaveDomainEventToOutboxHandlerIT extends BaseIntegrationTest {
 
     @Test
     void rollsBackSubscriptionAndRetainsAggregateEventsWhenACommittedDuplicateOutboxIdIsFlushed() {
-        UUID subscriptionId = UUID.randomUUID();
+        SubscriptionId subscriptionId = SubscriptionId.of("SUS-" + UUID.randomUUID());
         Subscription subscription = subscriptionWithKnownCreatedEvent(subscriptionId, "duplicate-correlation");
         SubscriptionCreated event = (SubscriptionCreated) subscription.getDomainEvents().get(0);
         OutboxMessage original = new OutboxMessage(event.eventId(), "subscription.created", "{\"preexisting\":true}",
@@ -151,7 +156,7 @@ class SaveDomainEventToOutboxHandlerIT extends BaseIntegrationTest {
             dispatcher.dispatch();
         })).isInstanceOf(RuntimeException.class);
 
-        assertThat(subscriptionJpaRepository.findById(subscriptionId)).isEmpty();
+        assertThat(subscriptionJpaRepository.findById(subscriptionId.value())).isEmpty();
         assertThat(outboxMessageRepository.findById(event.eventId())).contains(original);
         assertThat(outboxJpaRepository.findAll().stream().filter(row -> row.getId().equals(event.eventId()))).hasSize(1);
         assertThat(subscription.getDomainEvents()).containsExactly(event);
@@ -162,9 +167,9 @@ class SaveDomainEventToOutboxHandlerIT extends BaseIntegrationTest {
         long subscriptionsBefore = subscriptionJpaRepository.count();
         long outboxBefore = outboxJpaRepository.count();
         LocalDate start = LocalDate.now().plusDays(3);
-        CreateSubscriptionCommand invalidCommand = new CreateSubscriptionCommand(UUID.randomUUID(), UUID.randomUUID(),
+        CreateSubscriptionCommand invalidCommand = new CreateSubscriptionCommand("PAC-" + UUID.randomUUID(), "PLAN-" + UUID.randomUUID(),
                 start, start.plusDays(14), ServiceType.LUNCH.name(), new BigDecimal("249.90"), "Accepted terms",
-                UUID.randomUUID(), LocalTime.of(12, 0), LocalTime.of(14, 0), null);
+                "DIR-" + UUID.randomUUID(), LocalTime.of(12, 0), LocalTime.of(14, 0), null);
 
         assertThatThrownBy(() -> pipeline.send(invalidCommand)).isInstanceOf(DomainException.class);
 
@@ -173,18 +178,18 @@ class SaveDomainEventToOutboxHandlerIT extends BaseIntegrationTest {
     }
 
     private CreatedSubscription createSubscriptionThroughPipeline() {
-        UUID patientId = UUID.randomUUID();
+        String patientId = "PAC-" + UUID.randomUUID();
         patientFixture.ingestEligiblePatient(patientId);
-        UUID addressId = addressFixture.ingestAddress(patientId);
+        String addressId = addressFixture.ingestAddress(patientId);
         LocalDate start = LocalDate.now().plusDays(3);
-        UUID dietPlanId = dietPlanFixture.ingestActiveBasePlan(start, 15);
-        UUID subscriptionId = pipeline.send(new CreateSubscriptionCommand(patientId, dietPlanId, start, start.plusDays(14),
+        String dietPlanId = dietPlanFixture.ingestActiveBasePlan(start, 15);
+        SubscriptionId subscriptionId = pipeline.send(new CreateSubscriptionCommand(patientId, dietPlanId, start, start.plusDays(14),
                 ServiceType.LUNCH.name(), new BigDecimal("249.90"), "Accepted terms", addressId,
                 LocalTime.of(12, 0), LocalTime.of(14, 0), null));
         return new CreatedSubscription(subscriptionId);
     }
 
-    private List<OutboxMessageJpaEntity> subscriptionCreatedRowsFor(UUID subscriptionId) {
+    private List<OutboxMessageJpaEntity> subscriptionCreatedRowsFor(SubscriptionId subscriptionId) {
         return outboxJpaRepository.findAll().stream()
                 .filter(row -> "subscription.created".equals(row.getType()))
                 .filter(row -> codec.decode(row.getType(), row.getContent()) instanceof SubscriptionCreated event
@@ -192,19 +197,20 @@ class SaveDomainEventToOutboxHandlerIT extends BaseIntegrationTest {
                 .toList();
     }
 
-    private Subscription subscriptionWithKnownCreatedEvent(UUID subscriptionId, String correlationId) {
+    private Subscription subscriptionWithKnownCreatedEvent(SubscriptionId subscriptionId, String correlationId) {
         LocalDate start = LocalDate.now().plusDays(3);
-        UUID patientId = UUID.randomUUID();
-        ServiceContract contract = new ServiceContract(UUID.randomUUID(), PlanType.BASE,
+        PatientId patientId = PatientId.of("PAC-" + UUID.randomUUID());
+        DietPlanId dietPlanId = DietPlanId.of("PLAN-" + UUID.randomUUID());
+        ServiceContract contract = new ServiceContract(dietPlanId, PlanType.BASE,
                 new ValidityPeriod(start, start.plusDays(14)), ServiceType.LUNCH, new BigDecimal("249.90"),
                 "Accepted terms", Instant.now());
-        DeliveryAddress address = new DeliveryAddress(UUID.randomUUID(), "Home", "Main Street", "10", "Cochabamba",
+        DeliveryAddress address = new DeliveryAddress(AddressId.of("DIR-" + UUID.randomUUID()), "Home", "Main Street", "10", "Cochabamba",
                 "Near park", -17.3935, -66.1570, null);
         return Subscription.create(subscriptionId, patientId, contract.dietPlanId(), contract,
                 new DeliveryPreferences(address, new TimeWindow(LocalTime.of(12, 0), LocalTime.of(14, 0)), null),
                 subscriptionRepository.getNextContractSequenceOfYear(), List.of(), correlationId);
     }
 
-    private record CreatedSubscription(UUID subscriptionId) {
+    private record CreatedSubscription(SubscriptionId subscriptionId) {
     }
 }

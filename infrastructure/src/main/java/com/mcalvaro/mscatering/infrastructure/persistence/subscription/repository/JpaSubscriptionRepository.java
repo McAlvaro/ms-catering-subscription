@@ -1,6 +1,8 @@
 package com.mcalvaro.mscatering.infrastructure.persistence.subscription.repository;
 
 import com.mcalvaro.mscatering.application.abstractions.DomainEventDispatcher;
+import com.mcalvaro.mscatering.domain.core.id.PatientId;
+import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
 import com.mcalvaro.mscatering.domain.subscription.ISubscriptionRepository;
 import com.mcalvaro.mscatering.domain.subscription.Subscription;
 import com.mcalvaro.mscatering.domain.subscription.enums.SubscriptionStatus;
@@ -15,7 +17,6 @@ import org.springframework.web.context.request.RequestContextHolder;
 import java.time.Year;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Repository
 public class JpaSubscriptionRepository implements ISubscriptionRepository {
@@ -34,8 +35,8 @@ public class JpaSubscriptionRepository implements ISubscriptionRepository {
     }
 
     @Override
-    public Optional<Subscription> findById(UUID id) {
-        return springRepository.findById(id).map(mapper::toDomain);
+    public Optional<Subscription> findById(SubscriptionId id) {
+        return springRepository.findById(id.value()).map(mapper::toDomain);
     }
 
     @Override
@@ -76,9 +77,9 @@ public class JpaSubscriptionRepository implements ISubscriptionRepository {
     }
 
     @Override
-    public boolean hasActiveOrPausedSubscription(UUID patientId) {
+    public boolean hasActiveOrPausedSubscription(PatientId patientId) {
         return springRepository.existsByPatientIdAndStatusIn(
-                patientId,
+                patientId.value(),
                 List.of(
                         SubscriptionStatus.ACTIVE.name(),
                         SubscriptionStatus.PAUSED.name()));

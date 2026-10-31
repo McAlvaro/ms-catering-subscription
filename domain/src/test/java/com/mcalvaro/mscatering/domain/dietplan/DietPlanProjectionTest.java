@@ -1,6 +1,9 @@
 package com.mcalvaro.mscatering.domain.dietplan;
 
 import com.mcalvaro.mscatering.domain.core.DomainException;
+import com.mcalvaro.mscatering.domain.core.id.DietPlanId;
+import com.mcalvaro.mscatering.domain.core.id.PatientId;
+import com.mcalvaro.mscatering.domain.core.id.RecipeId;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
@@ -15,8 +18,8 @@ class DietPlanProjectionTest {
 
     @Test
     void preservesAnImmutablePersonalizedPlanSchedule() {
-        UUID patientId = UUID.randomUUID();
-        DietPlanProjection plan = new DietPlanProjection(UUID.randomUUID(), PlanType.PERSONALIZED, patientId, true,
+        PatientId patientId = PatientId.generate();
+        DietPlanProjection plan = new DietPlanProjection(DietPlanId.generate(), PlanType.PERSONALIZED, patientId, true,
                 LocalDate.of(2026, 2, 1), 1, List.of(day(1)));
 
         assertThat(plan.ownerPatient()).contains(patientId);
@@ -26,7 +29,7 @@ class DietPlanProjectionTest {
 
     @Test
     void rejectsSchedulesThatDoNotCoverEveryConsecutiveDay() {
-        assertThatThrownBy(() -> new DietPlanProjection(UUID.randomUUID(), PlanType.BASE, null, true,
+        assertThatThrownBy(() -> new DietPlanProjection(DietPlanId.generate(), PlanType.BASE, null, true,
                 LocalDate.of(2026, 2, 1), 2, List.of(day(2))))
                 .isInstanceOf(DomainException.class)
                 .hasFieldOrPropertyWithValue("code", "PROJ-001");
@@ -36,9 +39,9 @@ class DietPlanProjectionTest {
     void rejectsMealsScheduledAtTheSameTimeOnOneDay() {
         LocalTime breakfastTime = LocalTime.of(8, 0);
         DietPlanMeal breakfast = new DietPlanMeal(UUID.randomUUID(), MealType.BREAKFAST, breakfastTime,
-                List.of(new DietPlanRecipe(UUID.randomUUID(), "Breakfast", 250)));
+                List.of(new DietPlanRecipe(RecipeId.generate(), "Breakfast", 250)));
         DietPlanMeal duplicateBreakfast = new DietPlanMeal(UUID.randomUUID(), MealType.BREAKFAST, breakfastTime,
-                List.of(new DietPlanRecipe(UUID.randomUUID(), "Second breakfast", 200)));
+                List.of(new DietPlanRecipe(RecipeId.generate(), "Second breakfast", 200)));
 
         assertThatThrownBy(() -> new DietPlanDay(UUID.randomUUID(), 1, 2, List.of(breakfast, duplicateBreakfast)))
                 .isInstanceOf(DomainException.class)
@@ -48,6 +51,6 @@ class DietPlanProjectionTest {
     private DietPlanDay day(int number) {
         return new DietPlanDay(UUID.randomUUID(), number, 1,
                 List.of(new DietPlanMeal(UUID.randomUUID(), MealType.BREAKFAST, LocalTime.of(8, 0),
-                        List.of(new DietPlanRecipe(UUID.randomUUID(), "Breakfast", 250)))));
+                        List.of(new DietPlanRecipe(RecipeId.generate(), "Breakfast", 250)))));
     }
 }

@@ -8,15 +8,14 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.UUID;
 
 @Repository
-public interface SpringDataSubscriptionRepository extends JpaRepository<SubscriptionJpaEntity, UUID> {
+public interface SpringDataSubscriptionRepository extends JpaRepository<SubscriptionJpaEntity, String> {
 
     @Query("SELECT COUNT(s) FROM SubscriptionJpaEntity s WHERE YEAR(s.contractStartDate) = :year")
     int countSubscriptionsByYear(@Param("year") int year);
 
-    boolean existsByPatientIdAndStatusIn(UUID patientId, List<String> statuses);
+    boolean existsByPatientIdAndStatusIn(String patientId, List<String> statuses);
 
     List<SubscriptionJpaEntity> findByStatus(String status);
 

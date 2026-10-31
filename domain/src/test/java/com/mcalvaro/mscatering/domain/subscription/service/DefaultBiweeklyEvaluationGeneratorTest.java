@@ -1,5 +1,6 @@
 package com.mcalvaro.mscatering.domain.subscription.service;
 
+import com.mcalvaro.mscatering.domain.core.id.PatientId;
 import com.mcalvaro.mscatering.domain.subscription.entity.BiweeklyEvaluation;
 import com.mcalvaro.mscatering.domain.subscription.enums.PlanDuration;
 import org.junit.jupiter.api.DisplayName;
@@ -7,7 +8,6 @@ import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -18,7 +18,7 @@ class DefaultBiweeklyEvaluationGeneratorTest {
     void shouldGenerateOneEvaluationWhenDurationIsBiweekly() {
         // Arrange
         DefaultBiweeklyEvaluationGenerator generator = new DefaultBiweeklyEvaluationGenerator();
-        UUID patientId = UUID.randomUUID();
+        PatientId patientId = PatientId.generate();
 
         // Act
         List<BiweeklyEvaluation> evaluations = generator.generate(patientId, LocalDate.of(2026, 1, 5),
@@ -39,7 +39,7 @@ class DefaultBiweeklyEvaluationGeneratorTest {
         DefaultBiweeklyEvaluationGenerator generator = new DefaultBiweeklyEvaluationGenerator();
 
         // Act
-        List<BiweeklyEvaluation> evaluations = generator.generate(UUID.randomUUID(), LocalDate.of(2026, 1, 5),
+        List<BiweeklyEvaluation> evaluations = generator.generate(PatientId.generate(), LocalDate.of(2026, 1, 5),
                 PlanDuration.MONTHLY);
 
         // Assert
@@ -55,7 +55,7 @@ class DefaultBiweeklyEvaluationGeneratorTest {
         DefaultBiweeklyEvaluationGenerator generator = new DefaultBiweeklyEvaluationGenerator();
 
         // Act
-        List<BiweeklyEvaluation> evaluations = generator.generate(UUID.randomUUID(), LocalDate.of(2026, 2, 21),
+        List<BiweeklyEvaluation> evaluations = generator.generate(PatientId.generate(), LocalDate.of(2026, 2, 21),
                 PlanDuration.BIWEEKLY);
 
         // Assert
@@ -71,7 +71,7 @@ class DefaultBiweeklyEvaluationGeneratorTest {
         DefaultBiweeklyEvaluationGenerator generator = new DefaultBiweeklyEvaluationGenerator();
 
         // Act
-        List<BiweeklyEvaluation> evaluations = generator.generate(UUID.randomUUID(), LocalDate.of(2026, 2, 22),
+        List<BiweeklyEvaluation> evaluations = generator.generate(PatientId.generate(), LocalDate.of(2026, 2, 22),
                 PlanDuration.BIWEEKLY);
 
         // Assert
@@ -87,7 +87,7 @@ class DefaultBiweeklyEvaluationGeneratorTest {
         DefaultBiweeklyEvaluationGenerator generator = new DefaultBiweeklyEvaluationGenerator();
 
         // Act
-        List<BiweeklyEvaluation> evaluations = generator.generate(UUID.randomUUID(), LocalDate.of(2026, 1, 5), null);
+        List<BiweeklyEvaluation> evaluations = generator.generate(PatientId.generate(), LocalDate.of(2026, 1, 5), null);
 
         // Assert
         assertThat(evaluations).isEmpty();

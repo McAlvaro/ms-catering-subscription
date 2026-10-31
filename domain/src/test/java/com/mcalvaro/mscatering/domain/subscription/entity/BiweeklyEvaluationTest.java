@@ -1,11 +1,12 @@
 package com.mcalvaro.mscatering.domain.subscription.entity;
 
+import com.mcalvaro.mscatering.domain.core.id.EvaluationId;
+import com.mcalvaro.mscatering.domain.core.id.PatientId;
 import com.mcalvaro.mscatering.domain.subscription.enums.EvaluationStatus;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -16,8 +17,8 @@ class BiweeklyEvaluationTest {
     @DisplayName("Should create a pending biweekly evaluation with its scheduled details")
     void shouldCreatePendingBiweeklyEvaluationWhenDetailsAreProvided() {
         // Arrange
-        UUID id = UUID.randomUUID();
-        UUID patientId = UUID.randomUUID();
+        EvaluationId id = EvaluationId.generate();
+        PatientId patientId = PatientId.generate();
         LocalDate scheduledDate = LocalDate.of(2026, 2, 15);
 
         // Act
@@ -37,7 +38,7 @@ class BiweeklyEvaluationTest {
     void shouldMarkEvaluationCompletedWhenCompletionDateIsProvided() {
         // Arrange
         BiweeklyEvaluation evaluation = new BiweeklyEvaluation(
-                UUID.randomUUID(), UUID.randomUUID(), 1, LocalDate.of(2026, 2, 15));
+                EvaluationId.generate(), PatientId.generate(), 1, LocalDate.of(2026, 2, 15));
         LocalDate completedDate = LocalDate.of(2026, 2, 16);
 
         // Act
@@ -53,7 +54,7 @@ class BiweeklyEvaluationTest {
     void shouldCancelEvaluationWhenItIsPending() {
         // Arrange
         BiweeklyEvaluation evaluation = new BiweeklyEvaluation(
-                UUID.randomUUID(), UUID.randomUUID(), 1, LocalDate.of(2026, 2, 15));
+                EvaluationId.generate(), PatientId.generate(), 1, LocalDate.of(2026, 2, 15));
 
         // Act
         evaluation.cancel();
@@ -67,7 +68,7 @@ class BiweeklyEvaluationTest {
     @DisplayName("Should reject a null identifier through the inherited entity validation")
     void shouldThrowNullPointerExceptionWhenIdIsNull() {
         // Arrange
-        UUID patientId = UUID.randomUUID();
+        PatientId patientId = PatientId.generate();
         LocalDate scheduledDate = LocalDate.of(2026, 2, 15);
 
         // Act & Assert

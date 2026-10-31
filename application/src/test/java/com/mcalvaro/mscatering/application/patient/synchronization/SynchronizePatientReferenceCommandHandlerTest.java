@@ -1,5 +1,6 @@
 package com.mcalvaro.mscatering.application.patient.synchronization;
 
+import com.mcalvaro.mscatering.domain.core.id.PatientId;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -31,7 +32,7 @@ class SynchronizePatientReferenceCommandHandlerTest {
                 Instant.parse("2026-10-27T12:00:00Z"),
                 "MsPatientsConsulCore",
                 "corr-123",
-                UUID.fromString("660e8400-e29b-41d4-a716-446655440001"),
+                PatientId.of("PAC-660e8400-e29b-41d4-a716-446655440001"),
                 "Ada Lovelace",
                 "a".repeat(64));
 

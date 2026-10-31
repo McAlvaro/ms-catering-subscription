@@ -1,6 +1,10 @@
 package com.mcalvaro.mscatering.domain.subscription.event;
 
 import com.mcalvaro.mscatering.domain.core.CorrelatedDomainEvent;
+import com.mcalvaro.mscatering.domain.core.id.DietPlanId;
+import com.mcalvaro.mscatering.domain.core.id.EvaluationId;
+import com.mcalvaro.mscatering.domain.core.id.PatientId;
+import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
 import com.mcalvaro.mscatering.domain.subscription.vo.ContractCode;
 import com.mcalvaro.mscatering.domain.dietplan.PlanType;
 
@@ -13,26 +17,26 @@ import java.util.UUID;
 public record SubscriptionCreated(
         UUID eventId,
         Instant occurredAt,
-        UUID subscriptionId,
-        UUID patientId,
+        SubscriptionId subscriptionId,
+        PatientId patientId,
         ContractCode contractCode,
-        UUID dietPlanId,
+        DietPlanId dietPlanId,
         PlanType planType,
         LocalDate periodStart,
         LocalDate periodEnd,
         int durationDays,
-        List<UUID> evaluationIds,
+        List<EvaluationId> evaluationIds,
         BigDecimal totalPrice,
         String correlationId) implements CorrelatedDomainEvent {
 
-    public SubscriptionCreated(UUID subscriptionId, UUID patientId, ContractCode contractCode) {
+    public SubscriptionCreated(SubscriptionId subscriptionId, PatientId patientId, ContractCode contractCode) {
         this(UUID.randomUUID(), Instant.now(), subscriptionId, patientId, contractCode, null, null,
                 null, null, 0, List.of(), null, null);
     }
 
-    public SubscriptionCreated(UUID subscriptionId, UUID patientId, ContractCode contractCode, UUID dietPlanId,
+    public SubscriptionCreated(SubscriptionId subscriptionId, PatientId patientId, ContractCode contractCode, DietPlanId dietPlanId,
             PlanType planType, LocalDate periodStart, LocalDate periodEnd, int durationDays,
-            List<UUID> evaluationIds, BigDecimal totalPrice, String correlationId) {
+            List<EvaluationId> evaluationIds, BigDecimal totalPrice, String correlationId) {
         this(UUID.randomUUID(), Instant.now(), subscriptionId, patientId, contractCode, dietPlanId, planType,
                 periodStart, periodEnd, durationDays, List.copyOf(evaluationIds), totalPrice, correlationId);
     }

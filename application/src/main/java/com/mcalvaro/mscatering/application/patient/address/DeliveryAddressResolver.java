@@ -1,10 +1,10 @@
 package com.mcalvaro.mscatering.application.patient.address;
 
 import com.mcalvaro.mscatering.domain.core.DomainException;
+import com.mcalvaro.mscatering.domain.core.id.AddressId;
+import com.mcalvaro.mscatering.domain.core.id.PatientId;
 import com.mcalvaro.mscatering.domain.patient.IPatientAddressReferenceRepository;
 import com.mcalvaro.mscatering.domain.subscription.vo.DeliveryAddress;
-
-import java.util.UUID;
 
 /**
  * Resolves a BC1 address projection into the immutable delivery snapshot VO.
@@ -19,7 +19,7 @@ public class DeliveryAddressResolver {
         this.addressRepository = addressRepository;
     }
 
-    public DeliveryAddress resolve(UUID patientId, UUID addressId) {
+    public DeliveryAddress resolve(PatientId patientId, AddressId addressId) {
         if (patientId == null || addressId == null) {
             throw new DomainException("ADR-001", ADDRESS_NOT_AVAILABLE_MESSAGE);
         }

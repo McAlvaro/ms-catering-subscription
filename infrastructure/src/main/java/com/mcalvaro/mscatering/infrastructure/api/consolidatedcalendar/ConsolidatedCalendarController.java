@@ -4,6 +4,7 @@ import an.awesome.pipelinr.Pipeline;
 import com.mcalvaro.mscatering.application.consolidatedcalendar.CloseConsolidatedCalendar.CloseConsolidatedCalendarCommand;
 import com.mcalvaro.mscatering.application.consolidatedcalendar.GetConsolidatedCalendarByDate.ConsolidatedCalendarDto;
 import com.mcalvaro.mscatering.application.consolidatedcalendar.GetConsolidatedCalendarByDate.GetConsolidatedCalendarByDateQuery;
+import com.mcalvaro.mscatering.domain.core.id.ConsolidatedCalendarId;
 import com.mcalvaro.mscatering.infrastructure.api.consolidatedcalendar.dto.CloseConsolidatedCalendarRequest;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -26,14 +27,14 @@ public class ConsolidatedCalendarController {
 
     @PostMapping("/close")
     @Transactional
-    public ResponseEntity<UUID> closeCalendar(@RequestBody CloseConsolidatedCalendarRequest request,
+    public ResponseEntity<ConsolidatedCalendarId> closeCalendar(@RequestBody CloseConsolidatedCalendarRequest request,
             @RequestHeader(value = "X-Correlation-Id", required = false) String correlationId) {
         CloseConsolidatedCalendarCommand command = new CloseConsolidatedCalendarCommand(
                 request.date(),
                 request.closedBy(),
                 correlationId == null || correlationId.isBlank() ? UUID.randomUUID().toString() : correlationId
         );
-        UUID calendarId = pipeline.send(command);
+        ConsolidatedCalendarId calendarId = pipeline.send(command);
         return ResponseEntity.status(HttpStatus.CREATED).body(calendarId);
     }
 

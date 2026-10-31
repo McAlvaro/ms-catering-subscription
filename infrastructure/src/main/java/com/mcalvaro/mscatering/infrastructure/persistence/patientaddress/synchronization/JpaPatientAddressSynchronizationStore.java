@@ -38,15 +38,15 @@ public class JpaPatientAddressSynchronizationStore implements PatientAddressSync
                 return;
             throw conflict("Inbound eventId was reused with different canonical content");
         }
-        if (receiptRepository.existsBySubjectKindAndSubjectIdAndPayloadFingerprint(ReceiptSubjectKind.PATIENT_ADDRESS.name(), command.addressId(),
+        if (receiptRepository.existsBySubjectKindAndSubjectIdAndPayloadFingerprint(ReceiptSubjectKind.PATIENT_ADDRESS.name(), command.addressId().value(),
                 command.payloadFingerprint())) {
             receiptRepository.saveAndFlush(receipt(command, eventFingerprint));
             return;
         }
-        if (addressRepository.existsById(command.addressId())) {
+        if (addressRepository.existsById(command.addressId().value())) {
             throw conflict("Address identity already has different canonical content");
         }
-        addressRepository.save(new PatientAddressReferenceJpaEntity(command.addressId(), command.patientId(), command.alias(),
+        addressRepository.save(new PatientAddressReferenceJpaEntity(command.addressId().value(), command.patientId().value(), command.alias(),
                 command.street(), command.reference(), command.city(), command.latitude(), command.longitude()));
         receiptRepository.saveAndFlush(receipt(command, eventFingerprint));
     }
@@ -54,8 +54,8 @@ public class JpaPatientAddressSynchronizationStore implements PatientAddressSync
     private ProcessedInboundEventReceiptJpaEntity receipt(SynchronizePatientAddressCommand command,
             String eventFingerprint) {
         return new ProcessedInboundEventReceiptJpaEntity(command.eventId(), command.eventName(), command.eventVersion(),
-                command.occurredOn(), command.source(), command.correlationId(), command.patientId(),
-                command.addressId(),
+                command.occurredOn(), command.source(), command.correlationId(), command.patientId().value(),
+                command.addressId().value(),
                 eventFingerprint, command.payloadFingerprint());
     }
 

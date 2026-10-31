@@ -11,15 +11,14 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Entity
 @Table(name = "consolidated_calendars")
 public class ConsolidatedCalendarJpaEntity {
 
     @Id
-    @Column(name = "id", updatable = false, nullable = false)
-    private UUID id;
+    @Column(name = "id", updatable = false, nullable = false, length = 64)
+    private String id;
 
     @Column(name = "date", nullable = false)
     private LocalDate date;
@@ -42,11 +41,11 @@ public class ConsolidatedCalendarJpaEntity {
     public ConsolidatedCalendarJpaEntity() {
     }
 
-    public UUID getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(String id) {
         this.id = id;
     }
 

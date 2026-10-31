@@ -23,7 +23,7 @@ class PatientRegisteredEventJsonTest {
 
     @Test
     void readsTheExternalOperationalNameAndIgnoresUnneededPii() throws Exception {
-        UUID patientId = UUID.randomUUID();
+        String patientId = "PAC-1001";
 
         PatientRegisteredEvent event = objectMapper.readValue("""
                 {
@@ -54,16 +54,16 @@ class PatientRegisteredEventJsonTest {
         PatientRegisteredEvent event = objectMapper.readValue("""
                 {"eventId":"550e8400-e29b-41d4-a716-446655440000","eventName":"bc1.PacienteRegistrado",
                  "eventVersion":"1.0","occurredOn":"2026-10-27T12:00:00Z","source":"MsPatientsConsulCore",
-                 "correlationId":"corr-123","data":{"idPaciente":"660e8400-e29b-41d4-a716-446655440001"}}
+                 "correlationId":"corr-123","data":{"idPaciente":"PAC-1001"}}
                 """, PatientRegisteredEvent.class);
 
-        assertThat(event.data().patientId()).isEqualTo(UUID.fromString("660e8400-e29b-41d4-a716-446655440001"));
+        assertThat(event.data().patientId()).isEqualTo("PAC-1001");
     }
 
     @Test
-    void rejectsMalformedPatientUuidAndMissingConsumedDataBeforeDispatch() throws Exception {
+    void rejectsMalformedPatientAndMissingConsumedDataBeforeDispatch() throws Exception {
         assertThatThrownBy(() -> objectMapper.readValue("""
-                {"data":{"idPaciente":"not-a-uuid"}}
+                {"data":{"idPaciente":{"invalid":"type"}}}
                 """, PatientRegisteredEvent.class))
                 .isInstanceOf(JsonProcessingException.class);
 
@@ -92,14 +92,14 @@ class PatientRegisteredEventJsonTest {
                   "occurredOn":"2026-10-27T12:00:00Z",
                   "source":"MsPatientsConsulCore",
                   "correlationId":"corr-123",
-                  "data":{"idPaciente":"660e8400-e29b-41d4-a716-446655440001"},
-                  "payload":{"patientId":"660e8400-e29b-41d4-a716-446655440001"}
+                  "data":{"idPaciente":"PAC-1001"},
+                  "payload":{"patientId":"PAC-1001"}
                 }
                 """, PatientRegisteredEvent.class))
                 .isInstanceOf(JsonProcessingException.class);
 
         PatientRegisteredEvent legacyPatientId = objectMapper.readValue(validEnvelopeWithData("""
-                {"patientId":"660e8400-e29b-41d4-a716-446655440001"}
+                {"patientId":"PAC-1001"}
                 """), PatientRegisteredEvent.class);
         assertThat(legacyPatientId.data().patientId()).isNull();
         assertThatThrownBy(() -> adapter.receive(legacyPatientId))

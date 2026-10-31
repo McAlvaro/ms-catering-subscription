@@ -1,6 +1,11 @@
 package com.mcalvaro.mscatering.application.subscription.RegisterFailedDelivery;
 
 import com.mcalvaro.mscatering.domain.core.DomainException;
+import com.mcalvaro.mscatering.domain.core.id.AddressId;
+import com.mcalvaro.mscatering.domain.core.id.DeliveryDayId;
+import com.mcalvaro.mscatering.domain.core.id.DietPlanId;
+import com.mcalvaro.mscatering.domain.core.id.PatientId;
+import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
 import com.mcalvaro.mscatering.domain.subscription.ISubscriptionRepository;
 import com.mcalvaro.mscatering.domain.subscription.Subscription;
 import com.mcalvaro.mscatering.domain.subscription.entity.DeliveryDay;
@@ -23,7 +28,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -65,7 +69,7 @@ class RegisterFailedDeliveryCommandHandlerTest {
     @DisplayName("Should throw an exception and not save when the subscription is absent")
     void shouldThrowExceptionAndNotSaveWhenSubscriptionIsAbsent() {
         // Arrange
-        RegisterFailedDeliveryCommand command = new RegisterFailedDeliveryCommand(UUID.randomUUID(), UUID.randomUUID(), "Recipient unavailable");
+        RegisterFailedDeliveryCommand command = new RegisterFailedDeliveryCommand(SubscriptionId.generate(), DeliveryDayId.generate(), "Recipient unavailable");
         when(subscriptionRepository.findById(command.subscriptionId())).thenReturn(Optional.empty());
 
         // Act & Assert
@@ -79,7 +83,7 @@ class RegisterFailedDeliveryCommandHandlerTest {
     void shouldPropagateAggregateExceptionAndNotSaveWhenDeliveryDayIsUnknown() {
         // Arrange
         Subscription subscription = buildSubscription();
-        RegisterFailedDeliveryCommand command = new RegisterFailedDeliveryCommand(subscription.getId(), UUID.randomUUID(), "Recipient unavailable");
+        RegisterFailedDeliveryCommand command = new RegisterFailedDeliveryCommand(subscription.getId(), DeliveryDayId.generate(), "Recipient unavailable");
         when(subscriptionRepository.findById(command.subscriptionId())).thenReturn(Optional.of(subscription));
 
         // Act & Assert
@@ -89,7 +93,8 @@ class RegisterFailedDeliveryCommandHandlerTest {
 
     private Subscription buildSubscription() {
         LocalDate startDate = LocalDate.of(2099, 1, 1);
-        DeliveryAddress address = new DeliveryAddress("Main Street", "10", "Madrid", "Door A", 40.4168, -3.7038, "600000000");
-        return Subscription.create(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), new ServiceContract(UUID.randomUUID(), com.mcalvaro.mscatering.domain.dietplan.PlanType.BASE, new ValidityPeriod(startDate, startDate.plusDays(14)), ServiceType.FULL, new BigDecimal("250.00"), "Terms accepted", Instant.parse("2025-01-01T10:00:00Z")), new DeliveryPreferences(address, new TimeWindow(LocalTime.of(9, 0), LocalTime.of(11, 0)), "Leave at reception"), 1);
+        DeliveryAddress address = new DeliveryAddress(AddressId.generate(), "Main Street", "10", "Madrid", "Door A", 40.4168, -3.7038, "600000000");
+        DietPlanId planId = DietPlanId.generate();
+        return Subscription.create(SubscriptionId.generate(), PatientId.generate(), planId, new ServiceContract(planId, com.mcalvaro.mscatering.domain.dietplan.PlanType.BASE, new ValidityPeriod(startDate, startDate.plusDays(14)), ServiceType.FULL, new BigDecimal("250.00"), "Terms accepted", Instant.parse("2025-01-01T10:00:00Z")), new DeliveryPreferences(address, new TimeWindow(LocalTime.of(9, 0), LocalTime.of(11, 0)), "Leave at reception"), 1);
     }
 }

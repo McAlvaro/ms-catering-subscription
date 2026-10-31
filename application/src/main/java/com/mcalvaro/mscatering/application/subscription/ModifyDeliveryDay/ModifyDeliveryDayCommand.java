@@ -1,9 +1,10 @@
 package com.mcalvaro.mscatering.application.subscription.ModifyDeliveryDay;
 
 import an.awesome.pipelinr.Command;
+import com.mcalvaro.mscatering.domain.core.id.DeliveryDayId;
+import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
 
 import java.time.LocalTime;
-import java.util.UUID;
 
 /**
  * Command to modify the delivery details of a specific day.
@@ -13,8 +14,8 @@ import java.util.UUID;
  * The 48-hour anticipation rule (RN-02) is enforced by the aggregate.
  */
 public record ModifyDeliveryDayCommand(
-        UUID subscriptionId,
-        UUID deliveryDayId,
+        SubscriptionId subscriptionId,
+        DeliveryDayId deliveryDayId,
         String street,
         String number,
         String city,
@@ -25,4 +26,21 @@ public record ModifyDeliveryDayCommand(
         LocalTime startTime,
         LocalTime endTime,
         String instructions) implements Command<Void> {
+
+    public ModifyDeliveryDayCommand(
+            String subscriptionId,
+            String deliveryDayId,
+            String street,
+            String number,
+            String city,
+            String reference,
+            double latitude,
+            double longitude,
+            String phone,
+            LocalTime startTime,
+            LocalTime endTime,
+            String instructions) {
+        this(SubscriptionId.of(subscriptionId), DeliveryDayId.of(deliveryDayId),
+                street, number, city, reference, latitude, longitude, phone, startTime, endTime, instructions);
+    }
 }

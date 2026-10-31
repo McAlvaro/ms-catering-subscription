@@ -50,22 +50,22 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
     @Autowired
     private DietPlanProjectionFixture dietPlanFixture;
 
-    private UUID activePatientId;
-    private UUID inactivePatientId;
-    private UUID activeAddressId;
-    private UUID foreignAddressId;
-    private final java.util.Map<Integer, UUID> planIds = new java.util.HashMap<>();
+    private String activePatientId;
+    private String inactivePatientId;
+    private String activeAddressId;
+    private String foreignAddressId;
+    private final java.util.Map<Integer, String> planIds = new java.util.HashMap<>();
 
     @BeforeEach
     void setUpPatients() {
         // Active patient — eligible to subscribe
-        activePatientId = UUID.randomUUID();
+        activePatientId = "PAC-" + UUID.randomUUID();
         patientFixture.ingestEligiblePatient(activePatientId);
         activeAddressId = addressFixture.ingestAddress(activePatientId);
-        foreignAddressId = addressFixture.ingestAddress(UUID.randomUUID());
+        foreignAddressId = addressFixture.ingestAddress("PAC-" + UUID.randomUUID());
 
         // Inactive patient — blocked by SUB-015
-        inactivePatientId = UUID.randomUUID();
+        inactivePatientId = "PAC-" + UUID.randomUUID();
         patientFixture.ingestIneligiblePatient(inactivePatientId);
         LocalDate start = LocalDate.now().plusDays(1);
         for (int duration : List.of(15, 20, 30)) {
@@ -114,7 +114,7 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
         @DisplayName("Should return 400 SUB-014 when patient does not exist in the local read model")
         void shouldReturn400WhenPatientNotFound() throws Exception {
             // Arrange
-            UUID unknownPatientId = UUID.randomUUID();
+            String unknownPatientId = "PAC-" + UUID.randomUUID();
             String body = objectMapper.writeValueAsString(buildValidCommand(unknownPatientId, 15));
 
             // Act & Assert
@@ -143,9 +143,9 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
         @DisplayName("Should return 400 SUB-013 when patient already has an ACTIVE or PAUSED subscription")
         void shouldReturn400WhenDuplicateSubscription() throws Exception {
             // Arrange — create the first subscription successfully
-            UUID patientId = UUID.randomUUID();
+            String patientId = "PAC-" + UUID.randomUUID();
             patientFixture.ingestEligiblePatient(patientId);
-            UUID addressId = addressFixture.ingestAddress(patientId);
+            String addressId = addressFixture.ingestAddress(patientId);
 
             String firstBody = objectMapper.writeValueAsString(buildValidCommand(patientId, addressId, 15));
             mockMvc.perform(post(URL)
@@ -223,7 +223,7 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
             // Arrange — same day: startDate == endDate
             LocalDate sameDay = LocalDate.now().plusDays(1);
             CreateSubscriptionCommand command = new CreateSubscriptionCommand(
-                    activePatientId, UUID.randomUUID(), sameDay, sameDay, "LUNCH", new BigDecimal("250.00"),
+                    activePatientId, "PLAN-" + UUID.randomUUID(), sameDay, sameDay, "LUNCH", new BigDecimal("250.00"),
                     "Acepto términos y condiciones del servicio de catering.", activeAddressId,
                     LocalTime.of(12, 0), LocalTime.of(14, 0), null);
             String body = objectMapper.writeValueAsString(command);
@@ -292,7 +292,7 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
         @DisplayName("Should return 400 ADR-001 when the selected address belongs to another patient")
         void shouldReturn400WhenAddressIsForeign() throws Exception {
             String body = buildValidCommandJson(activePatientId, 15)
-                    .replace(activeAddressId.toString(), foreignAddressId.toString());
+                    .replace(activeAddressId, foreignAddressId);
 
             // Act & Assert
             mockMvc.perform(post(URL)
@@ -306,7 +306,7 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
         @DisplayName("Should return 400 ADR-001 when the selected address does not exist")
         void shouldReturn400WhenAddressIsMissing() throws Exception {
             String body = buildValidCommandJson(activePatientId, 15)
-                    .replace(activeAddressId.toString(), "00000000-0000-0000-0000-000000000001");
+                    .replace(activeAddressId, "DIR-00000000-0000-0000-0000-000000000001");
 
             // Act & Assert
             mockMvc.perform(post(URL)
@@ -383,11 +383,11 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
         }
     }
 
-    private CreateSubscriptionCommand buildValidCommand(UUID patientId, int planDays) {
+    private CreateSubscriptionCommand buildValidCommand(String patientId, int planDays) {
         return buildValidCommand(patientId, activeAddressId, planDays);
     }
 
-    private CreateSubscriptionCommand buildValidCommand(UUID patientId, UUID addressId, int planDays) {
+    private CreateSubscriptionCommand buildValidCommand(String patientId, String addressId, int planDays) {
         LocalDate start = LocalDate.now().plusDays(1);
         LocalDate end = start.plusDays(planDays - 1);
         return buildCommand(patientId, addressId, start, end,
@@ -396,12 +396,12 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
     }
 
     private CreateSubscriptionCommand buildCommand(
-            UUID patientId, LocalDate start, LocalDate end, String acceptedConditions,
+            String patientId, LocalDate start, LocalDate end, String acceptedConditions,
             LocalTime prefTimeStart, LocalTime prefTimeEnd) {
         return buildCommand(patientId, activeAddressId, start, end, acceptedConditions, prefTimeStart, prefTimeEnd);
     }
 
-    private CreateSubscriptionCommand buildCommand(UUID patientId, UUID addressId, LocalDate start, LocalDate end,
+    private CreateSubscriptionCommand buildCommand(String patientId, String addressId, LocalDate start, LocalDate end,
             String acceptedConditions, LocalTime prefTimeStart, LocalTime prefTimeEnd) {
         return new CreateSubscriptionCommand(
                 patientId,
@@ -418,7 +418,7 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
                 "Sin picante");
     }
 
-    private String buildValidCommandJson(UUID patientId, int planDays) throws Exception {
+    private String buildValidCommandJson(String patientId, int planDays) throws Exception {
         return objectMapper.writeValueAsString(buildValidCommand(patientId, planDays));
     }
 }

@@ -1,12 +1,12 @@
 package com.mcalvaro.mscatering.domain.subscription.entity;
 
+import com.mcalvaro.mscatering.domain.core.id.PauseRequestId;
 import com.mcalvaro.mscatering.domain.subscription.vo.PauseRange;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -17,7 +17,7 @@ class PauseRequestTest {
     @DisplayName("Should create an active pause request with its requested range and reason")
     void shouldCreateActivePauseRequestWhenValidDetailsAreProvided() {
         // Arrange
-        UUID id = UUID.randomUUID();
+        PauseRequestId id = PauseRequestId.generate();
         PauseRange range = pauseRange();
         Instant beforeCreation = Instant.now();
 
@@ -39,7 +39,7 @@ class PauseRequestTest {
     void shouldEarlyReactivateWhenReactivationDateIsProvided() {
         // Arrange
         PauseRange range = pauseRange();
-        PauseRequest pauseRequest = new PauseRequest(UUID.randomUUID(), range, "Vacation");
+        PauseRequest pauseRequest = new PauseRequest(PauseRequestId.generate(), range, "Vacation");
         Instant createdAt = pauseRequest.getCreatedAt();
         LocalDate reactivationDate = range.startDate().plusDays(1);
 
@@ -58,7 +58,7 @@ class PauseRequestTest {
     @DisplayName("Should replace the actual end date when early reactivation is requested again")
     void shouldReplaceActualEndDateWhenEarlyReactivationIsRequestedAgain() {
         // Arrange
-        PauseRequest pauseRequest = new PauseRequest(UUID.randomUUID(), pauseRange(), "Vacation");
+        PauseRequest pauseRequest = new PauseRequest(PauseRequestId.generate(), pauseRange(), "Vacation");
         LocalDate firstReactivationDate = LocalDate.now().plusDays(4);
         LocalDate finalReactivationDate = firstReactivationDate.plusDays(1);
         pauseRequest.earlyReactivate(firstReactivationDate);

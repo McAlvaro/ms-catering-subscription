@@ -6,6 +6,11 @@ import au.com.dius.pact.provider.junitsupport.Provider;
 import au.com.dius.pact.provider.junitsupport.State;
 import au.com.dius.pact.provider.junitsupport.loader.PactFolder;
 import au.com.dius.pact.provider.spring.junit5.PactVerificationSpringProvider;
+import com.mcalvaro.mscatering.domain.core.id.AddressId;
+import com.mcalvaro.mscatering.domain.core.id.DietPlanId;
+import com.mcalvaro.mscatering.domain.core.id.EvaluationId;
+import com.mcalvaro.mscatering.domain.core.id.PatientId;
+import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
 import com.mcalvaro.mscatering.domain.subscription.Subscription;
 import com.mcalvaro.mscatering.domain.subscription.entity.BiweeklyEvaluation;
 import com.mcalvaro.mscatering.domain.subscription.enums.ServiceType;
@@ -113,30 +118,30 @@ class SubscriptionProviderPactTest {
      * Estado requerido para Interacción 1 (POST /api/subscriptions).
      * Asegura que el paciente con UUID fijo del contrato exista y esté activo.
      */
-    @State("a patient with ID 550e8400-e29b-41d4-a716-446655440000 exists and owns address 770e8400-e29b-41d4-a716-446655440010")
+    @State("a patient with ID PAC-550e8400-e29b-41d4-a716-446655440000 exists and owns address DIR-770e8400-e29b-41d4-a716-446655440010")
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Rollback(false)
     void patientExistsAndIsEligible() {
-        UUID patientId = UUID.fromString("550e8400-e29b-41d4-a716-446655440000");
-        savePatientAndAddress(patientId, UUID.fromString("770e8400-e29b-41d4-a716-446655440010"));
-        ingestPactPlan(UUID.fromString("660e8400-e29b-41d4-a716-446655440001"), LocalDate.of(2026, 10, 1));
+        String patientId = "PAC-550e8400-e29b-41d4-a716-446655440000";
+        savePatientAndAddress(patientId, "DIR-770e8400-e29b-41d4-a716-446655440010");
+        ingestPactPlan("PLAN-660e8400-e29b-41d4-a716-446655440001", LocalDate.of(2026, 10, 1));
     }
 
     /**
      * Estado requerido para Interacción 2 (GET /api/subscriptions/{id}).
-     * Persiste una suscripción activa con el UUID fijo del contrato.
+     * Persiste una suscripción activa con el ID fijo del contrato.
      */
-    @State("a subscription with ID 770e8400-e29b-41d4-a716-446655440002 exists")
+    @State("a subscription with ID SUS-770e8400-e29b-41d4-a716-446655440002 exists")
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Rollback(false)
     void subscriptionExistsInRepository() {
-        UUID subscriptionId = UUID.fromString("770e8400-e29b-41d4-a716-446655440002");
-        UUID patientId = UUID.fromString("550e8400-e29b-41d4-a716-446655440000");
-        UUID dietPlanId = UUID.fromString("660e8400-e29b-41d4-a716-446655440001");
+        SubscriptionId subscriptionId = SubscriptionId.of("SUS-770e8400-e29b-41d4-a716-446655440002");
+        PatientId patientId = PatientId.of("PAC-550e8400-e29b-41d4-a716-446655440000");
+        DietPlanId dietPlanId = DietPlanId.of("PLAN-660e8400-e29b-41d4-a716-446655440001");
 
-        savePatientAndAddress(patientId, UUID.fromString("770e8400-e29b-41d4-a716-446655440010"));
+        savePatientAndAddress(patientId.value(), "DIR-770e8400-e29b-41d4-a716-446655440010");
 
-        if (!springDataSubscriptionRepository.existsById(subscriptionId)) {
+        if (!springDataSubscriptionRepository.existsById(subscriptionId.value())) {
             LocalDate startDate = LocalDate.now().plusDays(1);
             ServiceContract contract = new ServiceContract(
                     dietPlanId,
@@ -149,7 +154,8 @@ class SubscriptionProviderPactTest {
 
             DeliveryPreferences preferences = new DeliveryPreferences(
                     new DeliveryAddress(
-                            "Av. Siempre Viva", "742", "Lima",
+                            AddressId.of("DIR-770e8400-e29b-41d4-a716-446655440010"),
+                            "Home", "Av. Siempre Viva", "742", "Lima",
                             "Frente al parque", -12.046374, -77.042793, "+51 999 888 777"),
                     new TimeWindow(LocalTime.of(12, 0), LocalTime.of(14, 0)),
                     "Sin picante");
@@ -158,7 +164,7 @@ class SubscriptionProviderPactTest {
                     subscriptionId, patientId, dietPlanId, contract, preferences, 99);
 
             BiweeklyEvaluation evaluation = new BiweeklyEvaluation(
-                    UUID.randomUUID(), patientId, 1, startDate.plusDays(14));
+                    EvaluationId.of("EVAL-" + UUID.randomUUID()), patientId, 1, startDate.plusDays(14));
             subscription.scheduleEvaluations(java.util.List.of(evaluation));
 
             SubscriptionJpaEntity jpaEntity = subscriptionMapper.toJpaEntity(subscription);
@@ -166,7 +172,7 @@ class SubscriptionProviderPactTest {
         }
     }
 
-    private void savePatientAndAddress(UUID patientId, UUID addressId) {
+    private void savePatientAndAddress(String patientId, String addressId) {
         if (!patientReferenceRepository.existsById(patientId)) {
             PatientReferenceJpaEntity patient = new PatientReferenceJpaEntity();
             patient.setPatientId(patientId);
@@ -181,7 +187,7 @@ class SubscriptionProviderPactTest {
         }
     }
 
-    private void ingestPactPlan(UUID planId, LocalDate start) {
+    private void ingestPactPlan(String planId, LocalDate start) {
         RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(new MockHttpServletRequest()));
         try {
             dietPlanInboundAdapter.receiveBase(new DietPlanInboundAdapter.DietPlanCreatedEvent(UUID.randomUUID(),
@@ -190,7 +196,7 @@ class SubscriptionProviderPactTest {
                             java.util.stream.IntStream.rangeClosed(1, 15).mapToObj(day ->
                                     new DietPlanInboundAdapter.DietPlanDayData(UUID.randomUUID(), day, 1,
                                             List.of(new DietPlanInboundAdapter.DietPlanMealData(UUID.randomUUID(), com.mcalvaro.mscatering.domain.dietplan.MealType.LUNCH, "12:00",
-                                                    List.of(new DietPlanInboundAdapter.DietPlanRecipeData(UUID.randomUUID(), "Pact recipe", 100)))))).toList(),
+                                                    List.of(new DietPlanInboundAdapter.DietPlanRecipeData("REC-" + UUID.randomUUID(), "Pact recipe", 100)))))).toList(),
                             null, null, null)));
         } finally {
             RequestContextHolder.resetRequestAttributes();

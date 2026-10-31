@@ -16,7 +16,7 @@ public final class SubscriptionReactivatedOutboxEventTranslator
             throw new IntegrationEventTranslationException("SubscriptionReactivated must not be null");
         return new SubscriptionReactivatedIntegrationEvent(source.eventId(), source.occurredAt(),
                 source.correlationId(),
-                new SubscriptionReactivatedIntegrationEvent.Data(source.subscriptionId(), source.patientId(),
+                new SubscriptionReactivatedIntegrationEvent.Data(source.subscriptionId().value(), source.patientId().value(),
                         source.reactivatedOn(), source.effectiveEndDate()));
     }
 }

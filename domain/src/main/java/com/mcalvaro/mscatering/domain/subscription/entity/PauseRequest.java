@@ -1,6 +1,7 @@
 package com.mcalvaro.mscatering.domain.subscription.entity;
 
 import com.mcalvaro.mscatering.domain.core.Entity;
+import com.mcalvaro.mscatering.domain.core.id.PauseRequestId;
 import com.mcalvaro.mscatering.domain.subscription.vo.PauseRange;
 
 import java.time.Instant;
@@ -8,10 +9,9 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 /**
- * Entity representing a formal pause request for a subscription
- * (SolicitudDePausa).
+ * Entity representing a formal pause request for a subscription (SolicitudDePausa).
  */
-public class PauseRequest extends Entity {
+public class PauseRequest extends Entity<PauseRequestId> {
 
     private final PauseRange range;
     private final String reason;
@@ -21,11 +21,11 @@ public class PauseRequest extends Entity {
     private int extensionDays;
     private boolean active;
 
-    public PauseRequest(UUID id, PauseRange range, String reason) {
+    public PauseRequest(PauseRequestId id, PauseRange range, String reason) {
         this(id, range, reason, UUID.randomUUID().toString(), range.durationDays());
     }
 
-    public PauseRequest(UUID id, PauseRange range, String reason, String correlationId, int extensionDays) {
+    public PauseRequest(PauseRequestId id, PauseRange range, String reason, String correlationId, int extensionDays) {
         super(id);
         this.range = range;
         this.reason = reason;

@@ -4,6 +4,15 @@ import com.mcalvaro.mscatering.domain.consolidatedcalendar.entity.ConsolidatedDe
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.entity.ConsolidatedRecipeSnapshot;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.event.ConsolidatedCalendarClosed;
 import com.mcalvaro.mscatering.domain.core.DomainEvent;
+import com.mcalvaro.mscatering.domain.core.id.AddressId;
+import com.mcalvaro.mscatering.domain.core.id.ConsolidatedCalendarId;
+import com.mcalvaro.mscatering.domain.core.id.ConsolidatedLineId;
+import com.mcalvaro.mscatering.domain.core.id.DeliveryDayId;
+import com.mcalvaro.mscatering.domain.core.id.DietPlanId;
+import com.mcalvaro.mscatering.domain.core.id.EvaluationId;
+import com.mcalvaro.mscatering.domain.core.id.PatientId;
+import com.mcalvaro.mscatering.domain.core.id.RecipeId;
+import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
 import com.mcalvaro.mscatering.domain.dietplan.PlanType;
 import com.mcalvaro.mscatering.domain.subscription.event.SubscriptionCancelled;
 import com.mcalvaro.mscatering.domain.subscription.event.SubscriptionCompleted;
@@ -89,8 +98,8 @@ class JacksonDomainEventCodecTest {
     @Test
     void doesNotSupportInternalOrNullEvents() {
         assertThat(codec.supports(new DeliveryConfirmed(
-                UUID.fromString("00000000-0000-0000-0000-000000000002"),
-                UUID.fromString("00000000-0000-0000-0000-000000000003")))).isFalse();
+                SubscriptionId.of("SUS-00000000-0000-0000-0000-000000000002"),
+                DeliveryDayId.of("CD-00000000-0000-0000-0000-000000000003")))).isFalse();
         assertThat(codec.supports(null)).isFalse();
     }
 
@@ -162,63 +171,63 @@ class JacksonDomainEventCodecTest {
 
     private static SubscriptionCreated subscriptionCreated() {
         return new SubscriptionCreated(UUID.fromString("00000000-0000-0000-0000-000000000001"), FIXED_INSTANT,
-                UUID.fromString("00000000-0000-0000-0000-000000000002"),
-                UUID.fromString("00000000-0000-0000-0000-000000000003"), new ContractCode("NTC-2026-0001"),
-                UUID.fromString("00000000-0000-0000-0000-000000000004"), PlanType.BASE,
+                SubscriptionId.of("SUS-00000000-0000-0000-0000-000000000002"),
+                PatientId.of("PAC-00000000-0000-0000-0000-000000000003"), new ContractCode("NTC-2026-0001"),
+                DietPlanId.of("PLAN-00000000-0000-0000-0000-000000000004"), PlanType.BASE,
                 LocalDate.of(2026, 1, 10), LocalDate.of(2026, 1, 24), 15,
-                List.of(UUID.fromString("00000000-0000-0000-0000-000000000005"),
-                        UUID.fromString("00000000-0000-0000-0000-000000000006")),
+                List.of(EvaluationId.of("EVAL-00000000-0000-0000-0000-000000000005"),
+                        EvaluationId.of("EVAL-00000000-0000-0000-0000-000000000006")),
                 new BigDecimal("249.90"), "correlation-created");
     }
 
     private static SubscriptionPaused subscriptionPaused() {
         return new SubscriptionPaused(UUID.fromString("00000000-0000-0000-0000-000000000007"), FIXED_INSTANT,
-                UUID.fromString("00000000-0000-0000-0000-000000000002"),
-                UUID.fromString("00000000-0000-0000-0000-000000000003"),
+                SubscriptionId.of("SUS-00000000-0000-0000-0000-000000000002"),
+                PatientId.of("PAC-00000000-0000-0000-0000-000000000003"),
                 new PauseRange(LocalDate.of(2024, 2, 10), LocalDate.of(2024, 2, 12)), "Travel",
                 LocalDate.of(2024, 2, 1), LocalDate.of(2026, 1, 27), "correlation-paused");
     }
 
     private static SubscriptionReactivated subscriptionReactivated() {
         return new SubscriptionReactivated(UUID.fromString("00000000-0000-0000-0000-000000000008"), FIXED_INSTANT,
-                UUID.fromString("00000000-0000-0000-0000-000000000002"),
-                UUID.fromString("00000000-0000-0000-0000-000000000003"), LocalDate.of(2026, 1, 12),
+                SubscriptionId.of("SUS-00000000-0000-0000-0000-000000000002"),
+                PatientId.of("PAC-00000000-0000-0000-0000-000000000003"), LocalDate.of(2026, 1, 12),
                 LocalDate.of(2026, 1, 25), "correlation-reactivated");
     }
 
     private static SubscriptionCancelled subscriptionCancelled() {
         return new SubscriptionCancelled(UUID.fromString("00000000-0000-0000-0000-000000000009"), FIXED_INSTANT,
-                UUID.fromString("00000000-0000-0000-0000-000000000002"),
-                UUID.fromString("00000000-0000-0000-0000-000000000003"),
-                UUID.fromString("00000000-0000-0000-0000-000000000004"), "Requested by patient",
+                SubscriptionId.of("SUS-00000000-0000-0000-0000-000000000002"),
+                PatientId.of("PAC-00000000-0000-0000-0000-000000000003"),
+                DietPlanId.of("PLAN-00000000-0000-0000-0000-000000000004"), "Requested by patient",
                 LocalDate.of(2026, 1, 13), 3, "correlation-cancelled");
     }
 
     private static SubscriptionCompleted subscriptionCompleted() {
         return new SubscriptionCompleted(UUID.fromString("00000000-0000-0000-0000-000000000010"), FIXED_INSTANT,
-                UUID.fromString("00000000-0000-0000-0000-000000000002"),
-                UUID.fromString("00000000-0000-0000-0000-000000000003"),
-                UUID.fromString("00000000-0000-0000-0000-000000000004"), LocalDate.of(2026, 1, 24), 2,
+                SubscriptionId.of("SUS-00000000-0000-0000-0000-000000000002"),
+                PatientId.of("PAC-00000000-0000-0000-0000-000000000003"),
+                DietPlanId.of("PLAN-00000000-0000-0000-0000-000000000004"), LocalDate.of(2026, 1, 24), 2,
                 "correlation-completed");
     }
 
     private static ConsolidatedCalendarClosed closedCalendarEvent() {
         return new ConsolidatedCalendarClosed(UUID.fromString("00000000-0000-0000-0000-000000000011"), FIXED_INSTANT,
-                UUID.fromString("00000000-0000-0000-0000-000000000012"), LocalDate.of(2026, 1, 10), 2,
+                ConsolidatedCalendarId.of("CAL-00000000-0000-0000-0000-000000000012"), LocalDate.of(2026, 1, 10), 2,
                 "correlation-calendar", List.of(delivery("013", "Patient One", "First Street"),
                         delivery("014", "Patient Two", "Second Street")));
     }
 
     private static ConsolidatedDeliverySnapshot delivery(String suffix, String patientName, String street) {
-        return new ConsolidatedDeliverySnapshot(UUID.fromString("00000000-0000-0000-0000-000000000" + suffix),
-                UUID.fromString("00000000-0000-0000-0000-000000000020"),
-                UUID.fromString("00000000-0000-0000-0000-000000000021"), patientName,
-                UUID.fromString("00000000-0000-0000-0000-000000000022"), 1,
-                new DeliveryAddress(UUID.fromString("00000000-0000-0000-0000-000000000023"), "Home", street, "10",
+        return new ConsolidatedDeliverySnapshot(ConsolidatedLineId.of("LINE-00000000-0000-0000-0000-000000000" + suffix),
+                SubscriptionId.of("SUS-00000000-0000-0000-0000-000000000020"),
+                PatientId.of("PAC-00000000-0000-0000-0000-000000000021"), patientName,
+                DietPlanId.of("PLAN-00000000-0000-0000-0000-000000000022"), 1,
+                new DeliveryAddress(AddressId.of("DIR-00000000-0000-0000-0000-000000000023"), "Home", street, "10",
                         "Madrid", "Reception", 40.4168, -3.7038, "600000000"),
-                List.of(new ConsolidatedRecipeSnapshot(UUID.fromString("00000000-0000-0000-0000-000000000024"),
+                List.of(new ConsolidatedRecipeSnapshot(RecipeId.of("REC-00000000-0000-0000-0000-000000000024"),
                         "Soup", LocalTime.of(12, 30), 250),
-                        new ConsolidatedRecipeSnapshot(UUID.fromString("00000000-0000-0000-0000-000000000025"),
+                        new ConsolidatedRecipeSnapshot(RecipeId.of("REC-00000000-0000-0000-0000-000000000025"),
                                 "Salad", LocalTime.of(13, 0), 180)));
     }
 

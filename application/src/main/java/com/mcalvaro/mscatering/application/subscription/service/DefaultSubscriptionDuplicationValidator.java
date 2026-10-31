@@ -1,12 +1,11 @@
 package com.mcalvaro.mscatering.application.subscription.service;
 
 import com.mcalvaro.mscatering.domain.core.DomainException;
+import com.mcalvaro.mscatering.domain.core.id.PatientId;
 import com.mcalvaro.mscatering.domain.patient.IPatientReferenceRepository;
 import com.mcalvaro.mscatering.domain.patient.PatientReference;
 import com.mcalvaro.mscatering.domain.subscription.ISubscriptionRepository;
 import com.mcalvaro.mscatering.domain.subscription.service.SubscriptionDuplicationValidator;
-
-import java.util.UUID;
 
 public class DefaultSubscriptionDuplicationValidator implements SubscriptionDuplicationValidator {
 
@@ -21,7 +20,7 @@ public class DefaultSubscriptionDuplicationValidator implements SubscriptionDupl
     }
 
     @Override
-    public void validate(UUID patientId) {
+    public void validate(PatientId patientId) {
         // 1. Validar que el paciente exista y esté activo (Read Model local)
         PatientReference patient = patientRepository.findById(patientId)
                 .orElseThrow(() -> new DomainException("SUB-014", "Patient not found."));

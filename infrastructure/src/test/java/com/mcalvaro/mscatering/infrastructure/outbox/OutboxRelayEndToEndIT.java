@@ -2,6 +2,9 @@ package com.mcalvaro.mscatering.infrastructure.outbox;
 
 import com.mcalvaro.mscatering.application.outbox.OutboxMessage;
 import com.mcalvaro.mscatering.application.outbox.OutboxMessageRepository;
+import com.mcalvaro.mscatering.domain.core.id.DietPlanId;
+import com.mcalvaro.mscatering.domain.core.id.PatientId;
+import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
 import com.mcalvaro.mscatering.domain.dietplan.PlanType;
 import com.mcalvaro.mscatering.domain.subscription.event.SubscriptionCreated;
 import com.mcalvaro.mscatering.domain.subscription.vo.ContractCode;
@@ -105,8 +108,11 @@ class OutboxRelayEndToEndIT {
 
     private static SubscriptionCreated sourceEvent() {
         Instant occurredAt = Instant.now().minusSeconds(2);
-        return new SubscriptionCreated(UUID.randomUUID(), occurredAt, UUID.randomUUID(), UUID.randomUUID(),
-                ContractCode.generate(2026, 1), UUID.randomUUID(), PlanType.BASE, LocalDate.of(2026, 10, 1),
+        return new SubscriptionCreated(UUID.randomUUID(), occurredAt,
+                SubscriptionId.of("SUS-" + UUID.randomUUID()),
+                PatientId.of("PAC-" + UUID.randomUUID()),
+                ContractCode.generate(2026, 1),
+                DietPlanId.of("PLAN-" + UUID.randomUUID()), PlanType.BASE, LocalDate.of(2026, 10, 1),
                 LocalDate.of(2026, 10, 15), 15, List.of(), BigDecimal.TEN, "relay-e2e");
     }
 

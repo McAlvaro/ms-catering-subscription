@@ -2,6 +2,7 @@ package com.mcalvaro.mscatering.application.subscription.CreateSubscription;
 
 import an.awesome.pipelinr.Command;
 
+import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
 import com.mcalvaro.mscatering.domain.subscription.ISubscriptionRepository;
 import com.mcalvaro.mscatering.domain.subscription.Subscription;
 import com.mcalvaro.mscatering.domain.subscription.entity.BiweeklyEvaluation;
@@ -27,17 +28,8 @@ import java.util.UUID;
  * <p>
  * Orchestrates the creation of a new subscription by coordinating
  * domain services, the aggregate factory method, and the unit of work.
- * <p>
- * Business rules enforced:
- * <ul>
- * <li>INV-01: A patient can only have one ACTIVE or PAUSED subscription at a
- * time.</li>
- * <li>RN-11: Biweekly evaluations are generated automatically on creation.</li>
- * <li>RN-12: Evaluation dates are adjusted to the next business day if
- * needed.</li>
- * </ul>
  */
-public class CreateSubscriptionCommandHandler implements Command.Handler<CreateSubscriptionCommand, UUID> {
+public class CreateSubscriptionCommandHandler implements Command.Handler<CreateSubscriptionCommand, SubscriptionId> {
 
     private final ISubscriptionRepository subscriptionRepository;
     private final SubscriptionDuplicationValidator duplicationValidator;
@@ -57,9 +49,9 @@ public class CreateSubscriptionCommandHandler implements Command.Handler<CreateS
     }
 
     @Override
-    public UUID handle(CreateSubscriptionCommand command) {
+    public SubscriptionId handle(CreateSubscriptionCommand command) {
         duplicationValidator.validate(command.patientId());
-        // Build domain Value Objects from primitive command fields
+        // Build domain Value Objects from command fields
         ValidityPeriod period = new ValidityPeriod(command.startDate(), command.endDate());
         DietPlanProjection dietPlan = dietPlanResolver.resolve(command.dietPlanId(), command.patientId(),
                 command.startDate(), command.endDate());
@@ -76,7 +68,7 @@ public class CreateSubscriptionCommandHandler implements Command.Handler<CreateS
         DeliveryAddress address = deliveryAddressResolver.resolve(command.patientId(), command.deliveryAddressId());
         DeliveryPreferences preferences = new DeliveryPreferences(address, window, command.prefSpecialInstructions());
 
-        UUID subscriptionId = UUID.randomUUID();
+        SubscriptionId subscriptionId = SubscriptionId.generate();
         int nextSequence = subscriptionRepository.getNextContractSequenceOfYear();
 
         PlanDuration duration = PlanDuration.fromDays(period.durationDays());

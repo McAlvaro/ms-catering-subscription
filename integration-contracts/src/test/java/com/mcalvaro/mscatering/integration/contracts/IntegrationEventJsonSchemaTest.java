@@ -58,9 +58,9 @@ class IntegrationEventJsonSchemaTest {
 
     private static Stream<IntegrationEvent> events() {
         UUID eventId = UUID.fromString("00000000-0000-0000-0000-000000000001");
-        UUID subscriptionId = UUID.fromString("00000000-0000-0000-0000-000000000002");
-        UUID patientId = UUID.fromString("00000000-0000-0000-0000-000000000003");
-        UUID planId = UUID.fromString("00000000-0000-0000-0000-000000000004");
+        String subscriptionId = "SUS-00000000-0000-0000-0000-000000000002";
+        String patientId = "PAC-00000000-0000-0000-0000-000000000003";
+        String planId = "PLAN-00000000-0000-0000-0000-000000000004";
         Instant instant = Instant.parse("2026-10-29T12:00:00Z");
         return Stream.of(
                 new SubscriptionCreatedIntegrationEvent(eventId, instant, "correlation",
@@ -76,11 +76,11 @@ class IntegrationEventJsonSchemaTest {
                 new SubscriptionCancelledIntegrationEvent(eventId, instant, "correlation",
                         new SubscriptionCancelledIntegrationEvent.Data(subscriptionId, patientId, planId, "MANUAL", "Solicitud", LocalDate.of(2026, 10, 8), 1)),
                 new ConsolidatedCalendarClosedIntegrationEvent(eventId, instant, "correlation",
-                        new ConsolidatedCalendarClosedIntegrationEvent.Data(UUID.fromString("00000000-0000-0000-0000-000000000005"),
+                        new ConsolidatedCalendarClosedIntegrationEvent.Data("CC-00000000-0000-0000-0000-000000000005",
                                 LocalDate.of(2026, 10, 29), instant, 1,
-                                List.of(new ConsolidatedCalendarClosedIntegrationEvent.Delivery(UUID.fromString("00000000-0000-0000-0000-000000000006"),
+                                List.of(new ConsolidatedCalendarClosedIntegrationEvent.Delivery("DIA-00000000-0000-0000-0000-000000000006",
                                         subscriptionId, patientId, "Ana", planId, 1,
-                                        new ConsolidatedCalendarClosedIntegrationEvent.Address(UUID.fromString("00000000-0000-0000-0000-000000000007"), "Casa", "Calle 1", "Referencia", "Santa Cruz", -17.78, -63.18),
-                                        List.of(new ConsolidatedCalendarClosedIntegrationEvent.Recipe(UUID.fromString("00000000-0000-0000-0000-000000000008"), "Sopa", "08:30", new BigDecimal("250"))))))));
+                                        new ConsolidatedCalendarClosedIntegrationEvent.Address("DIR-00000000-0000-0000-0000-000000000007", "Casa", "Calle 1", "Referencia", "Santa Cruz", -17.78, -63.18),
+                                        List.of(new ConsolidatedCalendarClosedIntegrationEvent.Recipe("REC-00000000-0000-0000-0000-000000000008", "Sopa", "08:30", new BigDecimal("250"))))))));
     }
 }

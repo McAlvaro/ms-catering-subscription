@@ -1,10 +1,11 @@
 package com.mcalvaro.mscatering.domain.patient;
 
+import com.mcalvaro.mscatering.domain.core.id.PatientId;
+
 import java.util.Optional;
-import java.util.UUID;
 
 public interface IPatientReferenceRepository {
     void save(PatientReference patientReference);
 
-    Optional<PatientReference> findById(UUID patientId);
+    Optional<PatientReference> findById(PatientId patientId);
 }

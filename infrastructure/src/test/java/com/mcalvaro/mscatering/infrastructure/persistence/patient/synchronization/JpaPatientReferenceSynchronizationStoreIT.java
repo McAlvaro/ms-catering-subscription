@@ -43,7 +43,7 @@ class JpaPatientReferenceSynchronizationStoreIT extends BaseIntegrationTest {
     @Test
     @DisplayName("Persists only the eligibility reference and receipt after accepting the complete payload")
     void persistsOnlyReferenceAndReceipt() {
-        PatientRegisteredEvent event = fixture.eventFor(UUID.randomUUID());
+        PatientRegisteredEvent event = fixture.eventFor("PAC-" + UUID.randomUUID());
 
         fixture.ingest(event);
 
@@ -59,7 +59,7 @@ class JpaPatientReferenceSynchronizationStoreIT extends BaseIntegrationTest {
     @DisplayName("Makes an exact event-id duplicate a no-op even when ignored PII changes")
     void ignoresExactDuplicateWhenIgnoredPiiChanges() throws Exception {
         UUID eventId = UUID.randomUUID();
-        UUID patientId = UUID.randomUUID();
+        String patientId = "PAC-" + UUID.randomUUID();
         PatientRegisteredEvent event = eventFromJson(eventId, patientId, "Ana Uno", "ana@example.com");
         PatientRegisteredEvent piiOnlyChange = eventFromJson(eventId, patientId, "Ana Uno", "ana.dos@example.com");
         long referencesBefore = patientReferenceRepository.count();
@@ -75,7 +75,7 @@ class JpaPatientReferenceSynchronizationStoreIT extends BaseIntegrationTest {
     @Test
     @DisplayName("Records a semantic duplicate without overwriting when only ignored PII changes")
     void recordsSemanticDuplicateWithoutProjectionOverwriteWhenIgnoredPiiChanges() throws Exception {
-        UUID patientId = UUID.randomUUID();
+        String patientId = "PAC-" + UUID.randomUUID();
         PatientRegisteredEvent first = eventFromJson(UUID.randomUUID(), patientId, "Ana Uno", "ana@example.com");
         PatientRegisteredEvent duplicate = eventFromJson(UUID.randomUUID(), patientId, "Ana Uno", "ana.dos@example.com");
         long receiptsBefore = receiptRepository.count();
@@ -91,7 +91,7 @@ class JpaPatientReferenceSynchronizationStoreIT extends BaseIntegrationTest {
     @Test
     @DisplayName("Rejects an event-id reuse with changed canonical content without overwriting state")
     void rejectsEventIdConflictWithoutOverwrite() {
-        PatientRegisteredEvent first = fixture.eventFor(UUID.randomUUID());
+        PatientRegisteredEvent first = fixture.eventFor("PAC-" + UUID.randomUUID());
         fixture.ingest(first);
         PatientRegisteredEvent conflict = new PatientRegisteredEvent(
                 first.eventId(), first.eventName(), first.eventVersion(), first.occurredOn(), first.source(),
@@ -107,11 +107,11 @@ class JpaPatientReferenceSynchronizationStoreIT extends BaseIntegrationTest {
     @Test
     @DisplayName("Rejects an event-id reuse with a different patient without overwriting state")
     void rejectsEventIdReuseWithDifferentPatient() {
-        PatientRegisteredEvent first = fixture.eventFor(UUID.randomUUID());
+        PatientRegisteredEvent first = fixture.eventFor("PAC-" + UUID.randomUUID());
         fixture.ingest(first);
         PatientRegisteredEvent conflict = new PatientRegisteredEvent(
                 first.eventId(), first.eventName(), first.eventVersion(), first.occurredOn(), first.source(),
-                first.correlationId(), new PatientRegisteredData(UUID.randomUUID(), "Conflicting patient"));
+                first.correlationId(), new PatientRegisteredData("PAC-" + UUID.randomUUID(), "Conflicting patient"));
 
         assertSynchronizationConflict(conflict);
 
@@ -123,7 +123,7 @@ class JpaPatientReferenceSynchronizationStoreIT extends BaseIntegrationTest {
     @Test
     @DisplayName("Rolls back reference and receipt together when receipt persistence fails")
     void rollsBackWhenDatabasePersistenceFails() {
-        PatientRegisteredEvent event = fixture.eventFor(UUID.randomUUID());
+        PatientRegisteredEvent event = fixture.eventFor("PAC-" + UUID.randomUUID());
         PatientRegisteredEvent tooLongCorrelationId = new PatientRegisteredEvent(
                 event.eventId(), event.eventName(), event.eventVersion(), event.occurredOn(), event.source(),
                 "x".repeat(256), event.data());
@@ -161,7 +161,7 @@ class JpaPatientReferenceSynchronizationStoreIT extends BaseIntegrationTest {
                 .isEqualTo("PROJ-002");
     }
 
-    private PatientRegisteredEvent eventFromJson(UUID eventId, UUID patientId, String nombreCompleto, String email)
+    private PatientRegisteredEvent eventFromJson(UUID eventId, String patientId, String nombreCompleto, String email)
             throws Exception {
         return objectMapper.readValue("""
                 {

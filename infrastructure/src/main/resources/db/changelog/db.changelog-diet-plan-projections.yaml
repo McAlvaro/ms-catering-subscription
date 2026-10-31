@@ -6,31 +6,31 @@ databaseChangeLog:
         - createTable:
             tableName: diet_plan_projections
             columns:
-              - column: { name: id, type: binary(16), constraints: { primaryKey: true, nullable: false } }
+              - column: { name: id, type: varchar(64), constraints: { primaryKey: true, nullable: false } }
               - column: { name: plan_type, type: varchar(20), constraints: { nullable: false } }
-              - column: { name: owner_patient_id, type: binary(16) }
+              - column: { name: owner_patient_id, type: varchar(64) }
               - column: { name: active, type: boolean, constraints: { nullable: false } }
               - column: { name: effective_start, type: date, constraints: { nullable: false } }
               - column: { name: duration_days, type: int, constraints: { nullable: false } }
         - createTable:
             tableName: diet_plan_days
             columns:
-              - column: { name: id, type: binary(16), constraints: { primaryKey: true, nullable: false } }
-              - column: { name: plan_id, type: binary(16), constraints: { nullable: false } }
+              - column: { name: id, type: varchar(64), constraints: { primaryKey: true, nullable: false } }
+              - column: { name: plan_id, type: varchar(64), constraints: { nullable: false } }
               - column: { name: day_number, type: int, constraints: { nullable: false } }
               - column: { name: meal_count, type: int, constraints: { nullable: false } }
         - createTable:
             tableName: diet_plan_meals
             columns:
-              - column: { name: id, type: binary(16), constraints: { primaryKey: true, nullable: false } }
-              - column: { name: day_id, type: binary(16), constraints: { nullable: false } }
+              - column: { name: id, type: varchar(64), constraints: { primaryKey: true, nullable: false } }
+              - column: { name: day_id, type: varchar(64), constraints: { nullable: false } }
               - column: { name: meal_time, type: varchar(5), constraints: { nullable: false } }
         - createTable:
             tableName: diet_plan_recipes
             columns:
-              - column: { name: id, type: binary(16), constraints: { primaryKey: true, nullable: false } }
-              - column: { name: meal_id, type: binary(16), constraints: { nullable: false } }
-              - column: { name: recipe_id, type: binary(16), constraints: { nullable: false } }
+              - column: { name: id, type: varchar(64), constraints: { primaryKey: true, nullable: false } }
+              - column: { name: meal_id, type: varchar(64), constraints: { nullable: false } }
+              - column: { name: recipe_id, type: varchar(64), constraints: { nullable: false } }
               - column: { name: recipe_name, type: varchar(255), constraints: { nullable: false } }
               - column: { name: portion_grams, type: int, constraints: { nullable: false } }
         - addUniqueConstraint:
@@ -58,7 +58,7 @@ databaseChangeLog:
             tableName: processed_inbound_event_receipts
             columns:
               - column: { name: subject_kind, type: varchar(30) }
-              - column: { name: subject_id, type: binary(16) }
+              - column: { name: subject_id, type: varchar(64) }
         - update:
             tableName: processed_inbound_event_receipts
             columns:
@@ -72,8 +72,8 @@ databaseChangeLog:
               - column: { name: subject_id, valueComputed: address_id }
             where: address_id IS NOT NULL
         - addNotNullConstraint: { tableName: processed_inbound_event_receipts, columnName: subject_kind, columnDataType: varchar(30) }
-        - addNotNullConstraint: { tableName: processed_inbound_event_receipts, columnName: subject_id, columnDataType: binary(16) }
-        - dropNotNullConstraint: { tableName: processed_inbound_event_receipts, columnName: patient_id, columnDataType: binary(16) }
+        - addNotNullConstraint: { tableName: processed_inbound_event_receipts, columnName: subject_id, columnDataType: varchar(64) }
+        - dropNotNullConstraint: { tableName: processed_inbound_event_receipts, columnName: patient_id, columnDataType: varchar(64) }
         - addColumn:
             tableName: subscriptions
             columns:

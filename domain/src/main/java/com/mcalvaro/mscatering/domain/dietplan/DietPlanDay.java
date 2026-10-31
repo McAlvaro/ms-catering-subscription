@@ -7,6 +7,10 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 public record DietPlanDay(UUID id, int dayNumber, int mealCount, List<DietPlanMeal> meals) {
+    public DietPlanDay(int dayNumber, int mealCount, List<DietPlanMeal> meals) {
+        this(UUID.randomUUID(), dayNumber, mealCount, meals);
+    }
+
     public DietPlanDay {
         meals = meals == null ? List.of() : List.copyOf(meals);
         if (id == null || dayNumber <= 0 || mealCount <= 0 || mealCount != meals.size()

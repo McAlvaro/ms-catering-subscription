@@ -1,5 +1,10 @@
 package com.mcalvaro.mscatering.infrastructure.api.subscription;
 
+import com.mcalvaro.mscatering.domain.core.id.AddressId;
+import com.mcalvaro.mscatering.domain.core.id.DeliveryDayId;
+import com.mcalvaro.mscatering.domain.core.id.DietPlanId;
+import com.mcalvaro.mscatering.domain.core.id.PatientId;
+import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
 import com.mcalvaro.mscatering.domain.subscription.*;
 import com.mcalvaro.mscatering.domain.subscription.entity.DeliveryDay;
 import com.mcalvaro.mscatering.domain.subscription.enums.ServiceType;
@@ -17,12 +22,12 @@ class MarkNoDeliveryApiIT extends BaseIntegrationTest {
     private static final String URL = "/api/subscriptions/{id}/delivery-days/{dayId}/no-delivery";
     @Autowired
     private ISubscriptionRepository subscriptionRepository;
-    private UUID subscriptionId;
-    private UUID deliveryDayId;
+    private SubscriptionId subscriptionId;
+    private DeliveryDayId deliveryDayId;
 
     @BeforeEach
     void setUp() {
-        subscriptionId = UUID.randomUUID();
+        subscriptionId = SubscriptionId.of("SUS-" + UUID.randomUUID());
         Subscription subscription = buildValidCommand();
         deliveryDayId = subscription.getDeliveryCalendar().getDeliveryDays().get(0).getId();
         subscriptionRepository.save(subscription);
@@ -36,7 +41,7 @@ class MarkNoDeliveryApiIT extends BaseIntegrationTest {
         void shouldReturn200WhenDayIsActive() throws Exception {
             // Arrange
             // Act & Assert
-            mockMvc.perform(post(URL, subscriptionId, deliveryDayId)).andExpect(status().isOk());
+            mockMvc.perform(post(URL, subscriptionId.value(), deliveryDayId.value())).andExpect(status().isOk());
         }
     }
 
@@ -48,7 +53,7 @@ class MarkNoDeliveryApiIT extends BaseIntegrationTest {
         void shouldReturn400WhenDeliveryDayDoesNotExist() throws Exception {
             // Arrange
             // Act & Assert
-            mockMvc.perform(post(URL, subscriptionId, UUID.randomUUID())).andExpect(status().isBadRequest())
+            mockMvc.perform(post(URL, subscriptionId.value(), "CD-" + UUID.randomUUID())).andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("SUB-009"));
         }
 
@@ -62,7 +67,7 @@ class MarkNoDeliveryApiIT extends BaseIntegrationTest {
                     day.markAsNoDelivery();
             subscriptionRepository.save(subscription);
             // Act & Assert
-            mockMvc.perform(post(URL, subscriptionId, deliveryDayId)).andExpect(status().isBadRequest())
+            mockMvc.perform(post(URL, subscriptionId.value(), deliveryDayId.value())).andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("SUB-012"));
         }
     }
@@ -75,26 +80,20 @@ class MarkNoDeliveryApiIT extends BaseIntegrationTest {
         void shouldReturn500WhenDeliveryDayIdIsMalformed() throws Exception {
             // Arrange
             // Act & Assert
-            mockMvc.perform(post(URL, subscriptionId, "invalid")).andExpect(status().isInternalServerError())
+            mockMvc.perform(post(URL, subscriptionId.value(), "invalid")).andExpect(status().isInternalServerError())
                     .andExpect(jsonPath("$.code").value("INTERNAL_SERVER_ERROR"));
         }
     }
 
     private Subscription buildValidCommand() {
         LocalDate start = LocalDate.now().plusDays(10);
-        return Subscription.create(subscriptionId, UUID.randomUUID(), UUID.randomUUID(),
-                new ServiceContract(UUID.randomUUID(), com.mcalvaro.mscatering.domain.dietplan.PlanType.BASE, new ValidityPeriod(start, start.plusDays(14)), ServiceType.FULL,
+        PatientId patientId = PatientId.of("PAC-" + UUID.randomUUID());
+        DietPlanId dietPlanId = DietPlanId.of("PLAN-" + UUID.randomUUID());
+        return Subscription.create(subscriptionId, patientId, dietPlanId,
+                new ServiceContract(dietPlanId, com.mcalvaro.mscatering.domain.dietplan.PlanType.BASE, new ValidityPeriod(start, start.plusDays(14)), ServiceType.FULL,
                         new BigDecimal("250"), "Terms", Instant.now()),
-                new DeliveryPreferences(new DeliveryAddress("Main", "1", "Lima", null, 0, 0, "1"),
+                new DeliveryPreferences(new DeliveryAddress(AddressId.of("DIR-" + UUID.randomUUID()), "Home", "Main", "1", "Lima", null, 0, 0, "1"),
                         new TimeWindow(LocalTime.NOON, LocalTime.of(14, 0)), null),
                 1);
-    }
-
-    private Subscription buildValidCommand(UUID ignored, int planDays) {
-        return buildValidCommand();
-    }
-
-    private String buildValidCommandJson() throws Exception {
-        return objectMapper.writeValueAsString(buildValidCommand());
     }
 }

@@ -1,10 +1,18 @@
 package com.mcalvaro.mscatering.domain.consolidatedcalendar;
 
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.entity.ConsolidatedLine;
+import com.mcalvaro.mscatering.domain.consolidatedcalendar.entity.ConsolidatedRecipeSnapshot;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.enums.ConsolidateStatus;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.event.ConsolidatedCalendarClosed;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.event.ConsolidatedCalendarCreated;
 import com.mcalvaro.mscatering.domain.core.DomainException;
+import com.mcalvaro.mscatering.domain.core.id.AddressId;
+import com.mcalvaro.mscatering.domain.core.id.ConsolidatedCalendarId;
+import com.mcalvaro.mscatering.domain.core.id.ConsolidatedLineId;
+import com.mcalvaro.mscatering.domain.core.id.DietPlanId;
+import com.mcalvaro.mscatering.domain.core.id.PatientId;
+import com.mcalvaro.mscatering.domain.core.id.RecipeId;
+import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
 import com.mcalvaro.mscatering.domain.subscription.enums.ServiceType;
 import com.mcalvaro.mscatering.domain.subscription.vo.DeliveryAddress;
 import com.mcalvaro.mscatering.domain.subscription.vo.TimeWindow;
@@ -15,7 +23,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -26,7 +33,7 @@ class ConsolidatedCalendarTest {
     @DisplayName("Should create an open calendar and emit its created event")
     void shouldCreateOpenCalendarAndEmitCreatedEventWhenValidDetailsAreProvided() {
         // Arrange
-        UUID calendarId = UUID.randomUUID();
+        ConsolidatedCalendarId calendarId = ConsolidatedCalendarId.generate();
         LocalDate date = LocalDate.of(2026, 9, 3);
 
         // Act
@@ -79,7 +86,7 @@ class ConsolidatedCalendarTest {
     @DisplayName("Should close a calendar and emit its closed event")
     void shouldCloseCalendarAndEmitClosedEventWhenItHasLines() {
         // Arrange
-        UUID calendarId = UUID.randomUUID();
+        ConsolidatedCalendarId calendarId = ConsolidatedCalendarId.generate();
         LocalDate date = LocalDate.of(2026, 9, 3);
         ConsolidatedCalendar calendar = ConsolidatedCalendar.create(calendarId, date);
         calendar.addLine(newLine(calendarId));
@@ -165,7 +172,7 @@ class ConsolidatedCalendarTest {
     }
 
     private ConsolidatedCalendar newCalendar() {
-        return ConsolidatedCalendar.create(UUID.randomUUID(), LocalDate.of(2026, 9, 3));
+        return ConsolidatedCalendar.create(ConsolidatedCalendarId.generate(), LocalDate.of(2026, 9, 3));
     }
 
     private ConsolidatedCalendar closedCalendar() {
@@ -175,11 +182,11 @@ class ConsolidatedCalendarTest {
         return calendar;
     }
 
-    private ConsolidatedLine newLine(UUID calendarId) {
+    private ConsolidatedLine newLine(ConsolidatedCalendarId calendarId) {
         TimeWindow timeWindow = new TimeWindow(LocalTime.of(12, 0), LocalTime.of(14, 0));
-        return new ConsolidatedLine(UUID.randomUUID(), calendarId, UUID.randomUUID(), UUID.randomUUID(),
-                "Ada", UUID.randomUUID(), 1, ServiceType.LUNCH,
-                new DeliveryAddress(UUID.randomUUID(), "Home", "Main Street", "10", "Madrid", "Door A", 40.4168, -3.7038, "600000000"),
-                timeWindow, "Leave at reception", List.of(new com.mcalvaro.mscatering.domain.consolidatedcalendar.entity.ConsolidatedRecipeSnapshot(UUID.randomUUID(), "Lunch", timeWindow.startTime(), 250)));
+        return new ConsolidatedLine(ConsolidatedLineId.generate(), calendarId, SubscriptionId.generate(), PatientId.generate(),
+                "Ada", DietPlanId.generate(), 1, ServiceType.LUNCH,
+                new DeliveryAddress(AddressId.generate(), "Home", "Main Street", "10", "Madrid", "Door A", 40.4168, -3.7038, "600000000"),
+                timeWindow, "Leave at reception", List.of(new ConsolidatedRecipeSnapshot(RecipeId.generate(), "Lunch", timeWindow.startTime(), 250)));
     }
 }

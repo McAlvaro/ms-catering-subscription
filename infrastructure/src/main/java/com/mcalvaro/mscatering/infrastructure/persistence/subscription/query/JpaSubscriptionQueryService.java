@@ -4,6 +4,7 @@ import com.mcalvaro.mscatering.application.subscription.GetSubscriptionDetails.B
 import com.mcalvaro.mscatering.application.subscription.GetSubscriptionDetails.DeliveryDayDto;
 import com.mcalvaro.mscatering.application.subscription.GetSubscriptionDetails.ISubscriptionQueryService;
 import com.mcalvaro.mscatering.application.subscription.GetSubscriptionDetails.SubscriptionDetailsDto;
+import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
 import com.mcalvaro.mscatering.infrastructure.persistence.subscription.entity.SubscriptionJpaEntity;
 import com.mcalvaro.mscatering.infrastructure.persistence.subscription.repository.SpringDataSubscriptionRepository;
 import org.springframework.stereotype.Service;
@@ -13,7 +14,6 @@ import java.time.LocalTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,8 +27,8 @@ public class JpaSubscriptionQueryService implements ISubscriptionQueryService {
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<SubscriptionDetailsDto> getSubscriptionDetails(UUID subscriptionId) {
-        return springRepository.findById(subscriptionId).map(this::mapToDetailsDto);
+    public Optional<SubscriptionDetailsDto> getSubscriptionDetails(SubscriptionId subscriptionId) {
+        return springRepository.findById(subscriptionId.value()).map(this::mapToDetailsDto);
     }
 
     private SubscriptionDetailsDto mapToDetailsDto(SubscriptionJpaEntity entity) {

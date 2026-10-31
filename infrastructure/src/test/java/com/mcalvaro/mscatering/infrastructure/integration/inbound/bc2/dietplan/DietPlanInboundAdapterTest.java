@@ -24,7 +24,7 @@ class DietPlanInboundAdapterTest {
         var captured = org.mockito.ArgumentCaptor.forClass(SynchronizeDietPlanCommand.class);
         verify(pipeline).send(captured.capture());
         assertThat(captured.getValue().plan().type()).isEqualTo(com.mcalvaro.mscatering.domain.dietplan.PlanType.PERSONALIZED);
-        assertThat(captured.getValue().plan().ownerPatientId()).isEqualTo(event.data().patientId());
+        assertThat(captured.getValue().plan().ownerPatientId().value()).isEqualTo(event.data().patientId());
         assertThat(captured.getValue().payloadFingerprint()).hasSize(64);
     }
     @Test
@@ -37,10 +37,11 @@ class DietPlanInboundAdapterTest {
         assertThatThrownBy(() -> adapter.receiveBase(invalid)).isInstanceOf(DomainException.class).hasFieldOrPropertyWithValue("code", "PROJ-001");
     }
     private DietPlanInboundAdapter.DietPlanCreatedEvent event(String name, boolean personalized) {
-        UUID patient = UUID.randomUUID();
+        String patient = "PAC-" + UUID.randomUUID();
+        String basePlanId = "PLAN-" + UUID.randomUUID();
         return new DietPlanInboundAdapter.DietPlanCreatedEvent(UUID.randomUUID(), name, "1.0", Instant.now(), "MSNutritionPlanner", "test-correlation",
-                new DietPlanInboundAdapter.DietPlanData(UUID.randomUUID(), "ACTIVO", LocalDate.of(2026, 1, 1), 1, true,
-                         List.of(new DietPlanInboundAdapter.DietPlanDayData(UUID.randomUUID(), 1, 1, List.of(new DietPlanInboundAdapter.DietPlanMealData(UUID.randomUUID(), com.mcalvaro.mscatering.domain.dietplan.MealType.BREAKFAST, "08:00", List.of(new DietPlanInboundAdapter.DietPlanRecipeData(UUID.randomUUID(), "Breakfast", 100)))))),
-                        personalized ? UUID.randomUUID() : null, personalized ? patient : null, personalized ? "Changed portions" : null));
+                new DietPlanInboundAdapter.DietPlanData("PLAN-" + UUID.randomUUID(), "ACTIVO", LocalDate.of(2026, 1, 1), 1, true,
+                         List.of(new DietPlanInboundAdapter.DietPlanDayData(UUID.randomUUID(), 1, 1, List.of(new DietPlanInboundAdapter.DietPlanMealData(UUID.randomUUID(), com.mcalvaro.mscatering.domain.dietplan.MealType.BREAKFAST, "08:00", List.of(new DietPlanInboundAdapter.DietPlanRecipeData("REC-" + UUID.randomUUID(), "Breakfast", 100)))))),
+                        personalized ? basePlanId : null, personalized ? patient : null, personalized ? "Changed portions" : null));
     }
 }

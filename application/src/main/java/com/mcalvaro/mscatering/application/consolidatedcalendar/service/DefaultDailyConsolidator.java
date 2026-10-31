@@ -3,6 +3,8 @@ package com.mcalvaro.mscatering.application.consolidatedcalendar.service;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.ConsolidatedCalendar;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.entity.ConsolidatedLine;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.service.DailyConsolidator;
+import com.mcalvaro.mscatering.domain.core.id.ConsolidatedCalendarId;
+import com.mcalvaro.mscatering.domain.core.id.ConsolidatedLineId;
 import com.mcalvaro.mscatering.domain.subscription.ISubscriptionRepository;
 import com.mcalvaro.mscatering.domain.subscription.Subscription;
 import com.mcalvaro.mscatering.domain.subscription.entity.DeliveryDay;
@@ -15,7 +17,6 @@ import com.mcalvaro.mscatering.domain.consolidatedcalendar.entity.ConsolidatedRe
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.UUID;
 import java.util.ArrayList;
 import java.util.Comparator;
 
@@ -34,7 +35,7 @@ public class DefaultDailyConsolidator implements DailyConsolidator {
 
     @Override
     public ConsolidatedCalendar consolidateForDate(LocalDate deliveryDate) {
-        ConsolidatedCalendar calendar = ConsolidatedCalendar.create(UUID.randomUUID(), deliveryDate);
+        ConsolidatedCalendar calendar = ConsolidatedCalendar.create(ConsolidatedCalendarId.generate(), deliveryDate);
 
         List<Subscription> activeSubscriptions = subscriptionRepository.findConsolidatableSubscriptions();
 
@@ -84,7 +85,7 @@ public class DefaultDailyConsolidator implements DailyConsolidator {
             throw failure("CAL-004", "Selected recipe snapshot is incomplete");
         }
         ConsolidatedLine line = new ConsolidatedLine(
-                            UUID.randomUUID(),
+                            ConsolidatedLineId.generate(),
                             calendar.getId(),
                             subscription.getId(),
                             subscription.getPatientId(),

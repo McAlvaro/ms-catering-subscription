@@ -1,6 +1,7 @@
 package com.mcalvaro.mscatering.domain.subscription.vo;
 
 import com.mcalvaro.mscatering.domain.core.DomainException;
+import com.mcalvaro.mscatering.domain.core.id.DietPlanId;
 import com.mcalvaro.mscatering.domain.dietplan.PlanType;
 import com.mcalvaro.mscatering.domain.subscription.enums.ServiceType;
 import org.junit.jupiter.api.DisplayName;
@@ -25,7 +26,7 @@ class ServiceContractTest {
     @DisplayName("Should create a service contract when all required values are valid")
     void shouldCreateServiceContractWhenAllRequiredValuesAreValid() {
         // Arrange
-        UUID dietPlanId = UUID.fromString("4f60d6f7-677a-45e7-b538-dac4bbb50ca4");
+        DietPlanId dietPlanId = DietPlanId.of("PLAN-" + UUID.fromString("4f60d6f7-677a-45e7-b538-dac4bbb50ca4"));
         ValidityPeriod period = buildPeriod();
         ServiceType serviceType = ServiceType.FULL;
         BigDecimal totalPrice = new BigDecimal("250.00");
@@ -76,7 +77,7 @@ class ServiceContractTest {
 
         // Act
         ServiceContract contract = new ServiceContract(
-                UUID.randomUUID(),
+                DietPlanId.generate(),
                 PlanType.BASE,
                 extendedPeriod,
                 ServiceType.FULL,
@@ -92,7 +93,7 @@ class ServiceContractTest {
     @DisplayName("Should throw DomainException VO-009 when validity period is null")
     void shouldThrowDomainExceptionWhenValidityPeriodIsNull() {
         // Arrange
-        UUID dietPlanId = UUID.randomUUID();
+        DietPlanId dietPlanId = DietPlanId.generate();
 
         // Act & Assert
         assertThatThrownBy(() -> new ServiceContract(
@@ -111,7 +112,7 @@ class ServiceContractTest {
 
         // Act & Assert
         assertThatThrownBy(() -> new ServiceContract(
-                UUID.randomUUID(), PlanType.BASE, period, ServiceType.FULL, invalidPrice, "Terms", Instant.now()))
+                DietPlanId.generate(), PlanType.BASE, period, ServiceType.FULL, invalidPrice, "Terms", Instant.now()))
                 .isInstanceOf(DomainException.class)
                 .hasFieldOrPropertyWithValue("code", "SUB-006")
                 .hasMessageContaining("greater than zero");
@@ -127,7 +128,7 @@ class ServiceContractTest {
 
         // Act & Assert
         assertThatThrownBy(() -> new ServiceContract(
-                UUID.randomUUID(), PlanType.BASE, period, ServiceType.FULL, BigDecimal.ONE, invalidConditions, Instant.now()))
+                DietPlanId.generate(), PlanType.BASE, period, ServiceType.FULL, BigDecimal.ONE, invalidConditions, Instant.now()))
                 .isInstanceOf(DomainException.class)
                 .hasFieldOrPropertyWithValue("code", "VO-010")
                 .hasMessageContaining("acceptedConditions must not be blank");
@@ -141,7 +142,7 @@ class ServiceContractTest {
 
         // Act & Assert
         assertThatThrownBy(() -> new ServiceContract(
-                UUID.randomUUID(), PlanType.BASE, period, null, BigDecimal.ONE, "Terms", Instant.now()))
+                DietPlanId.generate(), PlanType.BASE, period, null, BigDecimal.ONE, "Terms", Instant.now()))
                 .isInstanceOf(DomainException.class)
                 .hasFieldOrPropertyWithValue("code", "VO-011")
                 .hasMessageContaining("serviceType must not be null");
@@ -155,7 +156,7 @@ class ServiceContractTest {
 
         // Act & Assert
         assertThatThrownBy(() -> new ServiceContract(
-                UUID.randomUUID(), PlanType.BASE, period, ServiceType.FULL, BigDecimal.ONE, "Terms", null))
+                DietPlanId.generate(), PlanType.BASE, period, ServiceType.FULL, BigDecimal.ONE, "Terms", null))
                 .isInstanceOf(DomainException.class)
                 .hasFieldOrPropertyWithValue("code", "VO-012")
                 .hasMessageContaining("signedAt must not be null");

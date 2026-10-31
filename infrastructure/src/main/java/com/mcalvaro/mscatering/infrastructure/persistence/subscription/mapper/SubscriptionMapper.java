@@ -1,5 +1,13 @@
 package com.mcalvaro.mscatering.infrastructure.persistence.subscription.mapper;
 
+import com.mcalvaro.mscatering.domain.core.id.AddressId;
+import com.mcalvaro.mscatering.domain.core.id.DeliveryCalendarId;
+import com.mcalvaro.mscatering.domain.core.id.DeliveryDayId;
+import com.mcalvaro.mscatering.domain.core.id.DietPlanId;
+import com.mcalvaro.mscatering.domain.core.id.EvaluationId;
+import com.mcalvaro.mscatering.domain.core.id.PatientId;
+import com.mcalvaro.mscatering.domain.core.id.PauseRequestId;
+import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
 import com.mcalvaro.mscatering.domain.subscription.Subscription;
 import com.mcalvaro.mscatering.domain.subscription.entity.BiweeklyEvaluation;
 import com.mcalvaro.mscatering.domain.subscription.entity.DeliveryCalendar;
@@ -38,9 +46,9 @@ public class SubscriptionMapper {
             return null;
 
         SubscriptionJpaEntity jpa = new SubscriptionJpaEntity();
-        jpa.setId(domain.getId());
-        jpa.setPatientId(domain.getPatientId());
-        jpa.setDietPlanId(domain.getDietPlanId());
+        jpa.setId(domain.getId().value());
+        jpa.setPatientId(domain.getPatientId().value());
+        jpa.setDietPlanId(domain.getDietPlanId().value());
         jpa.setContractCode(domain.getContractCode().value());
         jpa.setStatus(domain.getStatus().name());
 
@@ -70,7 +78,7 @@ public class SubscriptionMapper {
 
         // Delivery Calendar
         DeliveryCalendarJpaEntity calJpa = new DeliveryCalendarJpaEntity();
-        calJpa.setId(domain.getDeliveryCalendar().getId());
+        calJpa.setId(domain.getDeliveryCalendar().getId().value());
         calJpa.setPeriodStart(domain.getDeliveryCalendar().getPeriod().startDate());
         calJpa.setPeriodEnd(domain.getDeliveryCalendar().getPeriod().endDate());
 
@@ -102,7 +110,7 @@ public class SubscriptionMapper {
         try {
             ValidityPeriod period = new ValidityPeriod(jpa.getContractStartDate(), jpa.getContractEndDate());
             ServiceContract contract = new ServiceContract(
-                    jpa.getDietPlanId(),
+                    DietPlanId.of(jpa.getDietPlanId()),
                     PlanType.valueOf(jpa.getPlanType()),
                     period,
                     ServiceType.valueOf(jpa.getServiceType()),
@@ -119,7 +127,10 @@ public class SubscriptionMapper {
                     LocalTime.parse(jpa.getPrefTimeEnd()));
             DeliveryPreferences prefs = new DeliveryPreferences(address, window, jpa.getPrefSpecialInstructions());
 
-            DeliveryCalendar calendar = new DeliveryCalendar(jpa.getDeliveryCalendar().getId(), jpa.getId(), period);
+            DeliveryCalendar calendar = new DeliveryCalendar(
+                    DeliveryCalendarId.of(jpa.getDeliveryCalendar().getId()),
+                    SubscriptionId.of(jpa.getId()),
+                    period);
             for (DeliveryDayJpaEntity dayJpa : jpa.getDeliveryCalendar().getDeliveryDays()) {
                 DeliveryDay day = toDeliveryDayDomain(dayJpa);
                 calendar.addDay(day);
@@ -127,9 +138,9 @@ public class SubscriptionMapper {
 
             Subscription subscription = (Subscription) allocateInstance(Subscription.class);
             setField(Subscription.class, subscription, "domainEvents", new java.util.ArrayList<>());
-            setField(Subscription.class, subscription, "id", jpa.getId());
-            setField(Subscription.class, subscription, "patientId", jpa.getPatientId());
-            setField(Subscription.class, subscription, "dietPlanId", jpa.getDietPlanId());
+            setField(Subscription.class, subscription, "id", SubscriptionId.of(jpa.getId()));
+            setField(Subscription.class, subscription, "patientId", PatientId.of(jpa.getPatientId()));
+            setField(Subscription.class, subscription, "dietPlanId", DietPlanId.of(jpa.getDietPlanId()));
             setField(Subscription.class, subscription, "contractCode", new ContractCode(jpa.getContractCode()));
             setField(Subscription.class, subscription, "contract", contract);
             setField(Subscription.class, subscription, "preferences", prefs);
@@ -150,10 +161,10 @@ public class SubscriptionMapper {
 
     private DeliveryDayJpaEntity toDeliveryDayJpa(DeliveryDay domain) {
         DeliveryDayJpaEntity jpa = new DeliveryDayJpaEntity();
-        jpa.setId(domain.getId());
+        jpa.setId(domain.getId().value());
         jpa.setDate(domain.getDate());
         jpa.setStatus(domain.getStatus().name());
-        jpa.setAddressId(domain.getAddress().addressId());
+        jpa.setAddressId(domain.getAddress().addressId() != null ? domain.getAddress().addressId().value() : null);
         jpa.setAddressAlias(domain.getAddress().alias());
         jpa.setAddressStreet(domain.getAddress().street());
         jpa.setAddressNumber(domain.getAddress().number());
@@ -173,11 +184,12 @@ public class SubscriptionMapper {
 
     private DeliveryDay toDeliveryDayDomain(DeliveryDayJpaEntity jpa) throws Exception {
         DeliveryDay day = (DeliveryDay) allocateInstance(DeliveryDay.class);
-        setField(DeliveryDay.class, day, "id", jpa.getId());
+        setField(DeliveryDay.class, day, "id", DeliveryDayId.of(jpa.getId()));
         setField(DeliveryDay.class, day, "date", jpa.getDate());
         setField(DeliveryDay.class, day, "status", DeliveryDayStatus.valueOf(jpa.getStatus()));
 
-        DeliveryAddress address = new DeliveryAddress(jpa.getAddressId(), jpa.getAddressAlias(),
+        AddressId addressId = jpa.getAddressId() != null ? AddressId.of(jpa.getAddressId()) : null;
+        DeliveryAddress address = new DeliveryAddress(addressId, jpa.getAddressAlias(),
                 jpa.getAddressStreet(), jpa.getAddressNumber(), jpa.getAddressCity(), jpa.getAddressReference(),
                 jpa.getAddressLatitude() != null ? jpa.getAddressLatitude() : 0.0,
                 jpa.getAddressLongitude() != null ? jpa.getAddressLongitude() : 0.0,
@@ -195,7 +207,7 @@ public class SubscriptionMapper {
 
     private PauseRequestJpaEntity toPauseRequestJpa(PauseRequest domain) {
         PauseRequestJpaEntity jpa = new PauseRequestJpaEntity();
-        jpa.setId(domain.getId());
+        jpa.setId(domain.getId().value());
         jpa.setRangeStart(domain.getRange().startDate());
         jpa.setRangeEnd(domain.getRange().endDate());
         jpa.setReason(domain.getReason());
@@ -210,7 +222,7 @@ public class SubscriptionMapper {
     private PauseRequest toPauseRequestDomain(PauseRequestJpaEntity jpa) {
         try {
             PauseRequest req = (PauseRequest) allocateInstance(PauseRequest.class);
-            setField(PauseRequest.class, req, "id", jpa.getId());
+            setField(PauseRequest.class, req, "id", PauseRequestId.of(jpa.getId()));
             setField(PauseRequest.class, req, "range", new PauseRange(jpa.getRangeStart(), jpa.getRangeEnd()));
             setField(PauseRequest.class, req, "reason", jpa.getReason());
             setField(PauseRequest.class, req, "actualEndDate", jpa.getActualEndDate());
@@ -230,8 +242,8 @@ public class SubscriptionMapper {
 
     private BiweeklyEvaluationJpaEntity toEvaluationJpa(BiweeklyEvaluation domain) {
         BiweeklyEvaluationJpaEntity jpa = new BiweeklyEvaluationJpaEntity();
-        jpa.setId(domain.getId());
-        jpa.setPatientId(domain.getPatientId());
+        jpa.setId(domain.getId().value());
+        jpa.setPatientId(domain.getPatientId().value());
         jpa.setEvaluationNumber(domain.getEvaluationNumber());
         jpa.setScheduledDate(domain.getScheduledDate());
         jpa.setStatus(domain.getStatus().name());
@@ -242,8 +254,8 @@ public class SubscriptionMapper {
     private BiweeklyEvaluation toEvaluationDomain(BiweeklyEvaluationJpaEntity jpa) {
         try {
             BiweeklyEvaluation eval = (BiweeklyEvaluation) allocateInstance(BiweeklyEvaluation.class);
-            setField(BiweeklyEvaluation.class, eval, "id", jpa.getId());
-            setField(BiweeklyEvaluation.class, eval, "patientId", jpa.getPatientId());
+            setField(BiweeklyEvaluation.class, eval, "id", EvaluationId.of(jpa.getId()));
+            setField(BiweeklyEvaluation.class, eval, "patientId", PatientId.of(jpa.getPatientId()));
             setField(BiweeklyEvaluation.class, eval, "evaluationNumber", jpa.getEvaluationNumber());
             setField(BiweeklyEvaluation.class, eval, "scheduledDate", jpa.getScheduledDate());
             setField(BiweeklyEvaluation.class, eval, "status", EvaluationStatus.valueOf(jpa.getStatus()));

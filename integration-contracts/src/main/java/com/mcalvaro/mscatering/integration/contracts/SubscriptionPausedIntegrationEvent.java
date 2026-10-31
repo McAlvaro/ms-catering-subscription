@@ -26,16 +26,16 @@ public record SubscriptionPausedIntegrationEvent(UUID eventId, Instant occurredO
     }
 
     public record Data(
-            @JsonProperty("idSuscripcion") UUID subscriptionId,
-            @JsonProperty("idPaciente") UUID patientId,
+            @JsonProperty("idSuscripcion") String subscriptionId,
+            @JsonProperty("idPaciente") String patientId,
             @JsonProperty("fechaDesde") LocalDate startDate,
             @JsonProperty("fechaHasta") LocalDate endDate,
             @JsonProperty("motivo") String reason,
             @JsonProperty("nuevaFechaFin") LocalDate newEndDate,
             @JsonProperty("fechaSolicitud") LocalDate requestedOn) {
         public Data {
-            ContractAssertions.required(subscriptionId, "subscriptionId");
-            ContractAssertions.required(patientId, "patientId");
+            ContractAssertions.text(subscriptionId, "subscriptionId");
+            ContractAssertions.text(patientId, "patientId");
             ContractAssertions.date(startDate, "startDate");
             ContractAssertions.date(endDate, "endDate");
             if (startDate.isAfter(endDate))

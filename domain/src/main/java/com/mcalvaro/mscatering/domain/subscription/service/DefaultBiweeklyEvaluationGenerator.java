@@ -1,5 +1,7 @@
 package com.mcalvaro.mscatering.domain.subscription.service;
 
+import com.mcalvaro.mscatering.domain.core.id.EvaluationId;
+import com.mcalvaro.mscatering.domain.core.id.PatientId;
 import com.mcalvaro.mscatering.domain.subscription.entity.BiweeklyEvaluation;
 import com.mcalvaro.mscatering.domain.subscription.enums.PlanDuration;
 
@@ -7,19 +9,18 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 public class DefaultBiweeklyEvaluationGenerator implements BiweeklyEvaluationGenerator {
 
     @Override
-    public List<BiweeklyEvaluation> generate(UUID patientId, LocalDate startDate, PlanDuration duration) {
+    public List<BiweeklyEvaluation> generate(PatientId patientId, LocalDate startDate, PlanDuration duration) {
         List<BiweeklyEvaluation> evaluations = new ArrayList<>();
 
         if (duration == PlanDuration.BIWEEKLY) {
             // 1 evaluación en el día 15 (endDate)
             LocalDate evalDate = startDate.plusDays(14);
             evaluations.add(new BiweeklyEvaluation(
-                    UUID.randomUUID(),
+                    EvaluationId.generate(),
                     patientId,
                     1,
                     adjustToWorkingDay(evalDate)));
@@ -29,12 +30,12 @@ public class DefaultBiweeklyEvaluationGenerator implements BiweeklyEvaluationGen
             LocalDate eval2Date = startDate.plusDays(29);
 
             evaluations.add(new BiweeklyEvaluation(
-                    UUID.randomUUID(),
+                    EvaluationId.generate(),
                     patientId,
                     1,
                     adjustToWorkingDay(eval1Date)));
             evaluations.add(new BiweeklyEvaluation(
-                    UUID.randomUUID(),
+                    EvaluationId.generate(),
                     patientId,
                     2,
                     adjustToWorkingDay(eval2Date)));

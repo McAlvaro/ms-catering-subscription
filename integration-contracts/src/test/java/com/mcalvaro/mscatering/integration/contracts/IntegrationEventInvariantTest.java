@@ -13,11 +13,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class IntegrationEventInvariantTest {
-    private static final UUID ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
+    private static final UUID EVENT_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
+    private static final String ID = "SUS-00000000-0000-0000-0000-000000000001";
 
     @Test
     void rejectsBlankRequiredFieldsAndInvalidContractRanges() {
-        assertThatThrownBy(() -> new SubscriptionCreatedIntegrationEvent(ID, Instant.now(), " ", createdData()))
+        assertThatThrownBy(() -> new SubscriptionCreatedIntegrationEvent(EVENT_ID, Instant.now(), " ", createdData()))
                 .isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> new SubscriptionCreatedIntegrationEvent.Data(ID, ID, ID, "BASE", 0,
                 LocalDate.now(), LocalDate.now(), 0, BigDecimal.ZERO, null)).isInstanceOf(IllegalArgumentException.class);

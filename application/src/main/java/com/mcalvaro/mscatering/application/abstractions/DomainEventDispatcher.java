@@ -21,7 +21,7 @@ public interface DomainEventDispatcher {
     /**
      * Registra un agregado modificado en el DomainEventDispatcher.
      */
-    void register(AggregateRoot aggregate);
+    void register(AggregateRoot<?> aggregate);
 
     /**
      * Commits all pending changes and publishes accumulated domain events.

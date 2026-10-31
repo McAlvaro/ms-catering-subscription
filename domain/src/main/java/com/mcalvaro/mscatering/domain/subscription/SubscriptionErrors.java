@@ -44,7 +44,7 @@ public final class SubscriptionErrors {
         return new DomainException("SUB-008", "Cannot complete subscription: contract period has not ended yet.");
     }
 
-    public static DomainException deliveryDayNotFound(java.util.UUID dayId) {
+    public static DomainException deliveryDayNotFound(com.mcalvaro.mscatering.domain.core.id.DeliveryDayId dayId) {
         return new DomainException("SUB-009", "Delivery day not found: " + dayId);
     }
 

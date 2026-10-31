@@ -1,5 +1,6 @@
 package com.mcalvaro.mscatering.infrastructure.persistence.patient.mapper;
 
+import com.mcalvaro.mscatering.domain.core.id.PatientId;
 import com.mcalvaro.mscatering.domain.patient.PatientReference;
 import com.mcalvaro.mscatering.infrastructure.persistence.patient.entity.PatientReferenceJpaEntity;
 import org.springframework.stereotype.Component;
@@ -11,7 +12,7 @@ public class PatientReferenceMapper {
         if (domain == null) return null;
 
         PatientReferenceJpaEntity jpa = new PatientReferenceJpaEntity();
-        jpa.setPatientId(domain.patientId());
+        jpa.setPatientId(domain.patientId().value());
         jpa.setPatientName(domain.patientName());
         jpa.setActive(domain.active());
         jpa.setUpdatedAt(domain.updatedAt());
@@ -22,7 +23,7 @@ public class PatientReferenceMapper {
         if (jpa == null) return null;
 
         return new PatientReference(
-                jpa.getPatientId(),
+                PatientId.of(jpa.getPatientId()),
                 jpa.getPatientName(),
                 jpa.isActive(),
                 jpa.getUpdatedAt()

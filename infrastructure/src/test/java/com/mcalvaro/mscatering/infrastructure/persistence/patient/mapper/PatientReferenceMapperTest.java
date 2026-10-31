@@ -1,5 +1,6 @@
 package com.mcalvaro.mscatering.infrastructure.persistence.patient.mapper;
 
+import com.mcalvaro.mscatering.domain.core.id.PatientId;
 import com.mcalvaro.mscatering.domain.patient.PatientReference;
 import com.mcalvaro.mscatering.infrastructure.persistence.patient.entity.PatientReferenceJpaEntity;
 import org.junit.jupiter.api.DisplayName;
@@ -24,7 +25,7 @@ class PatientReferenceMapperTest {
         PatientReferenceJpaEntity result = mapper.toJpaEntity(reference);
 
         // Assert
-        assertThat(result.getPatientId()).isEqualTo(reference.patientId());
+        assertThat(result.getPatientId()).isEqualTo(reference.patientId().value());
         assertThat(result.isActive()).isEqualTo(reference.isActive());
         assertThat(result.getUpdatedAt()).isEqualTo(reference.updatedAt());
     }
@@ -39,7 +40,7 @@ class PatientReferenceMapperTest {
         PatientReference result = mapper.toDomain(reference);
 
         // Assert
-        assertThat(result.patientId()).isEqualTo(reference.getPatientId());
+        assertThat(result.patientId().value()).isEqualTo(reference.getPatientId());
         assertThat(result.isActive()).isEqualTo(reference.isActive());
         assertThat(result.updatedAt()).isEqualTo(reference.getUpdatedAt());
     }
@@ -61,13 +62,13 @@ class PatientReferenceMapperTest {
     }
 
     private PatientReference buildPatientReference() {
-        return new PatientReference(UUID.fromString("1b896fcb-dfac-4798-ae62-f0731b9a051b"), "Ada Lovelace", false,
+        return new PatientReference(PatientId.of("PAC-1b896fcb-dfac-4798-ae62-f0731b9a051b"), "Ada Lovelace", false,
                 Instant.parse("2026-03-10T09:15:30Z"));
     }
 
     private PatientReferenceJpaEntity buildPatientReferenceJpaEntity() {
         PatientReferenceJpaEntity entity = new PatientReferenceJpaEntity();
-        entity.setPatientId(UUID.fromString("4af6eebe-981b-4160-aede-50fa764a41cb"));
+        entity.setPatientId("PAC-4af6eebe-981b-4160-aede-50fa764a41cb");
         entity.setPatientName("Ada Lovelace");
         entity.setActive(true);
         entity.setUpdatedAt(Instant.parse("2026-04-11T10:20:30Z"));

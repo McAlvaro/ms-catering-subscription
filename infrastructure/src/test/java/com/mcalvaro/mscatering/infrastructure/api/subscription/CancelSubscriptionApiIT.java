@@ -1,5 +1,9 @@
 package com.mcalvaro.mscatering.infrastructure.api.subscription;
 
+import com.mcalvaro.mscatering.domain.core.id.AddressId;
+import com.mcalvaro.mscatering.domain.core.id.DietPlanId;
+import com.mcalvaro.mscatering.domain.core.id.PatientId;
+import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
 import com.mcalvaro.mscatering.domain.subscription.*;
 import com.mcalvaro.mscatering.domain.subscription.enums.ServiceType;
 import com.mcalvaro.mscatering.domain.subscription.vo.*;
@@ -16,11 +20,11 @@ class CancelSubscriptionApiIT extends BaseIntegrationTest {
     private static final String URL = "/api/subscriptions/{id}";
     @Autowired
     private ISubscriptionRepository subscriptionRepository;
-    private UUID subscriptionId;
+    private SubscriptionId subscriptionId;
 
     @BeforeEach
     void setUp() {
-        subscriptionId = UUID.randomUUID();
+        subscriptionId = SubscriptionId.of("SUS-" + UUID.randomUUID());
         subscriptionRepository.save(buildValidCommand());
     }
 
@@ -31,7 +35,7 @@ class CancelSubscriptionApiIT extends BaseIntegrationTest {
         @DisplayName("Should return 200 OK when subscription is cancelled")
         void shouldReturn200WhenSubscriptionExists() throws Exception {// Arrange
             // Act & Assert
-            mockMvc.perform(delete(URL, subscriptionId).param("reason", "Patient request")).andExpect(status().isOk());
+            mockMvc.perform(delete(URL, subscriptionId.value()).param("reason", "Patient request")).andExpect(status().isOk());
         }
     }
 
@@ -42,7 +46,7 @@ class CancelSubscriptionApiIT extends BaseIntegrationTest {
         @DisplayName("Should return 404 NOT_FOUND when subscription does not exist")
         void shouldReturn404WhenSubscriptionDoesNotExist() throws Exception {// Arrange
             // Act & Assert
-            mockMvc.perform(delete(URL, UUID.randomUUID()).param("reason", "Patient request"))
+            mockMvc.perform(delete(URL, "SUS-" + UUID.randomUUID()).param("reason", "Patient request"))
                     .andExpect(status().isNotFound()).andExpect(jsonPath("$.code").value("NOT_FOUND"));
         }
     }
@@ -54,26 +58,20 @@ class CancelSubscriptionApiIT extends BaseIntegrationTest {
         @DisplayName("Should return 500 INTERNAL_SERVER_ERROR when required reason is absent")
         void shouldReturn500WhenReasonIsMissing() throws Exception {// Arrange
             // Act & Assert
-            mockMvc.perform(delete(URL, subscriptionId)).andExpect(status().isInternalServerError())
+            mockMvc.perform(delete(URL, subscriptionId.value())).andExpect(status().isInternalServerError())
                     .andExpect(jsonPath("$.code").value("INTERNAL_SERVER_ERROR"));
         }
     }
 
     private Subscription buildValidCommand() {
         LocalDate start = LocalDate.now().plusDays(10);
-        return Subscription.create(subscriptionId, UUID.randomUUID(), UUID.randomUUID(),
-                new ServiceContract(UUID.randomUUID(), com.mcalvaro.mscatering.domain.dietplan.PlanType.BASE, new ValidityPeriod(start, start.plusDays(14)), ServiceType.FULL,
+        PatientId patientId = PatientId.of("PAC-" + UUID.randomUUID());
+        DietPlanId dietPlanId = DietPlanId.of("PLAN-" + UUID.randomUUID());
+        return Subscription.create(subscriptionId, patientId, dietPlanId,
+                new ServiceContract(dietPlanId, com.mcalvaro.mscatering.domain.dietplan.PlanType.BASE, new ValidityPeriod(start, start.plusDays(14)), ServiceType.FULL,
                         new BigDecimal("250"), "Terms", Instant.now()),
-                new DeliveryPreferences(new DeliveryAddress("Main", "1", "Lima", null, 0, 0, "1"),
+                new DeliveryPreferences(new DeliveryAddress(AddressId.of("DIR-" + UUID.randomUUID()), "Home", "Main", "1", "Lima", null, 0, 0, "1"),
                         new TimeWindow(LocalTime.NOON, LocalTime.of(14, 0)), null),
                 1);
-    }
-
-    private Subscription buildValidCommand(UUID ignored, int planDays) {
-        return buildValidCommand();
-    }
-
-    private String buildValidCommandJson() throws Exception {
-        return objectMapper.writeValueAsString(buildValidCommand());
     }
 }

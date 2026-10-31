@@ -1,6 +1,11 @@
 package com.mcalvaro.mscatering.domain.subscription;
 
 import com.mcalvaro.mscatering.domain.core.DomainException;
+import com.mcalvaro.mscatering.domain.core.id.DeliveryDayId;
+import com.mcalvaro.mscatering.domain.core.id.DietPlanId;
+import com.mcalvaro.mscatering.domain.core.id.EvaluationId;
+import com.mcalvaro.mscatering.domain.core.id.PatientId;
+import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
 import com.mcalvaro.mscatering.domain.subscription.entity.BiweeklyEvaluation;
 import com.mcalvaro.mscatering.domain.subscription.entity.DeliveryDay;
 import com.mcalvaro.mscatering.domain.subscription.enums.DeliveryDayStatus;
@@ -41,9 +46,9 @@ class SubscriptionTest {
     @DisplayName("Should create an active subscription with one delivery for every contract day")
     void shouldCreateActiveSubscriptionWhenValidDetailsAreProvided() {
         // Arrange
-        UUID subscriptionId = UUID.randomUUID();
-        UUID patientId = UUID.randomUUID();
-        UUID dietPlanId = UUID.randomUUID();
+        SubscriptionId subscriptionId = SubscriptionId.generate();
+        PatientId patientId = PatientId.generate();
+        DietPlanId dietPlanId = DietPlanId.generate();
         ServiceContract contract = buildContract(LocalDate.of(2099, 1, 1));
         DeliveryPreferences preferences = buildPreferences("Leave at reception");
 
@@ -168,9 +173,9 @@ class SubscriptionTest {
     void shouldCompleteAndCancelEvaluationsWhenTheirOperationsAreRequested() {
         // Arrange
         Subscription subscription = buildSubscription(LocalDate.of(2099, 3, 1));
-        BiweeklyEvaluation completed = new BiweeklyEvaluation(UUID.randomUUID(), subscription.getPatientId(), 1,
+        BiweeklyEvaluation completed = new BiweeklyEvaluation(EvaluationId.generate(), subscription.getPatientId(), 1,
                 LocalDate.of(2099, 3, 15));
-        BiweeklyEvaluation pending = new BiweeklyEvaluation(UUID.randomUUID(), subscription.getPatientId(), 2,
+        BiweeklyEvaluation pending = new BiweeklyEvaluation(EvaluationId.generate(), subscription.getPatientId(), 2,
                 LocalDate.of(2099, 3, 29));
         LocalDate completedAt = LocalDate.of(2099, 3, 16);
         String cancellationReason = "Patient requested cancellation";
@@ -251,7 +256,7 @@ class SubscriptionTest {
         // Arrange
         Subscription subscription = buildSubscription(LocalDate.of(2099, 4, 1));
         subscription.pause(new PauseRange(LocalDate.of(2099, 4, 4), LocalDate.of(2099, 4, 6)), "Medical leave");
-        subscription.scheduleEvaluations(java.util.List.of(new BiweeklyEvaluation(UUID.randomUUID(), subscription.getPatientId(),
+        subscription.scheduleEvaluations(java.util.List.of(new BiweeklyEvaluation(EvaluationId.generate(), subscription.getPatientId(),
                 1, LocalDate.of(2099, 4, 15))));
 
         // Act & Assert
@@ -311,7 +316,7 @@ class SubscriptionTest {
         subscription.clearDomainEvents();
 
         // Act & Assert
-        assertThatThrownBy(() -> subscription.confirmDelivery(UUID.randomUUID()))
+        assertThatThrownBy(() -> subscription.confirmDelivery(DeliveryDayId.generate()))
                 .isInstanceOf(DomainException.class)
                 .hasFieldOrPropertyWithValue("code", "SUB-009");
         assertThat(subscription.getStatus()).isEqualTo(SubscriptionStatus.ACTIVE);
@@ -342,13 +347,13 @@ class SubscriptionTest {
     void shouldThrowIllegalArgumentExceptionWhenEvaluationDoesNotExist() {
         // Arrange
         Subscription subscription = buildSubscription(LocalDate.of(2099, 11, 1));
-        BiweeklyEvaluation scheduledEvaluation = new BiweeklyEvaluation(UUID.randomUUID(), subscription.getPatientId(), 1,
+        BiweeklyEvaluation scheduledEvaluation = new BiweeklyEvaluation(EvaluationId.generate(), subscription.getPatientId(), 1,
                 LocalDate.of(2099, 11, 15));
         subscription.scheduleEvaluations(java.util.List.of(scheduledEvaluation));
         subscription.clearDomainEvents();
 
         // Act & Assert
-        assertThatThrownBy(() -> subscription.markEvaluationCompleted(UUID.randomUUID(), LocalDate.of(2099, 11, 16)))
+        assertThatThrownBy(() -> subscription.markEvaluationCompleted(EvaluationId.generate(), LocalDate.of(2099, 11, 16)))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Evaluation not found");
         assertThat(scheduledEvaluation.getStatus()).isEqualTo(EvaluationStatus.PENDING);
@@ -372,12 +377,12 @@ class SubscriptionTest {
     }
 
     private Subscription buildSubscription(LocalDate startDate) {
-        return Subscription.create(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), buildContract(startDate),
+        return Subscription.create(SubscriptionId.generate(), PatientId.generate(), DietPlanId.generate(), buildContract(startDate),
                 buildPreferences("Leave at reception"), 1);
     }
 
     private ServiceContract buildContract(LocalDate startDate) {
-        return new ServiceContract(UUID.randomUUID(), com.mcalvaro.mscatering.domain.dietplan.PlanType.BASE, new ValidityPeriod(startDate, startDate.plusDays(14)),
+        return new ServiceContract(DietPlanId.generate(), com.mcalvaro.mscatering.domain.dietplan.PlanType.BASE, new ValidityPeriod(startDate, startDate.plusDays(14)),
                 ServiceType.FULL, new BigDecimal("250.00"), "Terms accepted", Instant.parse("2025-01-01T10:00:00Z"));
     }
 

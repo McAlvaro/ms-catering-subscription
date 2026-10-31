@@ -1,5 +1,9 @@
 package com.mcalvaro.mscatering.infrastructure.api.subscription;
 
+import com.mcalvaro.mscatering.domain.core.id.AddressId;
+import com.mcalvaro.mscatering.domain.core.id.DietPlanId;
+import com.mcalvaro.mscatering.domain.core.id.PatientId;
+import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
 import com.mcalvaro.mscatering.domain.subscription.ISubscriptionRepository;
 import com.mcalvaro.mscatering.domain.subscription.Subscription;
 import com.mcalvaro.mscatering.domain.subscription.enums.ServiceType;
@@ -33,15 +37,15 @@ class GetSubscriptionDetailsApiIT extends BaseIntegrationTest {
     @Autowired
     private ISubscriptionRepository subscriptionRepository;
 
-    private UUID subscriptionId;
-    private UUID patientId;
-    private UUID dietPlanId;
+    private SubscriptionId subscriptionId;
+    private PatientId patientId;
+    private DietPlanId dietPlanId;
 
     @BeforeEach
     void setUpSubscription() {
-        subscriptionId = UUID.randomUUID();
-        patientId = UUID.randomUUID();
-        dietPlanId = UUID.randomUUID();
+        subscriptionId = SubscriptionId.of("SUS-" + UUID.randomUUID());
+        patientId = PatientId.of("PAC-" + UUID.randomUUID());
+        dietPlanId = DietPlanId.of("PLAN-" + UUID.randomUUID());
         subscriptionRepository.save(buildSubscription());
     }
 
@@ -56,11 +60,11 @@ class GetSubscriptionDetailsApiIT extends BaseIntegrationTest {
             LocalDate expectedStartDate = LocalDate.now().plusDays(10);
 
             // Act & Assert
-            mockMvc.perform(get(URL, subscriptionId))
+            mockMvc.perform(get(URL, subscriptionId.value()))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.id").value(subscriptionId.toString()))
-                    .andExpect(jsonPath("$.patientId").value(patientId.toString()))
-                    .andExpect(jsonPath("$.dietPlanId").value(dietPlanId.toString()))
+                    .andExpect(jsonPath("$.id").value(subscriptionId.value()))
+                    .andExpect(jsonPath("$.patientId").value(patientId.value()))
+                    .andExpect(jsonPath("$.dietPlanId").value(dietPlanId.value()))
                     .andExpect(jsonPath("$.status").value("ACTIVE"))
                     .andExpect(jsonPath("$.startDate").value(expectedStartDate.toString()))
                     .andExpect(jsonPath("$.endDate").value(expectedStartDate.plusDays(14).toString()))
@@ -79,7 +83,7 @@ class GetSubscriptionDetailsApiIT extends BaseIntegrationTest {
         @DisplayName("Should return 404 NOT_FOUND when the subscription does not exist")
         void shouldReturn404WhenSubscriptionDoesNotExist() throws Exception {
             // Arrange
-            UUID unknownSubscriptionId = UUID.randomUUID();
+            String unknownSubscriptionId = "SUS-" + UUID.randomUUID();
 
             // Act & Assert
             mockMvc.perform(get(URL, unknownSubscriptionId))
@@ -96,7 +100,7 @@ class GetSubscriptionDetailsApiIT extends BaseIntegrationTest {
         @DisplayName("Should return 500 INTERNAL_SERVER_ERROR when the subscription ID is not a UUID")
         void shouldReturn500WhenSubscriptionIdIsNotUuid() throws Exception {
             // Arrange
-            String invalidSubscriptionId = "not-a-uuid";
+            String invalidSubscriptionId = "not-a-valid-id";
 
             // Act & Assert
             mockMvc.perform(get(URL, invalidSubscriptionId))
@@ -108,7 +112,7 @@ class GetSubscriptionDetailsApiIT extends BaseIntegrationTest {
     private Subscription buildSubscription() {
         LocalDate startDate = LocalDate.now().plusDays(10);
         ServiceContract contract = new ServiceContract(
-                UUID.randomUUID(),
+                dietPlanId,
                 com.mcalvaro.mscatering.domain.dietplan.PlanType.BASE,
                 new ValidityPeriod(startDate, startDate.plusDays(14)),
                 ServiceType.FULL,
@@ -116,7 +120,7 @@ class GetSubscriptionDetailsApiIT extends BaseIntegrationTest {
                 "Terms accepted",
                 Instant.now());
         DeliveryPreferences preferences = new DeliveryPreferences(
-                new DeliveryAddress("Main Street", "10", "Madrid", "Door A", 40.4168, -3.7038, "600000000"),
+                new DeliveryAddress(AddressId.of("DIR-" + UUID.randomUUID()), "Home", "Main Street", "10", "Madrid", "Door A", 40.4168, -3.7038, "600000000"),
                 new TimeWindow(LocalTime.of(9, 0), LocalTime.of(11, 0)),
                 "Leave at reception");
         return Subscription.create(subscriptionId, patientId, dietPlanId, contract, preferences, 1);

@@ -3,15 +3,13 @@ package com.mcalvaro.mscatering.infrastructure.integration.inbound.bc1.address;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.UUID;
-
 /**
  * Consumed portion of BC1's address payload; all other wire fields are ignored.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record PatientAddressRegisteredData(
-        @JsonProperty("idPaciente") UUID patientId,
-        @JsonProperty("idDireccion") UUID addressId,
+        @JsonProperty("idPaciente") String patientId,
+        @JsonProperty("idDireccion") String addressId,
         @JsonProperty("alias") String alias,
         @JsonProperty("direccion") String street,
         @JsonProperty("referencia") String reference,

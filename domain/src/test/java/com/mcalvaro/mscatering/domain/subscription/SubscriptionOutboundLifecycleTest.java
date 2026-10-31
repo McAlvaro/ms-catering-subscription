@@ -2,6 +2,9 @@ package com.mcalvaro.mscatering.domain.subscription;
 
 import com.mcalvaro.mscatering.domain.core.CorrelatedDomainEvent;
 import com.mcalvaro.mscatering.domain.core.DomainException;
+import com.mcalvaro.mscatering.domain.core.id.DietPlanId;
+import com.mcalvaro.mscatering.domain.core.id.PatientId;
+import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
 import com.mcalvaro.mscatering.domain.subscription.entity.DeliveryDay;
 import com.mcalvaro.mscatering.domain.subscription.enums.DeliveryDayStatus;
 import com.mcalvaro.mscatering.domain.subscription.enums.ServiceType;
@@ -239,8 +242,8 @@ class SubscriptionOutboundLifecycleTest {
     }
 
     private Subscription buildSubscription(LocalDate start) {
-        return Subscription.create(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
-                new ServiceContract(UUID.randomUUID(), com.mcalvaro.mscatering.domain.dietplan.PlanType.BASE, new ValidityPeriod(start, start.plusDays(14)), ServiceType.FULL,
+        return Subscription.create(SubscriptionId.generate(), PatientId.generate(), DietPlanId.generate(),
+                new ServiceContract(DietPlanId.generate(), com.mcalvaro.mscatering.domain.dietplan.PlanType.BASE, new ValidityPeriod(start, start.plusDays(14)), ServiceType.FULL,
                         new BigDecimal("250.00"), "Terms accepted", Instant.parse("2025-01-01T10:00:00Z")),
                 new DeliveryPreferences(
                         new DeliveryAddress("Main Street", "10", "Madrid", "Door A", 40.4168, -3.7038,

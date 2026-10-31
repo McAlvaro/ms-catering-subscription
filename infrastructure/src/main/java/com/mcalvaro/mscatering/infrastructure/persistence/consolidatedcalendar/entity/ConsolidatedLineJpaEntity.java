@@ -12,37 +12,36 @@ import jakarta.persistence.CascadeType;
 import java.util.ArrayList;
 import java.util.List;
 
-import java.util.UUID;
 
 @Entity
 @Table(name = "consolidated_lines")
 public class ConsolidatedLineJpaEntity {
 
     @Id
-    @Column(name = "id", updatable = false, nullable = false)
-    private UUID id;
+    @Column(name = "id", updatable = false, nullable = false, length = 64)
+    private String id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "calendar_id", nullable = false)
     private ConsolidatedCalendarJpaEntity consolidatedCalendar;
 
-    @Column(name = "subscription_id", nullable = false)
-    private UUID subscriptionId;
+    @Column(name = "subscription_id", nullable = false, length = 64)
+    private String subscriptionId;
 
-    @Column(name = "patient_id", nullable = false)
-    private UUID patientId;
+    @Column(name = "patient_id", nullable = false, length = 64)
+    private String patientId;
     @Column(name = "patient_name", nullable = false)
     private String patientName;
 
-    @Column(name = "diet_plan_id", nullable = false)
-    private UUID dietPlanId;
+    @Column(name = "diet_plan_id", nullable = false, length = 64)
+    private String dietPlanId;
     @Column(name = "plan_day_number", nullable = false)
     private int planDayNumber;
 
     @Column(name = "service_type", nullable = false, length = 50)
     private String serviceType;
-    @Column(name = "address_id", nullable = false)
-    private UUID addressId;
+    @Column(name = "address_id", nullable = false, length = 64)
+    private String addressId;
     @Column(name = "address_alias", nullable = false)
     private String addressAlias;
 
@@ -84,11 +83,11 @@ public class ConsolidatedLineJpaEntity {
     public ConsolidatedLineJpaEntity() {
     }
 
-    public UUID getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -100,29 +99,29 @@ public class ConsolidatedLineJpaEntity {
         this.consolidatedCalendar = consolidatedCalendar;
     }
 
-    public UUID getSubscriptionId() {
+    public String getSubscriptionId() {
         return subscriptionId;
     }
 
-    public void setSubscriptionId(UUID subscriptionId) {
+    public void setSubscriptionId(String subscriptionId) {
         this.subscriptionId = subscriptionId;
     }
 
-    public UUID getPatientId() {
+    public String getPatientId() {
         return patientId;
     }
 
-    public void setPatientId(UUID patientId) {
+    public void setPatientId(String patientId) {
         this.patientId = patientId;
     }
     public String getPatientName() { return patientName; }
     public void setPatientName(String value) { patientName = value; }
 
-    public UUID getDietPlanId() {
+    public String getDietPlanId() {
         return dietPlanId;
     }
 
-    public void setDietPlanId(UUID dietPlanId) {
+    public void setDietPlanId(String dietPlanId) {
         this.dietPlanId = dietPlanId;
     }
     public int getPlanDayNumber() { return planDayNumber; }
@@ -135,8 +134,8 @@ public class ConsolidatedLineJpaEntity {
     public void setServiceType(String serviceType) {
         this.serviceType = serviceType;
     }
-    public UUID getAddressId() { return addressId; }
-    public void setAddressId(UUID value) { addressId = value; }
+    public String getAddressId() { return addressId; }
+    public void setAddressId(String value) { addressId = value; }
     public String getAddressAlias() { return addressAlias; }
     public void setAddressAlias(String value) { addressAlias = value; }
 

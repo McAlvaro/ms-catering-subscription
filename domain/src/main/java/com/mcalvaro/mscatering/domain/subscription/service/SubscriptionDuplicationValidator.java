@@ -1,16 +1,11 @@
 package com.mcalvaro.mscatering.domain.subscription.service;
 
-import java.util.UUID;
-
 import com.mcalvaro.mscatering.domain.core.DomainException;
+import com.mcalvaro.mscatering.domain.core.id.PatientId;
 
 /**
  * Domain Service responsible for validating that a patient does not have
  * more than one ACTIVE or PAUSED subscription simultaneously.
- * <p>
- * This logic requires cross-aggregate boundaries validation (querying the
- * repository)
- * and therefore cannot reside inside the Subscription Aggregate Root itself.
  */
 public interface SubscriptionDuplicationValidator {
 
@@ -22,5 +17,5 @@ public interface SubscriptionDuplicationValidator {
      * @throws DomainException if the patient already has an active or paused
      *                         subscription.
      */
-    void validate(UUID patientId);
+    void validate(PatientId patientId);
 }

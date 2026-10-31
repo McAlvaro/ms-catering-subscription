@@ -135,7 +135,7 @@ class DeliveryInboundAdapterValidationTest {
         @DisplayName("Rejects missing idEntrega")
         void rejectsMissingIdEntrega() {
             DeliveryConfirmedData data = new DeliveryConfirmedData(
-                    null, UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
+                    null, "PKG-1", "CD-1", "SUS-1", "PAC-1",
                     "2026-10-30T10:00:00Z", "John Doe", "https://photos.com/1", null
             );
             DeliveryConfirmedEvent event = confirmedEvent(data);
@@ -148,7 +148,7 @@ class DeliveryInboundAdapterValidationTest {
         @DisplayName("Rejects missing idSuscripcion")
         void rejectsMissingIdSuscripcion() {
             DeliveryConfirmedData data = new DeliveryConfirmedData(
-                    UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), null, UUID.randomUUID(),
+                    "ENT-1", "PKG-1", "CD-1", null, "PAC-1",
                     "2026-10-30T10:00:00Z", "John Doe", "https://photos.com/1", null
             );
             DeliveryConfirmedEvent event = confirmedEvent(data);
@@ -163,7 +163,7 @@ class DeliveryInboundAdapterValidationTest {
         @DisplayName("Rejects invalid or blank fechaHoraEntrega")
         void rejectsInvalidFechaHoraEntrega(String fechaHoraEntrega) {
             DeliveryConfirmedData data = new DeliveryConfirmedData(
-                    UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
+                    "ENT-1", "PKG-1", "CD-1", "SUS-1", "PAC-1",
                     fechaHoraEntrega, "John Doe", "https://photos.com/1", null
             );
             DeliveryConfirmedEvent event = confirmedEvent(data);
@@ -213,7 +213,7 @@ class DeliveryInboundAdapterValidationTest {
         @DisplayName("Rejects missing idEntrega")
         void rejectsMissingIdEntrega() {
             DeliveryFailedData data = new DeliveryFailedData(
-                    null, UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
+                    null, "PKG-1", "CD-1", "SUS-1", "PAC-1",
                     LocalDate.of(2026, 10, 30), 2, "Direccion no encontrada", false, null
             );
             DeliveryFailedEvent event = failedEvent(data);
@@ -226,7 +226,7 @@ class DeliveryInboundAdapterValidationTest {
         @DisplayName("Rejects missing idSuscripcion")
         void rejectsMissingIdSuscripcion() {
             DeliveryFailedData data = new DeliveryFailedData(
-                    UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), null, UUID.randomUUID(),
+                    "ENT-1", "PKG-1", "CD-1", null, "PAC-1",
                     LocalDate.of(2026, 10, 30), 2, "Direccion no encontrada", false, null
             );
             DeliveryFailedEvent event = failedEvent(data);
@@ -239,7 +239,7 @@ class DeliveryInboundAdapterValidationTest {
         @DisplayName("Rejects null fechaEntrega")
         void rejectsNullFechaEntrega() {
             DeliveryFailedData data = new DeliveryFailedData(
-                    UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
+                    "ENT-1", "PKG-1", "CD-1", "SUS-1", "PAC-1",
                     (LocalDate) null, 2, "Direccion no encontrada", false, null
             );
             DeliveryFailedEvent event = failedEvent(data);
@@ -254,7 +254,7 @@ class DeliveryInboundAdapterValidationTest {
         @DisplayName("Rejects blank or null motivoFinal")
         void rejectsBlankMotivoFinal(String motivo) {
             DeliveryFailedData data = new DeliveryFailedData(
-                    UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
+                    "ENT-1", "PKG-1", "CD-1", "SUS-1", "PAC-1",
                     LocalDate.of(2026, 10, 30), 2, motivo, false, null
             );
             DeliveryFailedEvent event = failedEvent(data);
@@ -266,7 +266,7 @@ class DeliveryInboundAdapterValidationTest {
 
     private DeliveryConfirmedData validConfirmedData() {
         return new DeliveryConfirmedData(
-                UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
+                "ENT-1", "PKG-1", "CD-1", "SUS-1", "PAC-1",
                 "2026-10-30T10:00:00Z", "John Doe", "https://photos.com/1", null
         );
     }
@@ -280,7 +280,7 @@ class DeliveryInboundAdapterValidationTest {
 
     private DeliveryFailedData validFailedData() {
         return new DeliveryFailedData(
-                UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
+                "ENT-1", "PKG-1", "CD-1", "SUS-1", "PAC-1",
                 LocalDate.of(2026, 10, 30), 2, "Direccion no encontrada", false, null
         );
     }

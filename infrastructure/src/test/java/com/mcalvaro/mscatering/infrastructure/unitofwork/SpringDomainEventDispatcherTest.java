@@ -4,6 +4,7 @@ import an.awesome.pipelinr.Pipeline;
 import com.mcalvaro.mscatering.application.abstractions.DomainEventNotification;
 import com.mcalvaro.mscatering.domain.core.AggregateRoot;
 import com.mcalvaro.mscatering.domain.core.DomainEvent;
+import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -56,9 +57,9 @@ class SpringDomainEventDispatcherTest {
         assertThat(aggregate.getDomainEvents()).containsExactly(event);
     }
 
-    private static final class TestAggregate extends AggregateRoot {
+    private static final class TestAggregate extends AggregateRoot<SubscriptionId> {
         private TestAggregate() {
-            super(UUID.randomUUID());
+            super(SubscriptionId.of("SUS-test-aggregate"));
         }
 
         private void record(DomainEvent event) {

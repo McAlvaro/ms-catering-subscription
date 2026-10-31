@@ -5,6 +5,8 @@ import com.mcalvaro.mscatering.application.outbox.OutboxMessage;
 import com.mcalvaro.mscatering.application.outbox.OutboxMessageRepository;
 import com.mcalvaro.mscatering.application.outbox.translation.OutboxEventTranslatorRegistry;
 import com.mcalvaro.mscatering.domain.core.DomainEvent;
+import com.mcalvaro.mscatering.domain.core.id.PatientId;
+import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
 import com.mcalvaro.mscatering.domain.subscription.event.SubscriptionCreated;
 import com.mcalvaro.mscatering.domain.subscription.vo.ContractCode;
 import com.mcalvaro.mscatering.infrastructure.persistence.outbox.codec.JacksonDomainEventCodec;
@@ -274,8 +276,8 @@ class OutboxProcessorTest {
 
     private static SubscriptionCreated decodedEvent() {
         return new SubscriptionCreated(UUID.fromString("00000000-0000-0000-0000-000000000011"),
-                NOW.minusSeconds(1), UUID.fromString("00000000-0000-0000-0000-000000000012"),
-                UUID.fromString("00000000-0000-0000-0000-000000000013"), ContractCode.generate(2026, 1), null, null,
+                NOW.minusSeconds(1), SubscriptionId.of("SUS-00000000-0000-0000-0000-000000000012"),
+                PatientId.of("PAC-00000000-0000-0000-0000-000000000013"), ContractCode.generate(2026, 1), null, null,
                 null, null, 0, List.of(), null, "correlation-1");
     }
 

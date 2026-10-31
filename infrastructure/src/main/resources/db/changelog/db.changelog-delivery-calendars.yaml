@@ -8,13 +8,13 @@ databaseChangeLog:
             columns:
               - column:
                   name: id
-                  type: binary(16)
+                  type: varchar(64)
                   constraints:
                     primaryKey: true
                     nullable: false
               - column:
                   name: subscription_id
-                  type: binary(16)
+                  type: varchar(64)
                   constraints:
                     nullable: false
                     unique: true

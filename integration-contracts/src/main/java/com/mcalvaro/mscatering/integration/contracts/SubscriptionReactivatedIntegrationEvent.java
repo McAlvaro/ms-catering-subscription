@@ -26,13 +26,13 @@ public record SubscriptionReactivatedIntegrationEvent(UUID eventId, Instant occu
     }
 
     public record Data(
-            @JsonProperty("idSuscripcion") UUID subscriptionId,
-            @JsonProperty("idPaciente") UUID patientId,
+            @JsonProperty("idSuscripcion") String subscriptionId,
+            @JsonProperty("idPaciente") String patientId,
             @JsonProperty("fechaReactivacion") LocalDate reactivatedOn,
             @JsonProperty("fechaFin") LocalDate endDate) {
         public Data {
-            ContractAssertions.required(subscriptionId, "subscriptionId");
-            ContractAssertions.required(patientId, "patientId");
+            ContractAssertions.text(subscriptionId, "subscriptionId");
+            ContractAssertions.text(patientId, "patientId");
             ContractAssertions.date(reactivatedOn, "reactivatedOn");
             ContractAssertions.date(endDate, "endDate");
         }

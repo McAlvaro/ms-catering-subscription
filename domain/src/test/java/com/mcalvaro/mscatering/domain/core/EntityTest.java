@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.Instant;
 import java.util.UUID;
+
+import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -14,7 +16,7 @@ class EntityTest {
     @DisplayName("Should reject a null identifier when creating an entity")
     void shouldRejectNullIdWhenCreatingEntity() {
         // Arrange
-        UUID id = null;
+        SubscriptionId id = null;
 
         // Act & Assert
         assertThatThrownBy(() -> new TestEntity(id))
@@ -26,11 +28,11 @@ class EntityTest {
     @DisplayName("Should return the assigned identifier when created with an identifier")
     void shouldReturnIdWhenCreatedWithId() {
         // Arrange
-        UUID id = UUID.randomUUID();
+        SubscriptionId id = SubscriptionId.generate();
         TestEntity entity = new TestEntity(id);
 
         // Act
-        UUID result = entity.getId();
+        SubscriptionId result = entity.getId();
 
         // Assert
         assertThat(result).isEqualTo(id);
@@ -40,7 +42,7 @@ class EntityTest {
     @DisplayName("Should accumulate domain events when events are added")
     void shouldAccumulateDomainEventsWhenEventsAreAdded() {
         // Arrange
-        TestEntity entity = new TestEntity(UUID.randomUUID());
+        TestEntity entity = new TestEntity(SubscriptionId.generate());
         DomainEvent firstEvent = new TestDomainEvent();
         DomainEvent secondEvent = new TestDomainEvent();
 
@@ -56,7 +58,7 @@ class EntityTest {
     @DisplayName("Should reject a null domain event when adding an event")
     void shouldRejectNullDomainEventWhenAddingEvent() {
         // Arrange
-        TestEntity entity = new TestEntity(UUID.randomUUID());
+        TestEntity entity = new TestEntity(SubscriptionId.generate());
 
         // Act & Assert
         assertThatThrownBy(() -> entity.record(null))
@@ -68,7 +70,7 @@ class EntityTest {
     @DisplayName("Should expose an unmodifiable event list when retrieving domain events")
     void shouldExposeUnmodifiableEventListWhenRetrievingDomainEvents() {
         // Arrange
-        TestEntity entity = new TestEntity(UUID.randomUUID());
+        TestEntity entity = new TestEntity(SubscriptionId.generate());
         DomainEvent event = new TestDomainEvent();
         entity.record(event);
 
@@ -82,7 +84,7 @@ class EntityTest {
     @DisplayName("Should remove all domain events when clearing events")
     void shouldRemoveAllDomainEventsWhenClearingEvents() {
         // Arrange
-        TestEntity entity = new TestEntity(UUID.randomUUID());
+        TestEntity entity = new TestEntity(SubscriptionId.generate());
         entity.record(new TestDomainEvent());
 
         // Act
@@ -96,10 +98,10 @@ class EntityTest {
     @DisplayName("Should compare entities by identifier when checking equality")
     void shouldCompareEntitiesByIdWhenCheckingEquality() {
         // Arrange
-        UUID id = UUID.randomUUID();
+        SubscriptionId id = SubscriptionId.generate();
         TestEntity entity = new TestEntity(id);
         TestEntity entityWithSameId = new TestEntity(id);
-        TestEntity entityWithDifferentId = new TestEntity(UUID.randomUUID());
+        TestEntity entityWithDifferentId = new TestEntity(SubscriptionId.generate());
 
         // Act & Assert
         assertThat(entity)
@@ -113,7 +115,7 @@ class EntityTest {
     @DisplayName("Should return the identifier hash code when calculating the hash code")
     void shouldReturnIdHashCodeWhenCalculatingHashCode() {
         // Arrange
-        UUID id = UUID.randomUUID();
+        SubscriptionId id = SubscriptionId.generate();
         TestEntity entity = new TestEntity(id);
 
         // Act
@@ -123,9 +125,9 @@ class EntityTest {
         assertThat(result).isEqualTo(id.hashCode());
     }
 
-    private static final class TestEntity extends Entity {
+    private static final class TestEntity extends Entity<SubscriptionId> {
 
-        private TestEntity(UUID id) {
+        private TestEntity(SubscriptionId id) {
             super(id);
         }
 

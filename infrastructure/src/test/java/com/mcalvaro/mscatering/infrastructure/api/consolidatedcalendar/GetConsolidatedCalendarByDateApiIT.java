@@ -1,5 +1,12 @@
 package com.mcalvaro.mscatering.infrastructure.api.consolidatedcalendar;
 
+import com.mcalvaro.mscatering.domain.core.id.AddressId;
+import com.mcalvaro.mscatering.domain.core.id.ConsolidatedCalendarId;
+import com.mcalvaro.mscatering.domain.core.id.ConsolidatedLineId;
+import com.mcalvaro.mscatering.domain.core.id.DietPlanId;
+import com.mcalvaro.mscatering.domain.core.id.PatientId;
+import com.mcalvaro.mscatering.domain.core.id.RecipeId;
+import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.ConsolidatedCalendar;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.IConsolidatedCalendarRepository;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.entity.ConsolidatedLine;
@@ -30,18 +37,18 @@ class GetConsolidatedCalendarByDateApiIT extends BaseIntegrationTest {
     @Autowired
     private IConsolidatedCalendarRepository calendarRepository;
 
-    private UUID calendarId;
-    private UUID subscriptionId;
-    private UUID patientId;
-    private UUID dietPlanId;
+    private ConsolidatedCalendarId calendarId;
+    private SubscriptionId subscriptionId;
+    private PatientId patientId;
+    private DietPlanId dietPlanId;
     private LocalDate calendarDate;
 
     @BeforeEach
     void setUpCalendar() {
-        calendarId = UUID.randomUUID();
-        subscriptionId = UUID.randomUUID();
-        patientId = UUID.randomUUID();
-        dietPlanId = UUID.randomUUID();
+        calendarId = ConsolidatedCalendarId.of("CAL-" + UUID.randomUUID());
+        subscriptionId = SubscriptionId.of("SUS-" + UUID.randomUUID());
+        patientId = PatientId.of("PAC-" + UUID.randomUUID());
+        dietPlanId = DietPlanId.of("PLAN-" + UUID.randomUUID());
         calendarDate = LocalDate.now().plusDays(10);
         calendarRepository.save(buildClosedCalendar());
     }
@@ -59,7 +66,7 @@ class GetConsolidatedCalendarByDateApiIT extends BaseIntegrationTest {
             // Act & Assert
             mockMvc.perform(get(URL).param("date", requestedDate))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.id").value(calendarId.toString()))
+                    .andExpect(jsonPath("$.id").value(calendarId.value()))
                     .andExpect(jsonPath("$.date").value(requestedDate))
                     .andExpect(jsonPath("$.status").value("CLOSED"))
                     .andExpect(jsonPath("$.totalDeliveries").value(1))
@@ -109,7 +116,7 @@ class GetConsolidatedCalendarByDateApiIT extends BaseIntegrationTest {
     private ConsolidatedCalendar buildClosedCalendar() {
         ConsolidatedCalendar calendar = ConsolidatedCalendar.create(calendarId, calendarDate);
         calendar.addLine(new ConsolidatedLine(
-                UUID.randomUUID(),
+                ConsolidatedLineId.of("LINE-" + UUID.randomUUID()),
                 calendarId,
                 subscriptionId,
                 patientId,
@@ -117,10 +124,10 @@ class GetConsolidatedCalendarByDateApiIT extends BaseIntegrationTest {
                 dietPlanId,
                 1,
                 ServiceType.LUNCH,
-                new DeliveryAddress(UUID.randomUUID(), "Home", "Main Street", "123", "Madrid", "Reception", 40.4168, -3.7038,
+                new DeliveryAddress(AddressId.of("DIR-" + UUID.randomUUID()), "Home", "Main Street", "123", "Madrid", "Reception", 40.4168, -3.7038,
                         "+34123456789"),
                 new TimeWindow(LocalTime.of(12, 0), LocalTime.of(14, 0)),
-                "Ring the doorbell", List.of(new com.mcalvaro.mscatering.domain.consolidatedcalendar.entity.ConsolidatedRecipeSnapshot(UUID.randomUUID(), "Lunch", LocalTime.NOON, 100))));
+                "Ring the doorbell", List.of(new com.mcalvaro.mscatering.domain.consolidatedcalendar.entity.ConsolidatedRecipeSnapshot(RecipeId.of("REC-" + UUID.randomUUID()), "Lunch", LocalTime.NOON, 100))));
         calendar.close("daily-operator");
         return calendar;
     }

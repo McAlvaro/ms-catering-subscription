@@ -34,7 +34,7 @@ class GetConsolidatedCalendarByDateQueryHandlerTest {
         // Arrange
         LocalDate date = LocalDate.of(2099, 1, 1);
         GetConsolidatedCalendarByDateQuery query = new GetConsolidatedCalendarByDateQuery(date);
-        ConsolidatedCalendarDto expected = new ConsolidatedCalendarDto(UUID.randomUUID(), date, "CLOSED", 2, Instant.parse("2099-01-01T12:00:00Z"), "operations", List.of());
+        ConsolidatedCalendarDto expected = new ConsolidatedCalendarDto("CC-1", date, "CLOSED", 2, Instant.parse("2099-01-01T12:00:00Z"), "operations", List.of());
         when(queryService.getByDate(date)).thenReturn(Optional.of(expected));
 
         // Act

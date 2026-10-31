@@ -1,6 +1,7 @@
 package com.mcalvaro.mscatering.application.subscription.CreateSubscription;
 
 import com.mcalvaro.mscatering.domain.core.DomainException;
+import com.mcalvaro.mscatering.domain.core.id.*;
 import com.mcalvaro.mscatering.domain.subscription.ISubscriptionRepository;
 import com.mcalvaro.mscatering.domain.subscription.Subscription;
 import com.mcalvaro.mscatering.domain.subscription.entity.BiweeklyEvaluation;
@@ -41,7 +42,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class CreateSubscriptionCommandHandlerTest {
 
-    private static final UUID DELIVERY_ADDRESS_ID = UUID.fromString("550e8400-e29b-41d4-a716-446655440010");
+    private static final AddressId DELIVERY_ADDRESS_ID = AddressId.of("DIR-550e8400-e29b-41d4-a716-446655440010");
 
     @Mock
     private ISubscriptionRepository subscriptionRepository;
@@ -71,17 +72,17 @@ class CreateSubscriptionCommandHandlerTest {
         when(evaluationGenerator.generate(command.patientId(), command.startDate(), PlanDuration.BIWEEKLY))
                 .thenReturn(List.of(evaluation));
         when(deliveryAddressResolver.resolve(command.patientId(), command.deliveryAddressId()))
-                .thenReturn(new com.mcalvaro.mscatering.domain.subscription.vo.DeliveryAddress("Main Street", null,
+                .thenReturn(new com.mcalvaro.mscatering.domain.subscription.vo.DeliveryAddress(command.deliveryAddressId(), "Main", "Street", null,
                         "Cochabamba", "Near park", -17.39, -66.15, null));
         when(dietPlanResolver.resolve(command.dietPlanId(), command.patientId(), command.startDate(), command.endDate()))
                 .thenReturn(new DietPlanProjection(command.dietPlanId(), PlanType.BASE, null, true, command.startDate(), 15,
-                        IntStream.rangeClosed(1, 15).mapToObj(day -> new com.mcalvaro.mscatering.domain.dietplan.DietPlanDay(UUID.randomUUID(), day, 1,
-                                List.of(new com.mcalvaro.mscatering.domain.dietplan.DietPlanMeal(UUID.randomUUID(), com.mcalvaro.mscatering.domain.dietplan.MealType.LUNCH, LocalTime.NOON,
-                                        List.of(new com.mcalvaro.mscatering.domain.dietplan.DietPlanRecipe(UUID.randomUUID(), "Meal", 1)))))).toList()));
+                        IntStream.rangeClosed(1, 15).mapToObj(day -> new com.mcalvaro.mscatering.domain.dietplan.DietPlanDay(day, 1,
+                                List.of(new com.mcalvaro.mscatering.domain.dietplan.DietPlanMeal(com.mcalvaro.mscatering.domain.dietplan.MealType.LUNCH, LocalTime.NOON,
+                                        List.of(new com.mcalvaro.mscatering.domain.dietplan.DietPlanRecipe(RecipeId.generate(), "Meal", 1)))))).toList()));
         ArgumentCaptor<Subscription> subscriptionCaptor = ArgumentCaptor.forClass(Subscription.class);
 
         // Act
-        UUID returnedId = handler.handle(command);
+        SubscriptionId returnedId = handler.handle(command);
 
         // Assert
         verify(duplicationValidator, times(1)).validate(command.patientId());
@@ -112,7 +113,7 @@ class CreateSubscriptionCommandHandlerTest {
         when(evaluationGenerator.generate(command.patientId(), command.startDate(), PlanDuration.BIWEEKLY))
                 .thenReturn(List.of(evaluation));
         when(deliveryAddressResolver.resolve(command.patientId(), command.deliveryAddressId()))
-                .thenReturn(new com.mcalvaro.mscatering.domain.subscription.vo.DeliveryAddress("Main Street", null,
+                .thenReturn(new com.mcalvaro.mscatering.domain.subscription.vo.DeliveryAddress(command.deliveryAddressId(), "Main", "Street", null,
                         "Cochabamba", "Near park", -17.39, -66.15, null));
         when(dietPlanResolver.resolve(command.dietPlanId(), command.patientId(), command.startDate(), command.endDate()))
                 .thenReturn(plan(command, PlanType.PERSONALIZED, command.patientId()));
@@ -191,27 +192,27 @@ class CreateSubscriptionCommandHandlerTest {
 
     private CreateSubscriptionCommand buildValidCommand(LocalDate startDate, LocalDate endDate, BigDecimal totalPrice) {
         return new CreateSubscriptionCommand(
-                DELIVERY_ADDRESS_ID,
-                UUID.randomUUID(),
+                PatientId.generate(),
+                DietPlanId.generate(),
                 startDate,
                 endDate,
                 ServiceType.FULL.name(),
                 totalPrice,
                 "Accepted terms and conditions",
-                UUID.randomUUID(),
+                DELIVERY_ADDRESS_ID,
                 LocalTime.of(9, 0),
                 LocalTime.of(11, 0),
                 "Ring the doorbell");
     }
 
-    private BiweeklyEvaluation buildEvaluation(UUID patientId) {
-        return new BiweeklyEvaluation(UUID.randomUUID(), patientId, 1, LocalDate.of(2026, 1, 15));
+    private BiweeklyEvaluation buildEvaluation(PatientId patientId) {
+        return new BiweeklyEvaluation(EvaluationId.generate(), patientId, 1, LocalDate.of(2026, 1, 15));
     }
 
-    private DietPlanProjection plan(CreateSubscriptionCommand command, PlanType type, UUID ownerPatientId) {
+    private DietPlanProjection plan(CreateSubscriptionCommand command, PlanType type, PatientId ownerPatientId) {
         return new DietPlanProjection(command.dietPlanId(), type, ownerPatientId, true, command.startDate(), 15,
-                IntStream.rangeClosed(1, 15).mapToObj(day -> new com.mcalvaro.mscatering.domain.dietplan.DietPlanDay(UUID.randomUUID(), day, 1,
-                        List.of(new com.mcalvaro.mscatering.domain.dietplan.DietPlanMeal(UUID.randomUUID(), com.mcalvaro.mscatering.domain.dietplan.MealType.LUNCH, LocalTime.NOON,
-                                List.of(new com.mcalvaro.mscatering.domain.dietplan.DietPlanRecipe(UUID.randomUUID(), "Meal", 1)))))).toList());
+                IntStream.rangeClosed(1, 15).mapToObj(day -> new com.mcalvaro.mscatering.domain.dietplan.DietPlanDay(day, 1,
+                        List.of(new com.mcalvaro.mscatering.domain.dietplan.DietPlanMeal(com.mcalvaro.mscatering.domain.dietplan.MealType.LUNCH, LocalTime.NOON,
+                                List.of(new com.mcalvaro.mscatering.domain.dietplan.DietPlanRecipe(RecipeId.generate(), "Meal", 1)))))).toList());
     }
 }

@@ -5,7 +5,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -25,14 +24,14 @@ import jakarta.persistence.Table;
 public class SubscriptionJpaEntity {
 
     @Id
-    @Column(name = "id", updatable = false, nullable = false)
-    private UUID id;
+    @Column(name = "id", updatable = false, nullable = false, length = 64)
+    private String id;
 
-    @Column(name = "patient_id", nullable = false)
-    private UUID patientId;
+    @Column(name = "patient_id", nullable = false, length = 64)
+    private String patientId;
 
-    @Column(name = "diet_plan_id", nullable = false)
-    private UUID dietPlanId;
+    @Column(name = "diet_plan_id", nullable = false, length = 64)
+    private String dietPlanId;
 
     @Column(name = "plan_type", nullable = false, length = 20)
     private String planType;
@@ -111,27 +110,27 @@ public class SubscriptionJpaEntity {
 
     // Getters y Setters
 
-    public UUID getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(String id) {
         this.id = id;
     }
 
-    public UUID getPatientId() {
+    public String getPatientId() {
         return patientId;
     }
 
-    public void setPatientId(UUID patientId) {
+    public void setPatientId(String patientId) {
         this.patientId = patientId;
     }
 
-    public UUID getDietPlanId() {
+    public String getDietPlanId() {
         return dietPlanId;
     }
 
-    public void setDietPlanId(UUID dietPlanId) {
+    public void setDietPlanId(String dietPlanId) {
         this.dietPlanId = dietPlanId;
     }
 

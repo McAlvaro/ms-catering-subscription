@@ -1,7 +1,8 @@
 package com.mcalvaro.mscatering.domain.patient;
 
+import com.mcalvaro.mscatering.domain.core.id.PatientId;
+
 import java.time.Instant;
-import java.util.UUID;
 
 /**
  * Read model — local replica of a patient's activation status
@@ -15,11 +16,10 @@ import java.util.UUID;
  * creating a subscription.
  */
 public record PatientReference(
-        UUID patientId,
+        PatientId patientId,
         String patientName,
         boolean active,
         Instant updatedAt) {
-
 
     public boolean isActive() {
         return active;

@@ -1,8 +1,9 @@
 package com.mcalvaro.mscatering.domain.consolidatedcalendar;
 
+import com.mcalvaro.mscatering.domain.core.id.ConsolidatedCalendarId;
+
 import java.time.LocalDate;
 import java.util.Optional;
-import java.util.UUID;
 
 /**
  * Domain port (repository interface) for the {@link ConsolidatedCalendar}
@@ -11,7 +12,7 @@ import java.util.UUID;
  */
 public interface IConsolidatedCalendarRepository {
 
-    Optional<ConsolidatedCalendar> findById(UUID id);
+    Optional<ConsolidatedCalendar> findById(ConsolidatedCalendarId id);
 
     Optional<ConsolidatedCalendar> findByDate(LocalDate date);
 

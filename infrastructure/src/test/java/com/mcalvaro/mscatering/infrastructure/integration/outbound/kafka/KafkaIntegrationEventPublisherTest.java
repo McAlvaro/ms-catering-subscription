@@ -50,7 +50,7 @@ class KafkaIntegrationEventPublisherTest {
         verify(kafkaTemplate).send(records.capture());
         ProducerRecord<String, String> record = records.getValue();
         assertThat(record.topic()).isEqualTo("bc3.catering.eventos");
-        assertThat(record.key()).isEqualTo(KafkaIntegrationEventFixtures.SUBSCRIPTION_ID.toString());
+        assertThat(record.key()).isEqualTo(KafkaIntegrationEventFixtures.SUBSCRIPTION_ID);
         assertThat(record.headers()).isEmpty();
         JsonNode json = mapper.readTree(record.value());
         assertThat(json.has("eventId")).isTrue();

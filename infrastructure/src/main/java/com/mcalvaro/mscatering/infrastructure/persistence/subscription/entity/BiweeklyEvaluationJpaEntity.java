@@ -9,22 +9,21 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.FetchType;
 
 import java.time.LocalDate;
-import java.util.UUID;
 
 @Entity
 @Table(name = "biweekly_evaluations")
 public class BiweeklyEvaluationJpaEntity {
 
     @Id
-    @Column(name = "id", updatable = false, nullable = false)
-    private UUID id;
+    @Column(name = "id", updatable = false, nullable = false, length = 64)
+    private String id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subscription_id", nullable = false)
     private SubscriptionJpaEntity subscription;
 
-    @Column(name = "patient_id", nullable = false)
-    private UUID patientId;
+    @Column(name = "patient_id", nullable = false, length = 64)
+    private String patientId;
 
     @Column(name = "evaluation_number", nullable = false)
     private Integer evaluationNumber;
@@ -41,11 +40,11 @@ public class BiweeklyEvaluationJpaEntity {
     public BiweeklyEvaluationJpaEntity() {
     }
 
-    public UUID getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -57,11 +56,11 @@ public class BiweeklyEvaluationJpaEntity {
         this.subscription = subscription;
     }
 
-    public UUID getPatientId() {
+    public String getPatientId() {
         return patientId;
     }
 
-    public void setPatientId(UUID patientId) {
+    public void setPatientId(String patientId) {
         this.patientId = patientId;
     }
 

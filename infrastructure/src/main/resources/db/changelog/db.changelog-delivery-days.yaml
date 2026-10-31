@@ -8,13 +8,13 @@ databaseChangeLog:
             columns:
               - column:
                   name: id
-                  type: binary(16)
+                  type: varchar(64)
                   constraints:
                     primaryKey: true
                     nullable: false
               - column:
                   name: calendar_id
-                  type: binary(16)
+                  type: varchar(64)
                   constraints:
                     nullable: false
               - column:
@@ -90,7 +90,7 @@ databaseChangeLog:
             columns:
               - column:
                   name: address_id
-                  type: binary(16)
+                  type: varchar(64)
               - column:
                   name: address_alias
                   type: varchar(255)

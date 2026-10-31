@@ -31,17 +31,17 @@ public class ProcessedInboundEventReceiptJpaEntity {
     @Column(name = "correlation_id", nullable = false, length = 255)
     private String correlationId;
 
-    @Column(name = "patient_id", nullable = false)
-    private UUID patientId;
+    @Column(name = "patient_id", length = 64)
+    private String patientId;
 
-    @Column(name = "address_id")
-    private UUID addressId;
+    @Column(name = "address_id", length = 64)
+    private String addressId;
 
     @Column(name = "subject_kind", nullable = false, length = 30)
     private String subjectKind;
 
-    @Column(name = "subject_id", nullable = false)
-    private UUID subjectId;
+    @Column(name = "subject_id", nullable = false, length = 64)
+    private String subjectId;
 
     @Column(name = "event_fingerprint", nullable = false, length = 64)
     private String eventFingerprint;
@@ -54,13 +54,13 @@ public class ProcessedInboundEventReceiptJpaEntity {
 
     public ProcessedInboundEventReceiptJpaEntity(UUID eventId, String eventName, String eventVersion,
             Instant occurredOn,
-            String source, String correlationId, UUID patientId, String eventFingerprint, String payloadFingerprint) {
+            String source, String correlationId, String patientId, String eventFingerprint, String payloadFingerprint) {
         this(eventId, eventName, eventVersion, occurredOn, source, correlationId, patientId, null, eventFingerprint,
                 payloadFingerprint);
     }
 
     public ProcessedInboundEventReceiptJpaEntity(UUID eventId, String eventName, String eventVersion,
-            Instant occurredOn, String source, String correlationId, UUID patientId, UUID addressId,
+            Instant occurredOn, String source, String correlationId, String patientId, String addressId,
             String eventFingerprint, String payloadFingerprint) {
         this.eventId = eventId;
         this.eventName = eventName;
@@ -77,7 +77,7 @@ public class ProcessedInboundEventReceiptJpaEntity {
     }
 
     public ProcessedInboundEventReceiptJpaEntity(UUID eventId, String eventName, String eventVersion, Instant occurredOn,
-            String source, String correlationId, ReceiptSubjectKind subjectKind, UUID subjectId, String eventFingerprint,
+            String source, String correlationId, ReceiptSubjectKind subjectKind, String subjectId, String eventFingerprint,
             String payloadFingerprint) {
         this.eventId = eventId; this.eventName = eventName; this.eventVersion = eventVersion; this.occurredOn = occurredOn;
         this.source = source; this.correlationId = correlationId; this.subjectKind = subjectKind.name(); this.subjectId = subjectId;

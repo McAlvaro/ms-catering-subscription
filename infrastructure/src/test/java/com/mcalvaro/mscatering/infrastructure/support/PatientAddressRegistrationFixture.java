@@ -19,13 +19,13 @@ public class PatientAddressRegistrationFixture {
         this.adapter = adapter;
     }
 
-    public UUID ingestAddress(UUID patientId) {
-        UUID addressId = UUID.randomUUID();
+    public String ingestAddress(String patientId) {
+        String addressId = "DIR-" + UUID.randomUUID();
         ingestAddress(patientId, addressId);
         return addressId;
     }
 
-    public void ingestAddress(UUID patientId, UUID addressId) {
+    public void ingestAddress(String patientId, String addressId) {
         ingest(new PatientAddressRegisteredEvent(UUID.randomUUID(), "bc1.DireccionClienteRegistrada", "1.0",
                 Instant.parse("2026-10-27T12:00:00Z"), "MsPatientsConsulCore", "test-" + UUID.randomUUID(),
                 new PatientAddressRegisteredData(patientId, addressId, "Home", "Main Street", "Near park", "Cochabamba",

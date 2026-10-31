@@ -4,23 +4,19 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.UUID;
 
 import com.mcalvaro.mscatering.domain.core.DomainException;
 import com.mcalvaro.mscatering.domain.core.Entity;
+import com.mcalvaro.mscatering.domain.core.id.DeliveryDayId;
 import com.mcalvaro.mscatering.domain.subscription.SubscriptionErrors;
 import com.mcalvaro.mscatering.domain.subscription.enums.DeliveryDayStatus;
 import com.mcalvaro.mscatering.domain.subscription.vo.DeliveryAddress;
 import com.mcalvaro.mscatering.domain.subscription.vo.TimeWindow;
 
 /**
- * Entity representing a single physical delivery on a given date
- * (DiaDeEntrega).
- * <p>
- * The patient may modify address, time window and instructions up to
- * 48 hours before the scheduled delivery date.
+ * Entity representing a single physical delivery on a given date (DiaDeEntrega).
  */
-public class DeliveryDay extends Entity {
+public class DeliveryDay extends Entity<DeliveryDayId> {
 
     private final LocalDate date;
     private DeliveryDayStatus status;
@@ -31,7 +27,7 @@ public class DeliveryDay extends Entity {
     private Instant deliveredAt;
     private String failureReason;
 
-    public DeliveryDay(UUID id, LocalDate date, DeliveryAddress address,
+    public DeliveryDay(DeliveryDayId id, LocalDate date, DeliveryAddress address,
             TimeWindow timeWindow, String instructions) {
         super(id);
         this.date = date;

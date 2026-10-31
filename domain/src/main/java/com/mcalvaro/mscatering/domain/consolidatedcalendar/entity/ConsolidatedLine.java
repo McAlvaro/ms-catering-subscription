@@ -1,11 +1,16 @@
 package com.mcalvaro.mscatering.domain.consolidatedcalendar.entity;
 
+import com.mcalvaro.mscatering.domain.core.DomainException;
 import com.mcalvaro.mscatering.domain.core.Entity;
+import com.mcalvaro.mscatering.domain.core.id.ConsolidatedCalendarId;
+import com.mcalvaro.mscatering.domain.core.id.ConsolidatedLineId;
+import com.mcalvaro.mscatering.domain.core.id.DietPlanId;
+import com.mcalvaro.mscatering.domain.core.id.PatientId;
+import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
 import com.mcalvaro.mscatering.domain.subscription.enums.ServiceType;
 import com.mcalvaro.mscatering.domain.subscription.vo.DeliveryAddress;
 import com.mcalvaro.mscatering.domain.subscription.vo.TimeWindow;
 
-import java.util.UUID;
 import java.util.List;
 
 /**
@@ -16,13 +21,13 @@ import java.util.List;
  * from the subscription package — sharing VOs within the same bounded
  * context is correct DDD practice.
  */
-public class ConsolidatedLine extends Entity {
+public class ConsolidatedLine extends Entity<ConsolidatedLineId> {
 
-    private final UUID consolidatedCalendarId;
-    private final UUID subscriptionId;
-    private final UUID patientId;
+    private final ConsolidatedCalendarId consolidatedCalendarId;
+    private final SubscriptionId subscriptionId;
+    private final PatientId patientId;
     private final String patientName;
-    private final UUID dietPlanId;
+    private final DietPlanId dietPlanId;
     private final int planDayNumber;
     private final ServiceType serviceType;
     private final DeliveryAddress address;
@@ -30,8 +35,8 @@ public class ConsolidatedLine extends Entity {
     private final String instructions;
     private final List<ConsolidatedRecipeSnapshot> recipes;
 
-    public ConsolidatedLine(UUID id, UUID consolidatedCalendarId, UUID subscriptionId, UUID patientId,
-            String patientName, UUID dietPlanId, int planDayNumber, ServiceType serviceType,
+    public ConsolidatedLine(ConsolidatedLineId id, ConsolidatedCalendarId consolidatedCalendarId, SubscriptionId subscriptionId, PatientId patientId,
+            String patientName, DietPlanId dietPlanId, int planDayNumber, ServiceType serviceType,
             DeliveryAddress address, TimeWindow timeWindow, String instructions,
             List<ConsolidatedRecipeSnapshot> recipes) {
         super(id);
@@ -49,25 +54,33 @@ public class ConsolidatedLine extends Entity {
         validateSnapshot();
     }
 
-    public UUID getConsolidatedCalendarId() {
+    public ConsolidatedCalendarId getConsolidatedCalendarId() {
         return consolidatedCalendarId;
     }
 
-    public UUID getSubscriptionId() {
+    public SubscriptionId getSubscriptionId() {
         return subscriptionId;
     }
 
-    public UUID getPatientId() {
+    public PatientId getPatientId() {
         return patientId;
     }
 
-    public UUID getDietPlanId() {
+    public DietPlanId getDietPlanId() {
         return dietPlanId;
     }
 
-    public String getPatientName() { return patientName; }
-    public int getPlanDayNumber() { return planDayNumber; }
-    public List<ConsolidatedRecipeSnapshot> getRecipes() { return recipes; }
+    public String getPatientName() {
+        return patientName;
+    }
+
+    public int getPlanDayNumber() {
+        return planDayNumber;
+    }
+
+    public List<ConsolidatedRecipeSnapshot> getRecipes() {
+        return recipes;
+    }
 
     public ConsolidatedDeliverySnapshot snapshot() {
         return new ConsolidatedDeliverySnapshot(getId(), subscriptionId, patientId, patientName, dietPlanId,
@@ -79,7 +92,7 @@ public class ConsolidatedLine extends Entity {
                 || patientName.isBlank() || dietPlanId == null || planDayNumber < 1 || serviceType == null
                 || address == null || address.addressId() == null || address.alias() == null || address.alias().isBlank()
                 || address.reference() == null || address.reference().isBlank() || recipes.isEmpty()) {
-            throw new com.mcalvaro.mscatering.domain.core.DomainException("CAL-004", "Delivery snapshot is incomplete");
+            throw new DomainException("CAL-004", "Delivery snapshot is incomplete");
         }
     }
 

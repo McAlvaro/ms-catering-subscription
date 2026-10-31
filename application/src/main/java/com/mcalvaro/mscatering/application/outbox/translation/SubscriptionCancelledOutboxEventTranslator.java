@@ -14,8 +14,8 @@ public final class SubscriptionCancelledOutboxEventTranslator implements OutboxE
         if (source == null)
             throw new IntegrationEventTranslationException("SubscriptionCancelled must not be null");
         return new SubscriptionCancelledIntegrationEvent(source.eventId(), source.occurredAt(), source.correlationId(),
-                new SubscriptionCancelledIntegrationEvent.Data(source.subscriptionId(), source.patientId(),
-                        source.dietPlanId(),
+                new SubscriptionCancelledIntegrationEvent.Data(source.subscriptionId().value(), source.patientId().value(),
+                        source.dietPlanId().value(),
                         "MANUAL", source.reason(), source.effectiveDate(), source.cancelledPendingDeliveries()));
     }
 }

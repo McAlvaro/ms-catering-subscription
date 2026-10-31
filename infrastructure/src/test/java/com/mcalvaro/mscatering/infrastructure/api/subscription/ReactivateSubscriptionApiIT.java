@@ -1,5 +1,9 @@
 package com.mcalvaro.mscatering.infrastructure.api.subscription;
 
+import com.mcalvaro.mscatering.domain.core.id.AddressId;
+import com.mcalvaro.mscatering.domain.core.id.DietPlanId;
+import com.mcalvaro.mscatering.domain.core.id.PatientId;
+import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
 import com.mcalvaro.mscatering.domain.subscription.*;
 import com.mcalvaro.mscatering.domain.subscription.enums.ServiceType;
 import com.mcalvaro.mscatering.domain.subscription.vo.*;
@@ -16,11 +20,11 @@ class ReactivateSubscriptionApiIT extends BaseIntegrationTest {
     private static final String URL = "/api/subscriptions/{id}/reactivate";
     @Autowired
     private ISubscriptionRepository subscriptionRepository;
-    private UUID subscriptionId;
+    private SubscriptionId subscriptionId;
 
     @BeforeEach
     void setUp() {
-        subscriptionId = UUID.randomUUID();
+        subscriptionId = SubscriptionId.of("SUS-" + UUID.randomUUID());
         Subscription subscription = buildValidCommand();
         subscription.pause(new PauseRange(LocalDate.now().plusDays(12), LocalDate.now().plusDays(14)), "Holiday");
         subscriptionRepository.save(subscription);
@@ -35,7 +39,7 @@ class ReactivateSubscriptionApiIT extends BaseIntegrationTest {
             // Arrange
             LocalDate date = LocalDate.now().plusDays(12);
             // Act & Assert
-            mockMvc.perform(post(URL, subscriptionId).param("reactivationDate", date.toString()))
+            mockMvc.perform(post(URL, subscriptionId.value()).param("reactivationDate", date.toString()))
                     .andExpect(status().isOk());
         }
     }
@@ -47,10 +51,10 @@ class ReactivateSubscriptionApiIT extends BaseIntegrationTest {
         @DisplayName("Should return 400 SUB-004 when subscription is active")
         void shouldReturn400WhenSubscriptionIsActive() throws Exception {
             // Arrange
-            UUID activeId = UUID.randomUUID();
+            SubscriptionId activeId = SubscriptionId.of("SUS-" + UUID.randomUUID());
             subscriptionRepository.save(buildValidCommand(activeId));
             // Act & Assert
-            mockMvc.perform(post(URL, activeId).param("reactivationDate", LocalDate.now().plusDays(3).toString()))
+            mockMvc.perform(post(URL, activeId.value()).param("reactivationDate", LocalDate.now().plusDays(3).toString()))
                     .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("SUB-004"));
         }
     }
@@ -63,7 +67,7 @@ class ReactivateSubscriptionApiIT extends BaseIntegrationTest {
         void shouldReturn500WhenReactivationDateIsMalformed() throws Exception {
             // Arrange
             // Act & Assert
-            mockMvc.perform(post(URL, subscriptionId).param("reactivationDate", "invalid"))
+            mockMvc.perform(post(URL, subscriptionId.value()).param("reactivationDate", "invalid"))
                     .andExpect(status().isInternalServerError())
                     .andExpect(jsonPath("$.code").value("INTERNAL_SERVER_ERROR"));
         }
@@ -73,21 +77,15 @@ class ReactivateSubscriptionApiIT extends BaseIntegrationTest {
         return buildValidCommand(subscriptionId);
     }
 
-    private Subscription buildValidCommand(UUID id) {
+    private Subscription buildValidCommand(SubscriptionId id) {
         LocalDate start = LocalDate.now().plusDays(10);
-        return Subscription.create(id, UUID.randomUUID(), UUID.randomUUID(),
-                new ServiceContract(UUID.randomUUID(), com.mcalvaro.mscatering.domain.dietplan.PlanType.BASE, new ValidityPeriod(start, start.plusDays(14)), ServiceType.FULL,
+        PatientId patientId = PatientId.of("PAC-" + UUID.randomUUID());
+        DietPlanId dietPlanId = DietPlanId.of("PLAN-" + UUID.randomUUID());
+        return Subscription.create(id, patientId, dietPlanId,
+                new ServiceContract(dietPlanId, com.mcalvaro.mscatering.domain.dietplan.PlanType.BASE, new ValidityPeriod(start, start.plusDays(14)), ServiceType.FULL,
                         new BigDecimal("250"), "Terms", Instant.now()),
-                new DeliveryPreferences(new DeliveryAddress("Main", "1", "Lima", null, 0, 0, "1"),
+                new DeliveryPreferences(new DeliveryAddress(AddressId.of("DIR-" + UUID.randomUUID()), "Home", "Main", "1", "Lima", null, 0, 0, "1"),
                         new TimeWindow(LocalTime.NOON, LocalTime.of(14, 0)), null),
                 1);
-    }
-
-    private Subscription buildValidCommand(UUID ignored, int planDays) {
-        return buildValidCommand();
-    }
-
-    private String buildValidCommandJson() throws Exception {
-        return objectMapper.writeValueAsString(buildValidCommand());
     }
 }

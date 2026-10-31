@@ -1,6 +1,7 @@
 package com.mcalvaro.mscatering.application.consolidatedcalendar.CloseConsolidatedCalendar;
 
 import an.awesome.pipelinr.Command;
+import com.mcalvaro.mscatering.domain.core.id.ConsolidatedCalendarId;
 
 import java.time.LocalDate;
 import java.util.UUID;
@@ -15,7 +16,7 @@ import java.util.UUID;
 public record CloseConsolidatedCalendarCommand(
         LocalDate date,
         String closedBy,
-        String correlationId) implements Command<UUID> {
+        String correlationId) implements Command<ConsolidatedCalendarId> {
     public CloseConsolidatedCalendarCommand(LocalDate date, String closedBy) {
         this(date, closedBy, UUID.randomUUID().toString());
     }

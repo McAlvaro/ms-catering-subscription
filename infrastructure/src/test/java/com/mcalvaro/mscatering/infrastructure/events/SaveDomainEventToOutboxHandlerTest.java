@@ -4,6 +4,10 @@ import com.mcalvaro.mscatering.application.abstractions.DomainEventNotification;
 import com.mcalvaro.mscatering.application.outbox.OutboxMessage;
 import com.mcalvaro.mscatering.application.outbox.OutboxMessageRepository;
 import com.mcalvaro.mscatering.domain.core.DomainEvent;
+import com.mcalvaro.mscatering.domain.core.id.DeliveryDayId;
+import com.mcalvaro.mscatering.domain.core.id.DietPlanId;
+import com.mcalvaro.mscatering.domain.core.id.PatientId;
+import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
 import com.mcalvaro.mscatering.domain.dietplan.PlanType;
 import com.mcalvaro.mscatering.domain.subscription.event.DeliveryConfirmed;
 import com.mcalvaro.mscatering.domain.subscription.event.SubscriptionCreated;
@@ -77,7 +81,7 @@ class SaveDomainEventToOutboxHandlerTest {
 
     @Test
     void ignoresUnsupportedInternalEventsWithoutEncodingOrPersisting() {
-        DeliveryConfirmed event = new DeliveryConfirmed(UUID.randomUUID(), UUID.randomUUID());
+        DeliveryConfirmed event = new DeliveryConfirmed(SubscriptionId.of("SUS-test-1"), DeliveryDayId.of("CD-test-1"));
         when(codec.supports(event)).thenReturn(false);
 
         handler.handle(new DomainEventNotification(event));
@@ -113,9 +117,9 @@ class SaveDomainEventToOutboxHandlerTest {
     private static SubscriptionCreated subscriptionCreated() {
         return new SubscriptionCreated(UUID.fromString("00000000-0000-0000-0000-000000000001"),
                 Instant.parse("2026-10-29T10:15:30.123456Z"),
-                UUID.fromString("00000000-0000-0000-0000-000000000002"),
-                UUID.fromString("00000000-0000-0000-0000-000000000003"), new ContractCode("NTC-2026-0001"),
-                UUID.fromString("00000000-0000-0000-0000-000000000004"), PlanType.BASE,
+                SubscriptionId.of("SUS-00000000-0000-0000-0000-000000000002"),
+                PatientId.of("PAC-00000000-0000-0000-0000-000000000003"), new ContractCode("NTC-2026-0001"),
+                DietPlanId.of("PLAN-00000000-0000-0000-0000-000000000004"), PlanType.BASE,
                 LocalDate.of(2026, 1, 10), LocalDate.of(2026, 1, 24), 15, List.of(), new BigDecimal("249.90"),
                 "correlation-created");
     }

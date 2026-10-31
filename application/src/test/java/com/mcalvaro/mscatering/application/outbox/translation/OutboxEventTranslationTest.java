@@ -4,6 +4,7 @@ import com.mcalvaro.mscatering.domain.consolidatedcalendar.entity.ConsolidatedDe
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.entity.ConsolidatedRecipeSnapshot;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.event.ConsolidatedCalendarClosed;
 import com.mcalvaro.mscatering.domain.core.DomainEvent;
+import com.mcalvaro.mscatering.domain.core.id.*;
 import com.mcalvaro.mscatering.domain.dietplan.PlanType;
 import com.mcalvaro.mscatering.domain.subscription.event.SubscriptionCancelled;
 import com.mcalvaro.mscatering.domain.subscription.event.SubscriptionCompleted;
@@ -40,26 +41,26 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class OutboxEventTranslationTest {
     private static final Instant OCCURRED_AT = Instant.parse("2026-10-29T12:00:00Z");
     private static final UUID EVENT_ID = uuid(1);
-    private static final UUID SUBSCRIPTION_ID = uuid(2);
-    private static final UUID PATIENT_ID = uuid(3);
-    private static final UUID PLAN_ID = uuid(4);
-    private static final UUID CALENDAR_ID = uuid(5);
-    private static final UUID FIRST_CALENDAR_DAY_ID = uuid(11);
-    private static final UUID SECOND_CALENDAR_DAY_ID = uuid(12);
-    private static final UUID SECOND_SUBSCRIPTION_ID = uuid(13);
-    private static final UUID SECOND_PATIENT_ID = uuid(14);
-    private static final UUID SECOND_PLAN_ID = uuid(15);
-    private static final UUID FIRST_ADDRESS_ID = uuid(16);
-    private static final UUID SECOND_ADDRESS_ID = uuid(17);
-    private static final UUID BREAKFAST_RECIPE_ID = uuid(18);
-    private static final UUID LUNCH_RECIPE_ID = uuid(19);
-    private static final UUID DINNER_RECIPE_ID = uuid(20);
-    private static final UUID SNACK_RECIPE_ID = uuid(21);
+    private static final SubscriptionId SUBSCRIPTION_ID = SubscriptionId.of("SUS-00000000-0000-0000-0000-000000000002");
+    private static final PatientId PATIENT_ID = PatientId.of("PAC-00000000-0000-0000-0000-000000000003");
+    private static final DietPlanId PLAN_ID = DietPlanId.of("PLAN-00000000-0000-0000-0000-000000000004");
+    private static final ConsolidatedCalendarId CALENDAR_ID = ConsolidatedCalendarId.of("CAL-00000000-0000-0000-0000-000000000005");
+    private static final ConsolidatedLineId FIRST_CALENDAR_DAY_ID = ConsolidatedLineId.of("LINE-00000000-0000-0000-0000-000000000011");
+    private static final ConsolidatedLineId SECOND_CALENDAR_DAY_ID = ConsolidatedLineId.of("LINE-00000000-0000-0000-0000-000000000012");
+    private static final SubscriptionId SECOND_SUBSCRIPTION_ID = SubscriptionId.of("SUS-00000000-0000-0000-0000-000000000013");
+    private static final PatientId SECOND_PATIENT_ID = PatientId.of("PAC-00000000-0000-0000-0000-000000000014");
+    private static final DietPlanId SECOND_PLAN_ID = DietPlanId.of("PLAN-00000000-0000-0000-0000-000000000015");
+    private static final AddressId FIRST_ADDRESS_ID = AddressId.of("DIR-00000000-0000-0000-0000-000000000016");
+    private static final AddressId SECOND_ADDRESS_ID = AddressId.of("DIR-00000000-0000-0000-0000-000000000017");
+    private static final RecipeId BREAKFAST_RECIPE_ID = RecipeId.of("REC-00000000-0000-0000-0000-000000000018");
+    private static final RecipeId LUNCH_RECIPE_ID = RecipeId.of("REC-00000000-0000-0000-0000-000000000019");
+    private static final RecipeId DINNER_RECIPE_ID = RecipeId.of("REC-00000000-0000-0000-0000-000000000020");
+    private static final RecipeId SNACK_RECIPE_ID = RecipeId.of("REC-00000000-0000-0000-0000-000000000021");
 
     @Test
     void mapsCreationSnapshotWithPersonalizedAndBasePlanTypes() {
         SubscriptionCreated personalized = createdEvent(PlanType.PERSONALIZED, "flow-personalized",
-                List.of(uuid(30), uuid(31)), new BigDecimal("280.50"));
+                List.of(EvaluationId.of("EVAL-00000000-0000-0000-0000-000000000030"), EvaluationId.of("EVAL-00000000-0000-0000-0000-000000000031")), new BigDecimal("280.50"));
         SubscriptionCreatedIntegrationEvent personalizedResult =
                 new SubscriptionCreatedOutboxEventTranslator().translate(personalized);
 
@@ -84,8 +85,8 @@ class OutboxEventTranslationTest {
 
         assertCommonEnvelope(result, EVENT_ID, OCCURRED_AT, "flow-pause",
                 "bc3.SuscripcionPausada", "bc3.suscripcion.pausada.v1");
-        assertThat(result.data().subscriptionId()).isEqualTo(SUBSCRIPTION_ID);
-        assertThat(result.data().patientId()).isEqualTo(PATIENT_ID);
+        assertThat(result.data().subscriptionId()).isEqualTo(SUBSCRIPTION_ID.value());
+        assertThat(result.data().patientId()).isEqualTo(PATIENT_ID.value());
         assertThat(result.data().startDate()).isEqualTo(LocalDate.of(2026, 10, 5));
         assertThat(result.data().endDate()).isEqualTo(LocalDate.of(2026, 10, 8));
         assertThat(result.data().reason()).isEqualTo("Viaje");
@@ -102,8 +103,8 @@ class OutboxEventTranslationTest {
 
         assertCommonEnvelope(result, EVENT_ID, OCCURRED_AT, "flow-reactivation",
                 "bc3.SuscripcionReactivada", "bc3.suscripcion.reactivada.v1");
-        assertThat(result.data().subscriptionId()).isEqualTo(SUBSCRIPTION_ID);
-        assertThat(result.data().patientId()).isEqualTo(PATIENT_ID);
+        assertThat(result.data().subscriptionId()).isEqualTo(SUBSCRIPTION_ID.value());
+        assertThat(result.data().patientId()).isEqualTo(PATIENT_ID.value());
         assertThat(result.data().reactivatedOn()).isEqualTo(LocalDate.of(2026, 10, 8));
         assertThat(result.data().endDate()).isEqualTo(LocalDate.of(2026, 11, 2));
     }
@@ -137,19 +138,19 @@ class OutboxEventTranslationTest {
 
         assertCommonEnvelope(result, EVENT_ID, OCCURRED_AT, "flow-calendar",
                 "bc3.CalendarioConsolidadoCerrado", "bc3.calendario.consolidado.cerrado.v1");
-        assertThat(result.data().calendarId()).isEqualTo(CALENDAR_ID);
+        assertThat(result.data().calendarId()).isEqualTo(CALENDAR_ID.value());
         assertThat(result.data().deliveryDate()).isEqualTo(LocalDate.of(2026, 10, 29));
         assertThat(result.data().closedOn()).isEqualTo(OCCURRED_AT);
         assertThat(result.data().totalDeliveries()).isEqualTo(2);
         assertThat(result.data().deliveries()).extracting(ConsolidatedCalendarClosedIntegrationEvent.Delivery::calendarDayId)
-                .containsExactly(FIRST_CALENDAR_DAY_ID, SECOND_CALENDAR_DAY_ID);
+                .containsExactly(FIRST_CALENDAR_DAY_ID.value(), SECOND_CALENDAR_DAY_ID.value());
 
         ConsolidatedCalendarClosedIntegrationEvent.Delivery first = result.data().deliveries().get(0);
         assertDelivery(first, FIRST_CALENDAR_DAY_ID, SUBSCRIPTION_ID, PATIENT_ID, "Ana Perez", PLAN_ID, 1);
         assertAddress(first.address(), FIRST_ADDRESS_ID, "Casa", "Av. Cristo Redentor", "Torre Norte", "Santa Cruz",
                 -17.78, -63.18);
         assertThat(first.recipes()).extracting(ConsolidatedCalendarClosedIntegrationEvent.Recipe::recipeId)
-                .containsExactly(BREAKFAST_RECIPE_ID, LUNCH_RECIPE_ID);
+                .containsExactly(BREAKFAST_RECIPE_ID.value(), LUNCH_RECIPE_ID.value());
         assertRecipe(first.recipes().get(0), BREAKFAST_RECIPE_ID, "Desayuno", "08:05", new BigDecimal("250"));
         assertRecipe(first.recipes().get(1), LUNCH_RECIPE_ID, "Almuerzo", "13:45", new BigDecimal("350"));
 
@@ -159,7 +160,7 @@ class OutboxEventTranslationTest {
         assertAddress(second.address(), SECOND_ADDRESS_ID, "Oficina", "Calle 7 123", "Edificio Sur", "Cochabamba",
                 -17.39, -66.16);
         assertThat(second.recipes()).extracting(ConsolidatedCalendarClosedIntegrationEvent.Recipe::recipeId)
-                .containsExactly(DINNER_RECIPE_ID, SNACK_RECIPE_ID);
+                .containsExactly(DINNER_RECIPE_ID.value(), SNACK_RECIPE_ID.value());
         assertRecipe(second.recipes().get(0), DINNER_RECIPE_ID, "Cena", "19:30", new BigDecimal("400"));
         assertRecipe(second.recipes().get(1), SNACK_RECIPE_ID, "Merienda", "16:15", new BigDecimal("150"));
     }
@@ -259,9 +260,9 @@ class OutboxEventTranslationTest {
 
     private static void assertCreatedData(SubscriptionCreatedIntegrationEvent event, String planType,
             int evaluationCount, BigDecimal amount) {
-        assertThat(event.data().subscriptionId()).isEqualTo(SUBSCRIPTION_ID);
-        assertThat(event.data().patientId()).isEqualTo(PATIENT_ID);
-        assertThat(event.data().planId()).isEqualTo(PLAN_ID);
+        assertThat(event.data().subscriptionId()).isEqualTo(SUBSCRIPTION_ID.value());
+        assertThat(event.data().patientId()).isEqualTo(PATIENT_ID.value());
+        assertThat(event.data().planId()).isEqualTo(PLAN_ID.value());
         assertThat(event.data().planType()).isEqualTo(planType);
         assertThat(event.data().durationDays()).isEqualTo(30);
         assertThat(event.data().startDate()).isEqualTo(LocalDate.of(2026, 10, 1));
@@ -274,28 +275,28 @@ class OutboxEventTranslationTest {
 
     private static void assertTerminationData(SubscriptionCancelledIntegrationEvent event, String type, String reason,
             LocalDate effectiveDate, int cancelledPendingDeliveries) {
-        assertThat(event.data().subscriptionId()).isEqualTo(SUBSCRIPTION_ID);
-        assertThat(event.data().patientId()).isEqualTo(PATIENT_ID);
-        assertThat(event.data().planId()).isEqualTo(PLAN_ID);
+        assertThat(event.data().subscriptionId()).isEqualTo(SUBSCRIPTION_ID.value());
+        assertThat(event.data().patientId()).isEqualTo(PATIENT_ID.value());
+        assertThat(event.data().planId()).isEqualTo(PLAN_ID.value());
         assertThat(event.data().terminationType()).isEqualTo(type);
         assertThat(event.data().reason()).isEqualTo(reason);
         assertThat(event.data().effectiveDate()).isEqualTo(effectiveDate);
         assertThat(event.data().cancelledPendingDeliveries()).isEqualTo(cancelledPendingDeliveries);
     }
 
-    private static void assertDelivery(ConsolidatedCalendarClosedIntegrationEvent.Delivery delivery, UUID calendarDayId,
-            UUID subscriptionId, UUID patientId, String patientName, UUID planId, int planDayNumber) {
-        assertThat(delivery.calendarDayId()).isEqualTo(calendarDayId);
-        assertThat(delivery.subscriptionId()).isEqualTo(subscriptionId);
-        assertThat(delivery.patientId()).isEqualTo(patientId);
+    private static void assertDelivery(ConsolidatedCalendarClosedIntegrationEvent.Delivery delivery, ConsolidatedLineId calendarDayId,
+            SubscriptionId subscriptionId, PatientId patientId, String patientName, DietPlanId planId, int planDayNumber) {
+        assertThat(delivery.calendarDayId()).isEqualTo(calendarDayId.value());
+        assertThat(delivery.subscriptionId()).isEqualTo(subscriptionId.value());
+        assertThat(delivery.patientId()).isEqualTo(patientId.value());
         assertThat(delivery.patientName()).isEqualTo(patientName);
-        assertThat(delivery.planId()).isEqualTo(planId);
+        assertThat(delivery.planId()).isEqualTo(planId.value());
         assertThat(delivery.planDayNumber()).isEqualTo(planDayNumber);
     }
 
-    private static void assertAddress(ConsolidatedCalendarClosedIntegrationEvent.Address address, UUID addressId,
+    private static void assertAddress(ConsolidatedCalendarClosedIntegrationEvent.Address address, AddressId addressId,
             String alias, String addressText, String reference, String city, double latitude, double longitude) {
-        assertThat(address.addressId()).isEqualTo(addressId);
+        assertThat(address.addressId()).isEqualTo(addressId.value());
         assertThat(address.alias()).isEqualTo(alias);
         assertThat(address.addressText()).isEqualTo(addressText);
         assertThat(address.reference()).isEqualTo(reference);
@@ -304,9 +305,9 @@ class OutboxEventTranslationTest {
         assertThat(address.longitude()).isEqualTo(longitude);
     }
 
-    private static void assertRecipe(ConsolidatedCalendarClosedIntegrationEvent.Recipe recipe, UUID recipeId,
+    private static void assertRecipe(ConsolidatedCalendarClosedIntegrationEvent.Recipe recipe, RecipeId recipeId,
             String name, String time, BigDecimal portionGrams) {
-        assertThat(recipe.recipeId()).isEqualTo(recipeId);
+        assertThat(recipe.recipeId()).isEqualTo(recipeId.value());
         assertThat(recipe.name()).isEqualTo(name);
         assertThat(recipe.time()).isEqualTo(time);
         assertThat(recipe.portionGrams()).isEqualByComparingTo(portionGrams);
@@ -349,7 +350,7 @@ class OutboxEventTranslationTest {
         }
     }
 
-    private static SubscriptionCreated createdEvent(PlanType planType, String correlationId, List<UUID> evaluationIds,
+    private static SubscriptionCreated createdEvent(PlanType planType, String correlationId, List<EvaluationId> evaluationIds,
             BigDecimal amount) {
         return new SubscriptionCreated(EVENT_ID, OCCURRED_AT, SUBSCRIPTION_ID, PATIENT_ID,
                 new ContractCode("NTC-2026-0001"), PLAN_ID, planType, LocalDate.of(2026, 10, 1),

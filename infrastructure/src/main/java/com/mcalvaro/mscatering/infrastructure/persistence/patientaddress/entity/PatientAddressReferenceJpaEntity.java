@@ -5,17 +5,16 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-import java.util.UUID;
 
 @Entity
 @Table(name = "patient_address_references")
 public class PatientAddressReferenceJpaEntity {
 
     @Id
-    @Column(name = "address_id", nullable = false, updatable = false)
-    private UUID addressId;
-    @Column(name = "patient_id", nullable = false, updatable = false)
-    private UUID patientId;
+    @Column(name = "address_id", nullable = false, updatable = false, length = 64)
+    private String addressId;
+    @Column(name = "patient_id", nullable = false, updatable = false, length = 64)
+    private String patientId;
     @Column(name = "alias", nullable = false)
     private String alias;
     @Column(name = "street", nullable = false)
@@ -32,7 +31,7 @@ public class PatientAddressReferenceJpaEntity {
     public PatientAddressReferenceJpaEntity() {
     }
 
-    public PatientAddressReferenceJpaEntity(UUID addressId, UUID patientId, String alias, String street, String reference,
+    public PatientAddressReferenceJpaEntity(String addressId, String patientId, String alias, String street, String reference,
             String city, double latitude, double longitude) {
         this.addressId = addressId;
         this.patientId = patientId;
@@ -44,11 +43,11 @@ public class PatientAddressReferenceJpaEntity {
         this.longitude = longitude;
     }
 
-    public UUID getAddressId() {
+    public String getAddressId() {
         return addressId;
     }
 
-    public UUID getPatientId() {
+    public String getPatientId() {
         return patientId;
     }
 

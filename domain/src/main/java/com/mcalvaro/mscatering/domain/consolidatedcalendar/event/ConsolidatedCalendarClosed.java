@@ -1,6 +1,7 @@
 package com.mcalvaro.mscatering.domain.consolidatedcalendar.event;
 
 import com.mcalvaro.mscatering.domain.core.CorrelatedDomainEvent;
+import com.mcalvaro.mscatering.domain.core.id.ConsolidatedCalendarId;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.entity.ConsolidatedDeliverySnapshot;
 
 import java.time.Instant;
@@ -10,7 +11,7 @@ import java.util.UUID;
 public record ConsolidatedCalendarClosed(
         UUID eventId,
         Instant occurredAt,
-        UUID calendarId,
+        ConsolidatedCalendarId calendarId,
         LocalDate date,
         int totalDeliveries,
         String correlationId,
@@ -23,7 +24,7 @@ public record ConsolidatedCalendarClosed(
         }
     }
 
-    public ConsolidatedCalendarClosed(UUID calendarId, LocalDate date, int totalDeliveries) {
+    public ConsolidatedCalendarClosed(ConsolidatedCalendarId calendarId, LocalDate date, int totalDeliveries) {
         this(UUID.randomUUID(), Instant.now(), calendarId, date, totalDeliveries, UUID.randomUUID().toString(), java.util.List.of());
     }
 }

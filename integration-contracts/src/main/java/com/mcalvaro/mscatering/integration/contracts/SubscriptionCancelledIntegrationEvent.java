@@ -26,17 +26,17 @@ public record SubscriptionCancelledIntegrationEvent(UUID eventId, Instant occurr
     }
 
     public record Data(
-            @JsonProperty("idSuscripcion") UUID subscriptionId,
-            @JsonProperty("idPaciente") UUID patientId,
-            @JsonProperty("idPlan") UUID planId,
+            @JsonProperty("idSuscripcion") String subscriptionId,
+            @JsonProperty("idPaciente") String patientId,
+            @JsonProperty("idPlan") String planId,
             @JsonProperty("tipoBaja") String terminationType,
             @JsonProperty("motivo") String reason,
             @JsonProperty("fechaEfectiva") LocalDate effectiveDate,
             @JsonProperty("entregasPendientesAnuladas") int cancelledPendingDeliveries) {
         public Data {
-            ContractAssertions.required(subscriptionId, "subscriptionId");
-            ContractAssertions.required(patientId, "patientId");
-            ContractAssertions.required(planId, "planId");
+            ContractAssertions.text(subscriptionId, "subscriptionId");
+            ContractAssertions.text(patientId, "patientId");
+            ContractAssertions.text(planId, "planId");
             if (!"MANUAL".equals(terminationType) && !"VENCIMIENTO".equals(terminationType)) {
                 throw new IllegalArgumentException("terminationType must be MANUAL or VENCIMIENTO");
             }

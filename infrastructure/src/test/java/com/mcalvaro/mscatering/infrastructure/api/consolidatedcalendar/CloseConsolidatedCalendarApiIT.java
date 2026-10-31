@@ -1,6 +1,10 @@
 package com.mcalvaro.mscatering.infrastructure.api.consolidatedcalendar;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.mcalvaro.mscatering.domain.core.id.AddressId;
+import com.mcalvaro.mscatering.domain.core.id.DietPlanId;
+import com.mcalvaro.mscatering.domain.core.id.PatientId;
+import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
 import com.mcalvaro.mscatering.domain.subscription.ISubscriptionRepository;
 import com.mcalvaro.mscatering.domain.subscription.Subscription;
 import com.mcalvaro.mscatering.domain.subscription.enums.ServiceType;
@@ -43,19 +47,19 @@ class CloseConsolidatedCalendarApiIT extends BaseIntegrationTest {
     @Autowired private DietPlanProjectionFixture dietPlanProjectionFixture;
     @Autowired private PatientRegistrationFixture patientRegistrationFixture;
 
-    private UUID subscriptionId;
-    private UUID patientId;
-    private UUID dietPlanId;
+    private SubscriptionId subscriptionId;
+    private PatientId patientId;
+    private DietPlanId dietPlanId;
     private LocalDate deliveryDate;
 
     @BeforeEach
     void setUpSubscription() {
-        subscriptionId = UUID.randomUUID();
-        patientId = UUID.randomUUID();
-        dietPlanId = UUID.randomUUID();
+        subscriptionId = SubscriptionId.of("SUS-" + UUID.randomUUID());
+        patientId = PatientId.of("PAC-" + UUID.randomUUID());
+        dietPlanId = DietPlanId.of("PLAN-" + UUID.randomUUID());
         deliveryDate = LocalDate.now().plusDays(10);
-        patientRegistrationFixture.ingest(patientRegistrationFixture.eventFor(patientId));
-        dietPlanProjectionFixture.ingestActiveBasePlan(dietPlanId, deliveryDate, 15);
+        patientRegistrationFixture.ingest(patientRegistrationFixture.eventFor(patientId.value()));
+        dietPlanProjectionFixture.ingestActiveBasePlan(dietPlanId.value(), deliveryDate, 15);
         subscriptionRepository.save(buildSubscription());
     }
 
@@ -140,7 +144,7 @@ class CloseConsolidatedCalendarApiIT extends BaseIntegrationTest {
                 "Accepted terms",
                 Instant.now());
         DeliveryPreferences preferences = new DeliveryPreferences(
-                new DeliveryAddress(UUID.randomUUID(), "Home", "Main Street", "123", "Madrid", "Reception", 40.4168, -3.7038,
+                new DeliveryAddress(AddressId.of("DIR-" + UUID.randomUUID()), "Home", "Main Street", "123", "Madrid", "Reception", 40.4168, -3.7038,
                         "+34123456789"),
                 new TimeWindow(LocalTime.of(12, 0), LocalTime.of(14, 0)),
                 "Ring the doorbell");

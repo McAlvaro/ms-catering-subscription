@@ -6,15 +6,14 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Column;
 
 import java.time.Instant;
-import java.util.UUID;
 
 @Entity
 @Table(name = "patient_references")
 public class PatientReferenceJpaEntity {
 
     @Id
-    @Column(name = "patient_id", updatable = false, nullable = false)
-    private UUID patientId;
+    @Column(name = "patient_id", updatable = false, nullable = false, length = 64)
+    private String patientId;
 
     @Column(name = "patient_name", nullable = false)
     private String patientName;
@@ -28,11 +27,11 @@ public class PatientReferenceJpaEntity {
     public PatientReferenceJpaEntity() {
     }
 
-    public UUID getPatientId() {
+    public String getPatientId() {
         return patientId;
     }
 
-    public void setPatientId(UUID patientId) {
+    public void setPatientId(String patientId) {
         this.patientId = patientId;
     }
 

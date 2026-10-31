@@ -15,6 +15,9 @@ import com.mcalvaro.mscatering.application.subscription.ReactivateSubscription.R
 import com.mcalvaro.mscatering.application.subscription.RegisterFailedDelivery.RegisterFailedDeliveryCommand;
 import com.mcalvaro.mscatering.application.subscription.UpdateDeliveryPreferences.UpdateDeliveryPreferencesCommand;
 import com.mcalvaro.mscatering.domain.core.DomainException;
+import com.mcalvaro.mscatering.domain.core.id.DeliveryDayId;
+import com.mcalvaro.mscatering.domain.core.id.EvaluationId;
+import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
 import com.mcalvaro.mscatering.infrastructure.api.CorrelationIdFilter;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -22,7 +25,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/subscriptions")
@@ -35,17 +37,17 @@ public class SubscriptionController {
     }
 
     @PostMapping
-    public ResponseEntity<UUID> create(@RequestBody CreateSubscriptionCommand command) {
+    public ResponseEntity<SubscriptionId> create(@RequestBody CreateSubscriptionCommand command) {
         if (command.patientId() == null || command.dietPlanId() == null || command.deliveryAddressId() == null) {
             throw new DomainException("INVALID_PAYLOAD", "A patient, plan and delivery address are required");
         }
-        UUID resultId = pipeline.send(command);
+        SubscriptionId resultId = pipeline.send(command);
         return ResponseEntity.status(HttpStatus.CREATED).body(resultId);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<SubscriptionDetailsDto> getDetails(@PathVariable UUID id) {
-        SubscriptionDetailsDto dto = pipeline.send(new GetSubscriptionDetailsQuery(id));
+    public ResponseEntity<SubscriptionDetailsDto> getDetails(@PathVariable String id) {
+        SubscriptionDetailsDto dto = pipeline.send(new GetSubscriptionDetailsQuery(SubscriptionId.of(id)));
         if (dto == null) {
             throw new IllegalArgumentException("Subscription not found: " + id);
         }
@@ -53,28 +55,28 @@ public class SubscriptionController {
     }
 
     @PostMapping("/{id}/pause")
-    public ResponseEntity<Void> pause(@PathVariable UUID id, @RequestBody PauseSubscriptionCommand body,
+    public ResponseEntity<Void> pause(@PathVariable String id, @RequestBody PauseSubscriptionCommand body,
             @RequestAttribute(CorrelationIdFilter.REQUEST_ATTRIBUTE) String correlationId) {
-        pipeline.send(new PauseSubscriptionCommand(id, body.startDate(), body.endDate(), body.reason(), correlationId));
+        pipeline.send(new PauseSubscriptionCommand(SubscriptionId.of(id), body.startDate(), body.endDate(), body.reason(), correlationId));
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/{id}/reactivate")
     public ResponseEntity<Void> reactivate(
-            @PathVariable UUID id,
+            @PathVariable String id,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate reactivationDate,
             @RequestAttribute(CorrelationIdFilter.REQUEST_ATTRIBUTE) String correlationId) {
-        pipeline.send(new ReactivateSubscriptionCommand(id, reactivationDate, correlationId));
+        pipeline.send(new ReactivateSubscriptionCommand(SubscriptionId.of(id), reactivationDate, correlationId));
         return ResponseEntity.ok().build();
     }
 
     @PutMapping("/{id}/delivery-days/{dayId}")
     public ResponseEntity<Void> modifyDeliveryDay(
-            @PathVariable UUID id,
-            @PathVariable UUID dayId,
+            @PathVariable String id,
+            @PathVariable String dayId,
             @RequestBody ModifyDeliveryDayCommand body) {
         pipeline.send(new ModifyDeliveryDayCommand(
-                id, dayId,
+                SubscriptionId.of(id), DeliveryDayId.of(dayId),
                 body.street(), body.number(), body.city(), body.reference(),
                 body.latitude(), body.longitude(), body.phone(),
                 body.startTime(), body.endTime(), body.instructions()));
@@ -82,58 +84,58 @@ public class SubscriptionController {
     }
 
     @PostMapping("/{id}/delivery-days/{dayId}/no-delivery")
-    public ResponseEntity<Void> markNoDelivery(@PathVariable UUID id, @PathVariable UUID dayId) {
-        pipeline.send(new MarkNoDeliveryCommand(id, dayId));
+    public ResponseEntity<Void> markNoDelivery(@PathVariable String id, @PathVariable String dayId) {
+        pipeline.send(new MarkNoDeliveryCommand(SubscriptionId.of(id), DeliveryDayId.of(dayId)));
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/{id}/delivery-days/{dayId}/confirm")
-    public ResponseEntity<Void> confirmDelivery(@PathVariable UUID id, @PathVariable UUID dayId) {
-        pipeline.send(new ConfirmDeliveryCommand(id, dayId));
+    public ResponseEntity<Void> confirmDelivery(@PathVariable String id, @PathVariable String dayId) {
+        pipeline.send(new ConfirmDeliveryCommand(SubscriptionId.of(id), DeliveryDayId.of(dayId)));
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/{id}/delivery-days/{dayId}/fail")
     public ResponseEntity<Void> registerFailedDelivery(
-            @PathVariable UUID id,
-            @PathVariable UUID dayId,
+            @PathVariable String id,
+            @PathVariable String dayId,
             @RequestParam String reason) {
-        pipeline.send(new RegisterFailedDeliveryCommand(id, dayId, reason));
+        pipeline.send(new RegisterFailedDeliveryCommand(SubscriptionId.of(id), DeliveryDayId.of(dayId), reason));
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/{id}/evaluations/{evalId}/complete")
     public ResponseEntity<Void> markEvaluationCompleted(
-            @PathVariable UUID id,
-            @PathVariable UUID evalId,
+            @PathVariable String id,
+            @PathVariable String evalId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate completedAt) {
-        pipeline.send(new MarkEvaluationCompletedCommand(id, evalId, completedAt));
+        pipeline.send(new MarkEvaluationCompletedCommand(SubscriptionId.of(id), EvaluationId.of(evalId), completedAt));
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/{id}/complete")
-    public ResponseEntity<Void> complete(@PathVariable UUID id,
+    public ResponseEntity<Void> complete(@PathVariable String id,
             @RequestAttribute(CorrelationIdFilter.REQUEST_ATTRIBUTE) String correlationId) {
-        pipeline.send(new CompleteSubscriptionCommand(id, correlationId));
+        pipeline.send(new CompleteSubscriptionCommand(SubscriptionId.of(id), correlationId));
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> cancel(@PathVariable UUID id, @RequestParam String reason,
+    public ResponseEntity<Void> cancel(@PathVariable String id, @RequestParam String reason,
             @RequestAttribute(CorrelationIdFilter.REQUEST_ATTRIBUTE) String correlationId) {
-        pipeline.send(new CancelSubscriptionCommand(id, reason, correlationId));
+        pipeline.send(new CancelSubscriptionCommand(SubscriptionId.of(id), reason, correlationId));
         return ResponseEntity.ok().build();
     }
 
     @PutMapping("/{id}/preferences")
     public ResponseEntity<Void> updatePreferences(
-            @PathVariable UUID id,
+            @PathVariable String id,
             @RequestBody UpdateDeliveryPreferencesCommand body) {
         if (body.deliveryAddressId() == null) {
             throw new DomainException("INVALID_PAYLOAD", "A delivery address is required");
         }
         pipeline.send(new UpdateDeliveryPreferencesCommand(
-                id,
+                SubscriptionId.of(id),
                 body.deliveryAddressId(),
                 body.startTime(), body.endTime(), body.specialInstructions()));
         return ResponseEntity.ok().build();

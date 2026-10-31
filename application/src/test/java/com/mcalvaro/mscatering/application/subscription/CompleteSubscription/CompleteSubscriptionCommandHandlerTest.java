@@ -1,6 +1,10 @@
 package com.mcalvaro.mscatering.application.subscription.CompleteSubscription;
 
 import com.mcalvaro.mscatering.domain.core.DomainException;
+import com.mcalvaro.mscatering.domain.core.id.AddressId;
+import com.mcalvaro.mscatering.domain.core.id.DietPlanId;
+import com.mcalvaro.mscatering.domain.core.id.PatientId;
+import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
 import com.mcalvaro.mscatering.domain.subscription.ISubscriptionRepository;
 import com.mcalvaro.mscatering.domain.subscription.Subscription;
 import com.mcalvaro.mscatering.domain.subscription.enums.ServiceType;
@@ -22,7 +26,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -62,7 +65,7 @@ class CompleteSubscriptionCommandHandlerTest {
     @DisplayName("Should throw an error and not save when the subscription does not exist")
     void shouldThrowErrorAndNotSaveWhenSubscriptionIsNotFound() {
         // Arrange
-        CompleteSubscriptionCommand command = new CompleteSubscriptionCommand(UUID.randomUUID());
+        CompleteSubscriptionCommand command = new CompleteSubscriptionCommand(SubscriptionId.generate());
         when(subscriptionRepository.findById(command.subscriptionId())).thenReturn(Optional.empty());
 
         // Act & Assert
@@ -93,11 +96,12 @@ class CompleteSubscriptionCommandHandlerTest {
     }
 
     private Subscription buildSubscription(LocalDate startDate) {
-        ServiceContract contract = new ServiceContract(UUID.randomUUID(), com.mcalvaro.mscatering.domain.dietplan.PlanType.BASE, new ValidityPeriod(startDate, startDate.plusDays(14)),
+        DietPlanId planId = DietPlanId.generate();
+        ServiceContract contract = new ServiceContract(planId, com.mcalvaro.mscatering.domain.dietplan.PlanType.BASE, new ValidityPeriod(startDate, startDate.plusDays(14)),
                 ServiceType.FULL, new BigDecimal("250.00"), "Terms accepted", Instant.parse("2025-01-01T10:00:00Z"));
         DeliveryPreferences preferences = new DeliveryPreferences(
-                new DeliveryAddress("Main Street", "10", "Madrid", "Door A", 40.4168, -3.7038, "600000000"),
+                new DeliveryAddress(AddressId.generate(), "Main Street", "10", "Madrid", "Door A", 40.4168, -3.7038, "600000000"),
                 new TimeWindow(LocalTime.of(9, 0), LocalTime.of(11, 0)), "Leave at reception");
-        return Subscription.create(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), contract, preferences, 1);
+        return Subscription.create(SubscriptionId.generate(), PatientId.generate(), planId, contract, preferences, 1);
     }
 }

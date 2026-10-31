@@ -1,6 +1,8 @@
 package com.mcalvaro.mscatering.infrastructure.persistence.subscription.repository;
 
 import com.mcalvaro.mscatering.application.abstractions.DomainEventDispatcher;
+import com.mcalvaro.mscatering.domain.core.id.PatientId;
+import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
 import com.mcalvaro.mscatering.domain.subscription.Subscription;
 import com.mcalvaro.mscatering.domain.subscription.enums.SubscriptionStatus;
 import com.mcalvaro.mscatering.infrastructure.persistence.subscription.entity.SubscriptionJpaEntity;
@@ -124,10 +126,10 @@ class JpaSubscriptionRepositoryTest {
     @Test
     @DisplayName("Delegates read methods to springRepository correctly")
     void delegatesReadMethods() {
-        UUID id = UUID.randomUUID();
+        SubscriptionId id = SubscriptionId.of("SUS-" + UUID.randomUUID());
         Subscription subscription = mock(Subscription.class);
         SubscriptionJpaEntity jpaEntity = mock(SubscriptionJpaEntity.class);
-        when(springRepository.findById(id)).thenReturn(Optional.of(jpaEntity));
+        when(springRepository.findById(id.value())).thenReturn(Optional.of(jpaEntity));
         when(mapper.toDomain(jpaEntity)).thenReturn(subscription);
 
         assertThat(repository.findById(id)).contains(subscription);
@@ -139,8 +141,8 @@ class JpaSubscriptionRepositoryTest {
                 .thenReturn(List.of(jpaEntity));
         assertThat(repository.findConsolidatableSubscriptions()).containsExactly(subscription);
 
-        UUID patientId = UUID.randomUUID();
-        when(springRepository.existsByPatientIdAndStatusIn(patientId, List.of(SubscriptionStatus.ACTIVE.name(), SubscriptionStatus.PAUSED.name())))
+        PatientId patientId = PatientId.of("PAC-" + UUID.randomUUID());
+        when(springRepository.existsByPatientIdAndStatusIn(patientId.value(), List.of(SubscriptionStatus.ACTIVE.name(), SubscriptionStatus.PAUSED.name())))
                 .thenReturn(true);
         assertThat(repository.hasActiveOrPausedSubscription(patientId)).isTrue();
     }

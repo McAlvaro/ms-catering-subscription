@@ -25,7 +25,7 @@
                     "properties": {
                         "idCalendario": {
                             "type": "string",
-                            "format": "uuid"
+                            "minLength": 1
                         },
                         "fechaEntrega": {
                             "type": "string",
@@ -58,15 +58,15 @@
                                 "properties": {
                                     "idCalendarioDia": {
                                         "type": "string",
-                                        "format": "uuid"
+                                        "minLength": 1
                                     },
                                     "idSuscripcion": {
                                         "type": "string",
-                                        "format": "uuid"
+                                        "minLength": 1
                                     },
                                     "idPaciente": {
                                         "type": "string",
-                                        "format": "uuid"
+                                        "minLength": 1
                                     },
                                     "nombrePaciente": {
                                         "type": "string",
@@ -74,7 +74,7 @@
                                     },
                                     "idPlan": {
                                         "type": "string",
-                                        "format": "uuid"
+                                        "minLength": 1
                                     },
                                     "numDiaPlan": {
                                         "type": "integer",
@@ -95,7 +95,7 @@
                                         "properties": {
                                             "idDireccion": {
                                                 "type": "string",
-                                                "format": "uuid"
+                                                "minLength": 1
                                             },
                                             "alias": {
                                                 "type": "string",
@@ -140,7 +140,7 @@
                                             "properties": {
                                                 "idReceta": {
                                                     "type": "string",
-                                                    "format": "uuid"
+                                                    "minLength": 1
                                                 },
                                                 "nombre": {
                                                     "type": "string",

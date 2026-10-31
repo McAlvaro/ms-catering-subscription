@@ -1,6 +1,8 @@
 package com.mcalvaro.mscatering.domain.subscription.event;
 
 import com.mcalvaro.mscatering.domain.core.DomainEvent;
+import com.mcalvaro.mscatering.domain.core.id.DeliveryDayId;
+import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -11,10 +13,10 @@ import java.util.UUID;
 public record DeliveryConfirmed(
         UUID eventId,
         Instant occurredAt,
-        UUID subscriptionId,
-        UUID deliveryDayId) implements DomainEvent {
+        SubscriptionId subscriptionId,
+        DeliveryDayId deliveryDayId) implements DomainEvent {
 
-    public DeliveryConfirmed(UUID subscriptionId, UUID deliveryDayId) {
+    public DeliveryConfirmed(SubscriptionId subscriptionId, DeliveryDayId deliveryDayId) {
         this(UUID.randomUUID(), Instant.now(), subscriptionId, deliveryDayId);
     }
 }

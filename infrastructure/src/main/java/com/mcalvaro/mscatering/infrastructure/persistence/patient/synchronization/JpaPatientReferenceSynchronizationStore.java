@@ -42,11 +42,11 @@ public class JpaPatientReferenceSynchronizationStore implements PatientReference
             throw conflict("Inbound eventId was reused with different canonical content");
         }
 
-        if (receiptRepository.existsBySubjectKindAndSubjectIdAndPayloadFingerprint(ReceiptSubjectKind.PATIENT.name(), command.patientId(), payloadFingerprint)) {
+        if (receiptRepository.existsBySubjectKindAndSubjectIdAndPayloadFingerprint(ReceiptSubjectKind.PATIENT.name(), command.patientId().value(), payloadFingerprint)) {
             receiptRepository.saveAndFlush(receipt(command, eventFingerprint, payloadFingerprint));
             return;
         }
-        if (receiptRepository.existsByPatientId(command.patientId())) {
+        if (receiptRepository.existsByPatientId(command.patientId().value())) {
             throw conflict("Patient identity already has different canonical content");
         }
 
@@ -56,7 +56,7 @@ public class JpaPatientReferenceSynchronizationStore implements PatientReference
 
     private PatientReferenceJpaEntity newPatientReference(SynchronizePatientReferenceCommand command) {
         PatientReferenceJpaEntity reference = new PatientReferenceJpaEntity();
-        reference.setPatientId(command.patientId());
+        reference.setPatientId(command.patientId().value());
         reference.setPatientName(command.patientName());
         reference.setActive(true);
         reference.setUpdatedAt(command.occurredOn());
@@ -67,7 +67,7 @@ public class JpaPatientReferenceSynchronizationStore implements PatientReference
             String eventFingerprint, String payloadFingerprint) {
         return new ProcessedInboundEventReceiptJpaEntity(command.eventId(), command.eventName(),
                 command.eventVersion(), command.occurredOn(), command.source(), command.correlationId(),
-                command.patientId(), eventFingerprint, payloadFingerprint);
+                command.patientId().value(), eventFingerprint, payloadFingerprint);
     }
 
     private PatientReferenceSynchronizationException conflict(String message) {

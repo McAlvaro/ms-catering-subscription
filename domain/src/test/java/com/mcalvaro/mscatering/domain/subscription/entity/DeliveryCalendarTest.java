@@ -1,5 +1,8 @@
 package com.mcalvaro.mscatering.domain.subscription.entity;
 
+import com.mcalvaro.mscatering.domain.core.id.DeliveryCalendarId;
+import com.mcalvaro.mscatering.domain.core.id.DeliveryDayId;
+import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
 import com.mcalvaro.mscatering.domain.subscription.enums.DeliveryDayStatus;
 import com.mcalvaro.mscatering.domain.subscription.vo.DeliveryAddress;
 import com.mcalvaro.mscatering.domain.subscription.vo.PauseRange;
@@ -13,7 +16,6 @@ import org.junit.jupiter.params.provider.EnumSource;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -24,8 +26,8 @@ class DeliveryCalendarTest {
     @DisplayName("Should create a calendar with its identifiers, period and no delivery days")
     void shouldCreateCalendarWhenValidDetailsAreProvided() {
         // Arrange
-        UUID calendarId = UUID.randomUUID();
-        UUID subscriptionId = UUID.randomUUID();
+        DeliveryCalendarId calendarId = DeliveryCalendarId.generate();
+        SubscriptionId subscriptionId = SubscriptionId.generate();
         ValidityPeriod period = new ValidityPeriod(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 1, 31));
 
         // Act
@@ -43,14 +45,14 @@ class DeliveryCalendarTest {
     void shouldAddDayAndExposeUnmodifiableDaysWhenDayIsAdded() {
         // Arrange
         DeliveryCalendar calendar = newCalendar();
-        DeliveryDay day = newDay(UUID.randomUUID(), LocalDate.of(2026, 1, 10));
+        DeliveryDay day = newDay(DeliveryDayId.generate(), LocalDate.of(2026, 1, 10));
 
         // Act
         calendar.addDay(day);
 
         // Assert
         assertThat(calendar.getDeliveryDays()).containsExactly(day);
-        assertThatThrownBy(() -> calendar.getDeliveryDays().add(newDay(UUID.randomUUID(), LocalDate.of(2026, 1, 11))))
+        assertThatThrownBy(() -> calendar.getDeliveryDays().add(newDay(DeliveryDayId.generate(), LocalDate.of(2026, 1, 11))))
                 .isInstanceOf(UnsupportedOperationException.class);
     }
 
@@ -61,15 +63,15 @@ class DeliveryCalendarTest {
         LocalDate start = LocalDate.now().plusDays(3);
         LocalDate end = start.plusDays(2);
         PauseRange range = new PauseRange(start, end);
-        DeliveryDay atStart = newDay(UUID.randomUUID(), start);
-        DeliveryDay atEnd = newDay(UUID.randomUUID(), end);
-        DeliveryDay outsideRange = newDay(UUID.randomUUID(), end.plusDays(1));
-        DeliveryDay alreadyPaused = newDayWithStatus(UUID.randomUUID(), start.plusDays(1), DeliveryDayStatus.PAUSED);
-        DeliveryDay consolidated = newDayWithStatus(UUID.randomUUID(), start.plusDays(1), DeliveryDayStatus.CONSOLIDATED);
-        DeliveryDay delivered = newDayWithStatus(UUID.randomUUID(), start.plusDays(1), DeliveryDayStatus.DELIVERED);
-        DeliveryDay notDelivered = newDayWithStatus(UUID.randomUUID(), start.plusDays(1), DeliveryDayStatus.NOT_DELIVERED);
-        DeliveryDay failed = newDayWithStatus(UUID.randomUUID(), start.plusDays(1), DeliveryDayStatus.FAILED);
-        DeliveryDay cancelled = newDayWithStatus(UUID.randomUUID(), start.plusDays(1), DeliveryDayStatus.CANCELLED);
+        DeliveryDay atStart = newDay(DeliveryDayId.generate(), start);
+        DeliveryDay atEnd = newDay(DeliveryDayId.generate(), end);
+        DeliveryDay outsideRange = newDay(DeliveryDayId.generate(), end.plusDays(1));
+        DeliveryDay alreadyPaused = newDayWithStatus(DeliveryDayId.generate(), start.plusDays(1), DeliveryDayStatus.PAUSED);
+        DeliveryDay consolidated = newDayWithStatus(DeliveryDayId.generate(), start.plusDays(1), DeliveryDayStatus.CONSOLIDATED);
+        DeliveryDay delivered = newDayWithStatus(DeliveryDayId.generate(), start.plusDays(1), DeliveryDayStatus.DELIVERED);
+        DeliveryDay notDelivered = newDayWithStatus(DeliveryDayId.generate(), start.plusDays(1), DeliveryDayStatus.NOT_DELIVERED);
+        DeliveryDay failed = newDayWithStatus(DeliveryDayId.generate(), start.plusDays(1), DeliveryDayStatus.FAILED);
+        DeliveryDay cancelled = newDayWithStatus(DeliveryDayId.generate(), start.plusDays(1), DeliveryDayStatus.CANCELLED);
         DeliveryCalendar calendar = calendarWith(atStart, atEnd, outsideRange, alreadyPaused, consolidated, delivered,
                 notDelivered, failed, cancelled);
 
@@ -95,15 +97,15 @@ class DeliveryCalendarTest {
         LocalDate start = LocalDate.now().plusDays(3);
         LocalDate end = start.plusDays(2);
         PauseRange range = new PauseRange(start, end);
-        DeliveryDay atStart = newDayWithStatus(UUID.randomUUID(), start, DeliveryDayStatus.PAUSED);
-        DeliveryDay atEnd = newDayWithStatus(UUID.randomUUID(), end, DeliveryDayStatus.PAUSED);
-        DeliveryDay outsideRange = newDayWithStatus(UUID.randomUUID(), end.plusDays(1), DeliveryDayStatus.PAUSED);
-        DeliveryDay scheduled = newDay(UUID.randomUUID(), start.plusDays(1));
-        DeliveryDay consolidated = newDayWithStatus(UUID.randomUUID(), start.plusDays(1), DeliveryDayStatus.CONSOLIDATED);
-        DeliveryDay delivered = newDayWithStatus(UUID.randomUUID(), start.plusDays(1), DeliveryDayStatus.DELIVERED);
-        DeliveryDay notDelivered = newDayWithStatus(UUID.randomUUID(), start.plusDays(1), DeliveryDayStatus.NOT_DELIVERED);
-        DeliveryDay failed = newDayWithStatus(UUID.randomUUID(), start.plusDays(1), DeliveryDayStatus.FAILED);
-        DeliveryDay cancelled = newDayWithStatus(UUID.randomUUID(), start.plusDays(1), DeliveryDayStatus.CANCELLED);
+        DeliveryDay atStart = newDayWithStatus(DeliveryDayId.generate(), start, DeliveryDayStatus.PAUSED);
+        DeliveryDay atEnd = newDayWithStatus(DeliveryDayId.generate(), end, DeliveryDayStatus.PAUSED);
+        DeliveryDay outsideRange = newDayWithStatus(DeliveryDayId.generate(), end.plusDays(1), DeliveryDayStatus.PAUSED);
+        DeliveryDay scheduled = newDay(DeliveryDayId.generate(), start.plusDays(1));
+        DeliveryDay consolidated = newDayWithStatus(DeliveryDayId.generate(), start.plusDays(1), DeliveryDayStatus.CONSOLIDATED);
+        DeliveryDay delivered = newDayWithStatus(DeliveryDayId.generate(), start.plusDays(1), DeliveryDayStatus.DELIVERED);
+        DeliveryDay notDelivered = newDayWithStatus(DeliveryDayId.generate(), start.plusDays(1), DeliveryDayStatus.NOT_DELIVERED);
+        DeliveryDay failed = newDayWithStatus(DeliveryDayId.generate(), start.plusDays(1), DeliveryDayStatus.FAILED);
+        DeliveryDay cancelled = newDayWithStatus(DeliveryDayId.generate(), start.plusDays(1), DeliveryDayStatus.CANCELLED);
         DeliveryCalendar calendar = calendarWith(atStart, atEnd, outsideRange, scheduled, consolidated, delivered,
                 notDelivered, failed, cancelled);
 
@@ -126,7 +128,7 @@ class DeliveryCalendarTest {
     @DisplayName("Should find a delivery day when its identifier exists")
     void shouldFindDayWhenIdentifierExists() {
         // Arrange
-        UUID dayId = UUID.randomUUID();
+        DeliveryDayId dayId = DeliveryDayId.generate();
         DeliveryDay expectedDay = newDay(dayId, LocalDate.of(2026, 1, 10));
         DeliveryCalendar calendar = calendarWith(expectedDay);
 
@@ -141,10 +143,10 @@ class DeliveryCalendarTest {
     @DisplayName("Should return an empty result when a delivery day identifier does not exist")
     void shouldReturnEmptyWhenDayIdentifierDoesNotExist() {
         // Arrange
-        DeliveryCalendar calendar = calendarWith(newDay(UUID.randomUUID(), LocalDate.of(2026, 1, 10)));
+        DeliveryCalendar calendar = calendarWith(newDay(DeliveryDayId.generate(), LocalDate.of(2026, 1, 10)));
 
         // Act
-        var result = calendar.findDayById(UUID.randomUUID());
+        var result = calendar.findDayById(DeliveryDayId.generate());
 
         // Assert
         assertThat(result).isEmpty();
@@ -155,11 +157,11 @@ class DeliveryCalendarTest {
     @DisplayName("Should retain an active day after excluding a different delivery day for every active status")
     void shouldRetainActiveDayWhenDifferentDayIsExcludedForEveryActiveStatus(DeliveryDayStatus status) {
         // Arrange
-        DeliveryDay activeDay = newDayWithStatus(UUID.randomUUID(), LocalDate.of(2026, 1, 10), status);
+        DeliveryDay activeDay = newDayWithStatus(DeliveryDayId.generate(), LocalDate.of(2026, 1, 10), status);
         DeliveryCalendar calendar = calendarWith(activeDay);
 
         // Act
-        boolean hasActiveDays = calendar.hasActiveDaysAfterExcluding(UUID.randomUUID());
+        boolean hasActiveDays = calendar.hasActiveDaysAfterExcluding(DeliveryDayId.generate());
 
         // Assert
         assertThat(hasActiveDays).isTrue();
@@ -170,11 +172,11 @@ class DeliveryCalendarTest {
     @DisplayName("Should not consider negative statuses as active days")
     void shouldNotRetainActiveDayWhenOnlyNegativeStatusExists(DeliveryDayStatus status) {
         // Arrange
-        DeliveryDay inactiveDay = newDayWithStatus(UUID.randomUUID(), LocalDate.of(2026, 1, 10), status);
+        DeliveryDay inactiveDay = newDayWithStatus(DeliveryDayId.generate(), LocalDate.of(2026, 1, 10), status);
         DeliveryCalendar calendar = calendarWith(inactiveDay);
 
         // Act
-        boolean hasActiveDays = calendar.hasActiveDaysAfterExcluding(UUID.randomUUID());
+        boolean hasActiveDays = calendar.hasActiveDaysAfterExcluding(DeliveryDayId.generate());
 
         // Assert
         assertThat(hasActiveDays).isFalse();
@@ -184,7 +186,7 @@ class DeliveryCalendarTest {
     @DisplayName("Should not retain an active day when the only active day is excluded")
     void shouldNotRetainActiveDayWhenOnlyActiveDayIsExcluded() {
         // Arrange
-        UUID dayId = UUID.randomUUID();
+        DeliveryDayId dayId = DeliveryDayId.generate();
         DeliveryCalendar calendar = calendarWith(newDay(dayId, LocalDate.of(2026, 1, 10)));
 
         // Act
@@ -199,9 +201,9 @@ class DeliveryCalendarTest {
     void shouldReturnOnlyDaysForDateWhenCalendarContainsMultipleDates() {
         // Arrange
         LocalDate requestedDate = LocalDate.of(2026, 1, 10);
-        DeliveryDay firstMatchingDay = newDay(UUID.randomUUID(), requestedDate);
-        DeliveryDay secondMatchingDay = newDay(UUID.randomUUID(), requestedDate);
-        DeliveryDay otherDay = newDay(UUID.randomUUID(), requestedDate.plusDays(1));
+        DeliveryDay firstMatchingDay = newDay(DeliveryDayId.generate(), requestedDate);
+        DeliveryDay secondMatchingDay = newDay(DeliveryDayId.generate(), requestedDate);
+        DeliveryDay otherDay = newDay(DeliveryDayId.generate(), requestedDate.plusDays(1));
         DeliveryCalendar calendar = calendarWith(firstMatchingDay, secondMatchingDay, otherDay);
 
         // Act
@@ -215,7 +217,7 @@ class DeliveryCalendarTest {
     @DisplayName("Should return no delivery days when the requested date has no matches")
     void shouldReturnNoDaysWhenRequestedDateHasNoMatches() {
         // Arrange
-        DeliveryCalendar calendar = calendarWith(newDay(UUID.randomUUID(), LocalDate.of(2026, 1, 10)));
+        DeliveryCalendar calendar = calendarWith(newDay(DeliveryDayId.generate(), LocalDate.of(2026, 1, 10)));
 
         // Act
         List<DeliveryDay> daysForDate = calendar.getDaysForDate(LocalDate.of(2026, 1, 11));
@@ -225,7 +227,7 @@ class DeliveryCalendarTest {
     }
 
     private DeliveryCalendar newCalendar() {
-        return new DeliveryCalendar(UUID.randomUUID(), UUID.randomUUID(),
+        return new DeliveryCalendar(DeliveryCalendarId.generate(), SubscriptionId.generate(),
                 new ValidityPeriod(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 1, 31)));
     }
 
@@ -237,13 +239,13 @@ class DeliveryCalendarTest {
         return calendar;
     }
 
-    private DeliveryDay newDay(UUID id, LocalDate date) {
+    private DeliveryDay newDay(DeliveryDayId id, LocalDate date) {
         return new DeliveryDay(id, date,
                 new DeliveryAddress("Main Street", "10", "Madrid", "Door A", 40.4168, -3.7038, "600000000"),
                 new TimeWindow(LocalTime.of(9, 0), LocalTime.of(11, 0)), "Leave at reception");
     }
 
-    private DeliveryDay newDayWithStatus(UUID id, LocalDate date, DeliveryDayStatus status) {
+    private DeliveryDay newDayWithStatus(DeliveryDayId id, LocalDate date, DeliveryDayStatus status) {
         DeliveryDay day = newDay(id, date);
         switch (status) {
             case PAUSED -> day.pause();

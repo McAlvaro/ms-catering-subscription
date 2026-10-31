@@ -102,7 +102,7 @@ class OutboxKafkaEndToEndIT {
 
     @Test
     void publishesThePersistedDomainEventToKafka() {
-        UUID subscriptionId = createSubscription();
+        String subscriptionId = createSubscription();
 
         await("the outbox message is processed", () -> outboxRows().stream()
                 .anyMatch(OutboxMessageJpaEntity::isProcessed));
@@ -113,21 +113,21 @@ class OutboxKafkaEndToEndIT {
 
             assertThat(records).hasSize(1);
             assertThat(records.get(0).topic()).isEqualTo(TOPIC);
-            assertThat(records.get(0).key()).isEqualTo(subscriptionId.toString());
+            assertThat(records.get(0).key()).isEqualTo(subscriptionId);
             assertThat(records.get(0).value()).contains("\"eventName\":\"bc3.SuscripcionCreada\"");
         }
     }
 
-    private UUID createSubscription() {
+    private String createSubscription() {
         PatientRegistrationFixture patients = new PatientRegistrationFixture(patientInboundAdapter,
                 patientReferenceRepository);
         PatientAddressRegistrationFixture addresses = new PatientAddressRegistrationFixture(addressInboundAdapter);
         DietPlanProjectionFixture plans = new DietPlanProjectionFixture(dietPlanInboundAdapter);
 
-        UUID patientId = UUID.randomUUID();
-        UUID addressId;
+        String patientId = "PAC-" + UUID.randomUUID();
+        String addressId;
         LocalDate start = LocalDate.now().plusDays(1);
-        UUID planId;
+        String planId;
         RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(new MockHttpServletRequest()));
         try {
             patients.ingestEligiblePatient(patientId);
@@ -143,7 +143,7 @@ class OutboxKafkaEndToEndIT {
         return postSubscription(command);
     }
 
-    private UUID postSubscription(CreateSubscriptionCommand command) {
+    private String postSubscription(CreateSubscriptionCommand command) {
         try {
             HttpRequest request = HttpRequest
                     .newBuilder(URI.create("http://localhost:" + port + "/api/subscriptions"))
@@ -153,7 +153,7 @@ class OutboxKafkaEndToEndIT {
             HttpResponse<String> response = HttpClient.newHttpClient().send(request,
                     HttpResponse.BodyHandlers.ofString());
             assertThat(response.statusCode()).as("HTTP body: %s", response.body()).isEqualTo(201);
-            return UUID.fromString(response.body().replace("\"", ""));
+            return response.body().replace("\"", "");
         } catch (IOException exception) {
             throw new IllegalStateException("Could not create the subscription through the HTTP API", exception);
         } catch (InterruptedException exception) {

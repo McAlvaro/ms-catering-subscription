@@ -1,7 +1,9 @@
 package com.mcalvaro.mscatering.domain.subscription;
 
+import com.mcalvaro.mscatering.domain.core.id.PatientId;
+import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
+
 import java.util.Optional;
-import java.util.UUID;
 
 /**
  * Repository interface for the {@link Subscription} aggregate.
@@ -9,7 +11,7 @@ import java.util.UUID;
  */
 public interface ISubscriptionRepository {
 
-    Optional<Subscription> findById(UUID id);
+    Optional<Subscription> findById(SubscriptionId id);
 
     void save(Subscription subscription);
 
@@ -34,5 +36,5 @@ public interface ISubscriptionRepository {
     /**
      * Checks if a patient has an ACTIVE or PAUSED subscription.
      */
-    boolean hasActiveOrPausedSubscription(UUID patientId);
+    boolean hasActiveOrPausedSubscription(PatientId patientId);
 }

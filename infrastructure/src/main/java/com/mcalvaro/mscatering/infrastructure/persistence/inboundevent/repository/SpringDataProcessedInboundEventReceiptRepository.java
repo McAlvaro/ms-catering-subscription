@@ -8,11 +8,11 @@ import java.util.UUID;
 public interface SpringDataProcessedInboundEventReceiptRepository
         extends JpaRepository<ProcessedInboundEventReceiptJpaEntity, UUID> {
 
-    boolean existsByPatientId(UUID patientId);
+    boolean existsByPatientId(String patientId);
 
-    boolean existsByPatientIdAndPayloadFingerprint(UUID patientId, String payloadFingerprint);
+    boolean existsByPatientIdAndPayloadFingerprint(String patientId, String payloadFingerprint);
 
-    boolean existsByAddressIdAndPayloadFingerprint(UUID addressId, String payloadFingerprint);
+    boolean existsByAddressIdAndPayloadFingerprint(String addressId, String payloadFingerprint);
 
-    boolean existsBySubjectKindAndSubjectIdAndPayloadFingerprint(String subjectKind, UUID subjectId, String payloadFingerprint);
+    boolean existsBySubjectKindAndSubjectIdAndPayloadFingerprint(String subjectKind, String subjectId, String payloadFingerprint);
 }

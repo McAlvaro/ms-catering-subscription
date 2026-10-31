@@ -7,16 +7,16 @@
       "description": "una solicitud para crear una nueva suscripcion de catering de 15 dias",
       "providerStates": [
         {
-          "name": "a patient with ID 550e8400-e29b-41d4-a716-446655440000 exists and owns address 770e8400-e29b-41d4-a716-446655440010"
+          "name": "a patient with ID PAC-550e8400-e29b-41d4-a716-446655440000 exists and owns address DIR-770e8400-e29b-41d4-a716-446655440010"
         }
       ],
       "request": {
         "body": {
           "acceptedConditions": "Acepto los terminos y condiciones del servicio de catering.",
-          "deliveryAddressId": "770e8400-e29b-41d4-a716-446655440010",
-          "dietPlanId": "660e8400-e29b-41d4-a716-446655440001",
+          "deliveryAddressId": "DIR-770e8400-e29b-41d4-a716-446655440010",
+          "dietPlanId": "PLAN-660e8400-e29b-41d4-a716-446655440001",
           "endDate": "2026-10-15",
-          "patientId": "550e8400-e29b-41d4-a716-446655440000",
+          "patientId": "PAC-550e8400-e29b-41d4-a716-446655440000",
           "prefSpecialInstructions": "Sin picante",
           "prefTimeEnd": "14:00:00",
           "prefTimeStart": "12:00:00",
@@ -34,7 +34,7 @@
               "matchers": [
                 {
                   "match": "regex",
-                  "regex": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+                  "regex": "DIR-[0-9a-fA-Za-z-]+"
                 }
               ]
             },
@@ -43,7 +43,7 @@
               "matchers": [
                 {
                   "match": "regex",
-                  "regex": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+                  "regex": "PLAN-[0-9a-fA-Za-z-]+"
                 }
               ]
             },
@@ -52,7 +52,7 @@
               "matchers": [
                 {
                   "match": "regex",
-                  "regex": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+                  "regex": "PAC-[0-9a-fA-Za-z-]+"
                 }
               ]
             },
@@ -70,7 +70,7 @@
         "path": "/api/subscriptions"
       },
       "response": {
-        "body": "\"550e8400-e29b-41d4-a716-446655440099\"",
+        "body": "\"SUS-550e8400-e29b-41d4-a716-446655440099\"",
         "headers": {
           "Content-Type": "application/json"
         },
@@ -81,7 +81,7 @@
               "matchers": [
                 {
                   "match": "regex",
-                  "regex": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+                  "regex": "SUS-[0-9a-fA-Za-z-]+"
                 }
               ]
             }
@@ -94,7 +94,7 @@
       "description": "una solicitud para consultar los detalles de una suscripcion existente",
       "providerStates": [
         {
-          "name": "a subscription with ID 770e8400-e29b-41d4-a716-446655440002 exists"
+          "name": "a subscription with ID SUS-770e8400-e29b-41d4-a716-446655440002 exists"
         }
       ],
       "request": {
@@ -102,7 +102,7 @@
           "Accept": "application/json"
         },
         "method": "GET",
-        "path": "/api/subscriptions/770e8400-e29b-41d4-a716-446655440002"
+        "path": "/api/subscriptions/SUS-770e8400-e29b-41d4-a716-446655440002"
       },
       "response": {
         "body": {
@@ -110,21 +110,21 @@
           "deliveryDays": [
             {
               "date": "string",
-              "id": "e2490de5-5bd3-43d5-b7c4-526e33f71304",
+              "id": "CD-e2490de5-5bd3-43d5-b7c4-526e33f71304",
               "status": "string"
             }
           ],
-          "dietPlanId": "e2490de5-5bd3-43d5-b7c4-526e33f71304",
+          "dietPlanId": "PLAN-e2490de5-5bd3-43d5-b7c4-526e33f71304",
           "endDate": "string",
           "evaluations": [
             {
-              "id": "e2490de5-5bd3-43d5-b7c4-526e33f71304",
+              "id": "EVAL-e2490de5-5bd3-43d5-b7c4-526e33f71304",
               "scheduledDate": "string",
               "status": "string"
             }
           ],
-          "id": "e2490de5-5bd3-43d5-b7c4-526e33f71304",
-          "patientId": "e2490de5-5bd3-43d5-b7c4-526e33f71304",
+          "id": "SUS-e2490de5-5bd3-43d5-b7c4-526e33f71304",
+          "patientId": "PAC-e2490de5-5bd3-43d5-b7c4-526e33f71304",
           "serviceType": "string",
           "startDate": "string",
           "status": "string",
@@ -141,21 +141,24 @@
               "type": "RandomString"
             },
             "$.deliveryDays[*].id": {
-              "type": "Uuid"
+              "size": 20,
+              "type": "RandomString"
             },
             "$.deliveryDays[*].status": {
               "size": 20,
               "type": "RandomString"
             },
             "$.dietPlanId": {
-              "type": "Uuid"
+              "size": 20,
+              "type": "RandomString"
             },
             "$.endDate": {
               "size": 20,
               "type": "RandomString"
             },
             "$.evaluations[*].id": {
-              "type": "Uuid"
+              "size": 20,
+              "type": "RandomString"
             },
             "$.evaluations[*].scheduledDate": {
               "size": 20,
@@ -166,10 +169,12 @@
               "type": "RandomString"
             },
             "$.id": {
-              "type": "Uuid"
+              "size": 20,
+              "type": "RandomString"
             },
             "$.patientId": {
-              "type": "Uuid"
+              "size": 20,
+              "type": "RandomString"
             },
             "$.serviceType": {
               "size": 20,
@@ -224,7 +229,7 @@
               "matchers": [
                 {
                   "match": "regex",
-                  "regex": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+                  "regex": "CD-[0-9a-fA-Za-z-]+"
                 }
               ]
             },
@@ -241,7 +246,7 @@
               "matchers": [
                 {
                   "match": "regex",
-                  "regex": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+                  "regex": "PLAN-[0-9a-fA-Za-z-]+"
                 }
               ]
             },
@@ -267,7 +272,7 @@
               "matchers": [
                 {
                   "match": "regex",
-                  "regex": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+                  "regex": "EVAL-[0-9a-fA-Za-z-]+"
                 }
               ]
             },
@@ -292,7 +297,7 @@
               "matchers": [
                 {
                   "match": "regex",
-                  "regex": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+                  "regex": "SUS-[0-9a-fA-Za-z-]+"
                 }
               ]
             },
@@ -301,7 +306,7 @@
               "matchers": [
                 {
                   "match": "regex",
-                  "regex": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+                  "regex": "PAC-[0-9a-fA-Za-z-]+"
                 }
               ]
             },

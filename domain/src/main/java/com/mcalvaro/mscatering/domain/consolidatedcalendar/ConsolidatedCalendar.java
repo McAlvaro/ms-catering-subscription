@@ -5,6 +5,7 @@ import com.mcalvaro.mscatering.domain.consolidatedcalendar.enums.ConsolidateStat
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.event.ConsolidatedCalendarClosed;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.event.ConsolidatedCalendarCreated;
 import com.mcalvaro.mscatering.domain.core.AggregateRoot;
+import com.mcalvaro.mscatering.domain.core.id.ConsolidatedCalendarId;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -19,7 +20,7 @@ import java.util.UUID;
  * Immutable daily grouping of all active deliveries. Once closed,
  * it triggers production (BC4) and logistics (BC5) via domain events.
  */
-public class ConsolidatedCalendar extends AggregateRoot {
+public class ConsolidatedCalendar extends AggregateRoot<ConsolidatedCalendarId> {
 
     private final LocalDate date;
     private ConsolidateStatus status;
@@ -28,7 +29,7 @@ public class ConsolidatedCalendar extends AggregateRoot {
     private String closedBy;
     private final List<ConsolidatedLine> lines = new ArrayList<>();
 
-    private ConsolidatedCalendar(UUID id, LocalDate date) {
+    private ConsolidatedCalendar(ConsolidatedCalendarId id, LocalDate date) {
         super(id);
         this.date = date;
         this.status = ConsolidateStatus.OPEN;
@@ -39,7 +40,7 @@ public class ConsolidatedCalendar extends AggregateRoot {
      * Creates a new open consolidated calendar for the given date.
      * Emits {@link ConsolidatedCalendarCreated}.
      */
-    public static ConsolidatedCalendar create(UUID id, LocalDate date) {
+    public static ConsolidatedCalendar create(ConsolidatedCalendarId id, LocalDate date) {
         ConsolidatedCalendar calendar = new ConsolidatedCalendar(id, date);
         calendar.addDomainEvent(new ConsolidatedCalendarCreated(id, date));
         return calendar;

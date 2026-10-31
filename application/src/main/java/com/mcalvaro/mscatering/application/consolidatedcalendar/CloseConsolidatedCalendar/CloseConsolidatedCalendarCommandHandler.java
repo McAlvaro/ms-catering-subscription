@@ -2,11 +2,11 @@ package com.mcalvaro.mscatering.application.consolidatedcalendar.CloseConsolidat
 
 import an.awesome.pipelinr.Command;
 
+import com.mcalvaro.mscatering.domain.core.id.ConsolidatedCalendarId;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.ConsolidatedCalendar;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.IConsolidatedCalendarRepository;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.service.DailyConsolidator;
 
-import java.util.UUID;
 import java.time.Instant;
 
 /**
@@ -24,7 +24,7 @@ import java.time.Instant;
  * </ol>
  */
 public class CloseConsolidatedCalendarCommandHandler
-        implements Command.Handler<CloseConsolidatedCalendarCommand, UUID> {
+        implements Command.Handler<CloseConsolidatedCalendarCommand, ConsolidatedCalendarId> {
 
     private final DailyConsolidator dailyConsolidator;
     private final IConsolidatedCalendarRepository calendarRepository;
@@ -36,7 +36,7 @@ public class CloseConsolidatedCalendarCommandHandler
     }
 
     @Override
-    public UUID handle(CloseConsolidatedCalendarCommand command) {
+    public ConsolidatedCalendarId handle(CloseConsolidatedCalendarCommand command) {
 
         ConsolidatedCalendar calendar = dailyConsolidator.consolidateForDate(command.date());
 

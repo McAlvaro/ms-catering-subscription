@@ -1,7 +1,8 @@
 package com.mcalvaro.mscatering.application.subscription.GetSubscriptionDetails;
 
+import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
+
 import java.util.Optional;
-import java.util.UUID;
 
 /**
  * Port (abstraction) for reading Subscription data (CQRS Read side).
@@ -15,5 +16,9 @@ public interface ISubscriptionQueryService {
     /**
      * Retrieves the full details of a subscription by its ID.
      */
-    Optional<SubscriptionDetailsDto> getSubscriptionDetails(UUID subscriptionId);
+    Optional<SubscriptionDetailsDto> getSubscriptionDetails(SubscriptionId subscriptionId);
+
+    default Optional<SubscriptionDetailsDto> getSubscriptionDetails(String subscriptionId) {
+        return getSubscriptionDetails(SubscriptionId.of(subscriptionId));
+    }
 }
