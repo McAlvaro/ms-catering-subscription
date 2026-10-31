@@ -41,23 +41,16 @@ spring:
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
     enabled: true
-  cloud:
-    consul:
-      host: ${CONSUL_HOST:localhost}
-      port: ${CONSUL_PORT:8500}
-      discovery:
-        enabled: true
-        register: true
-        service-name: ${spring.application.name}
-        instance-id: ${spring.application.name}:${spring.application.instance-id:${HOSTNAME:${random.value}}}
-        register-health-check: true
-        health-check-path: /actuator/health
-        health-check-interval: 15s
-        prefer-ip-address: ${CONSUL_PREFER_IP_ADDRESS:false}
-        fail-fast: true
-    service-registry:
-      auto-registration:
-        enabled: true
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
+    register-with-eureka: ${EUREKA_REGISTER_WITH_EUREKA:true}
+    fetch-registry: ${EUREKA_FETCH_REGISTRY:true}
+  instance:
+    prefer-ip-address: ${EUREKA_PREFER_IP_ADDRESS:true}
+    instance-id: ${spring.application.name}:${spring.application.instance-id:${HOSTNAME:${random.value}}}
 
 # ── Swagger / SpringDoc ──────────────────────────────────────────────
 springdoc:

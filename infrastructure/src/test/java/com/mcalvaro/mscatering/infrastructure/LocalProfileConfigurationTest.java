@@ -7,13 +7,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.ecwid.consul.v1.ConsulClient;
+import com.netflix.discovery.EurekaClient;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.cloud.consul.discovery.ConsulDiscoveryClient;
-import org.springframework.cloud.consul.serviceregistry.ConsulAutoServiceRegistration;
+import org.springframework.cloud.netflix.eureka.EurekaDiscoveryClient;
+import org.springframework.cloud.netflix.eureka.serviceregistry.EurekaAutoServiceRegistration;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.Environment;
 import org.springframework.test.context.ActiveProfiles;
@@ -47,11 +47,11 @@ class LocalProfileConfigurationTest {
     }
 
     @Test
-    void localProfileDoesNotCreateConsulClientsOrRegistration() throws Exception {
-        assertEquals("false", environment.getProperty("spring.cloud.consul.enabled"));
-        assertTrue(applicationContext.getBeansOfType(ConsulClient.class).isEmpty());
-        assertTrue(applicationContext.getBeansOfType(ConsulDiscoveryClient.class).isEmpty());
-        assertTrue(applicationContext.getBeansOfType(ConsulAutoServiceRegistration.class).isEmpty());
+    void localProfileDoesNotCreateEurekaClientsOrRegistration() throws Exception {
+        assertEquals("false", environment.getProperty("eureka.client.enabled"));
+        assertTrue(applicationContext.getBeansOfType(EurekaClient.class).isEmpty());
+        assertTrue(applicationContext.getBeansOfType(EurekaDiscoveryClient.class).isEmpty());
+        assertTrue(applicationContext.getBeansOfType(EurekaAutoServiceRegistration.class).isEmpty());
 
         mockMvc.perform(get("/actuator/health"))
                 .andExpect(status().isOk())
@@ -59,7 +59,7 @@ class LocalProfileConfigurationTest {
     }
 
     @Test
-    void localProfileServesSwaggerUiWithoutMySqlOrConsul() throws Exception {
+    void localProfileServesSwaggerUiWithoutMySqlOrEureka() throws Exception {
         mockMvc.perform(get("/swagger-ui.html"))
                 .andExpect(status().isFound())
                 .andExpect(redirectedUrl("/swagger-ui/index.html"));

@@ -22,26 +22,17 @@ spring:
     enabled: true
 
   cloud:
-    consul:
-      enabled: false
-      discovery:
-        enabled: false
-        register: false
-        register-health-check: false
-      service-registry:
-        enabled: false
-        auto-registration:
-          enabled: false
     discovery:
       enabled: false
     service-registry:
       auto-registration:
         enabled: false
 
-management:
-  health:
-    consul:
-      enabled: false
+eureka:
+  client:
+    enabled: false
+    register-with-eureka: false
+    fetch-registry: false
 
 app:
   kafka:

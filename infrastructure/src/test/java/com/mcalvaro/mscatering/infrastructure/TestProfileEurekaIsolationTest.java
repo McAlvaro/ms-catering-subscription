@@ -6,15 +6,15 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.ecwid.consul.v1.ConsulClient;
+import com.netflix.discovery.EurekaClient;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.consul.discovery.ConsulDiscoveryClient;
-import org.springframework.cloud.consul.serviceregistry.ConsulAutoServiceRegistration;
+import org.springframework.cloud.netflix.eureka.EurekaDiscoveryClient;
+import org.springframework.cloud.netflix.eureka.serviceregistry.EurekaAutoServiceRegistration;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.Environment;
 
-class TestProfileConsulIsolationTest extends BaseIntegrationTest {
+class TestProfileEurekaIsolationTest extends BaseIntegrationTest {
 
     @Autowired
     private Environment environment;
@@ -23,11 +23,11 @@ class TestProfileConsulIsolationTest extends BaseIntegrationTest {
     private ApplicationContext applicationContext;
 
     @Test
-    void testProfileDoesNotCreateConsulClientsOrRegistration() throws Exception {
-        assertEquals("false", environment.getProperty("spring.cloud.consul.enabled"));
-        assertTrue(applicationContext.getBeansOfType(ConsulClient.class).isEmpty());
-        assertTrue(applicationContext.getBeansOfType(ConsulDiscoveryClient.class).isEmpty());
-        assertTrue(applicationContext.getBeansOfType(ConsulAutoServiceRegistration.class).isEmpty());
+    void testProfileDoesNotCreateEurekaClientsOrRegistration() throws Exception {
+        assertEquals("false", environment.getProperty("eureka.client.enabled"));
+        assertTrue(applicationContext.getBeansOfType(EurekaClient.class).isEmpty());
+        assertTrue(applicationContext.getBeansOfType(EurekaDiscoveryClient.class).isEmpty());
+        assertTrue(applicationContext.getBeansOfType(EurekaAutoServiceRegistration.class).isEmpty());
 
         mockMvc.perform(get("/actuator/health"))
                 .andExpect(status().isOk())
