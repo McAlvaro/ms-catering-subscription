@@ -142,7 +142,8 @@ El contenedor de `ms-catering-subscription` se configura mediante las siguientes
 #### Mensajería de Eventos (Apache Kafka)
 | Variable | Descripción | Valor por defecto |
 | :--- | :--- | :--- |
-| `KAFKA_BOOTSTRAP_SERVERS` | Dirección del broker de Kafka | `localhost:9092` |
+| `KAFKA_ENABLED` | Habilitar comunicación e integración con Kafka (`true`/`false`) | `true` |
+| `KAFKA_BOOTSTRAP_SERVERS` | Dirección del broker de Kafka | `kafka:9092` |
 | `KAFKA_PATIENT_TOPIC` | Tópico de eventos de pacientes (BC1) | `bc1.pacientes.eventos` |
 | `KAFKA_PLAN_TOPIC` | Tópico de eventos de planes nutricionales (BC2) | `bc2.nutricion.eventos` |
 | `KAFKA_DELIVERY_TOPIC` | Tópico de eventos de entregas y logística (BC5) | `bc5.logistica.eventos` |
