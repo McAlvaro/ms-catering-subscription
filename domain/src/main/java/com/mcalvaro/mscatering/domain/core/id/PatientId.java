@@ -26,7 +26,7 @@ public record PatientId(@JsonValue String value) implements DomainId {
     }
 
     public static PatientId generate() {
-        return new PatientId(PREFIX + UUID.randomUUID());
+        return new PatientId(PREFIX + DomainId.randomToken());
     }
 
     @Override

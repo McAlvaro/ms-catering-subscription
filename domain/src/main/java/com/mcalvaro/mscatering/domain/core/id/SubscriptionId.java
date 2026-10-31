@@ -26,7 +26,7 @@ public record SubscriptionId(@JsonValue String value) implements DomainId {
     }
 
     public static SubscriptionId generate() {
-        return new SubscriptionId(PREFIX + UUID.randomUUID());
+        return new SubscriptionId(PREFIX + DomainId.randomToken());
     }
 
     @Override

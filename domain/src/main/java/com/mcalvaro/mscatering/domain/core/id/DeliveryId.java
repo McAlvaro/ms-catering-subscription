@@ -26,7 +26,7 @@ public record DeliveryId(@JsonValue String value) implements DomainId {
     }
 
     public static DeliveryId generate() {
-        return new DeliveryId(PREFIX + UUID.randomUUID());
+        return new DeliveryId(PREFIX + DomainId.randomToken());
     }
 
     @Override

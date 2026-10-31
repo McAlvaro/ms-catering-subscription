@@ -26,7 +26,7 @@ public record PackageId(@JsonValue String value) implements DomainId {
     }
 
     public static PackageId generate() {
-        return new PackageId(PREFIX + UUID.randomUUID());
+        return new PackageId(PREFIX + DomainId.randomToken());
     }
 
     @Override

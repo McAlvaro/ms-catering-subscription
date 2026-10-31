@@ -26,7 +26,7 @@ public record PauseRequestId(@JsonValue String value) implements DomainId {
     }
 
     public static PauseRequestId generate() {
-        return new PauseRequestId(PREFIX + UUID.randomUUID());
+        return new PauseRequestId(PREFIX + DomainId.randomToken());
     }
 
     @Override

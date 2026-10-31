@@ -26,7 +26,7 @@ public record ConsolidatedLineId(@JsonValue String value) implements DomainId {
     }
 
     public static ConsolidatedLineId generate() {
-        return new ConsolidatedLineId(PREFIX + UUID.randomUUID());
+        return new ConsolidatedLineId(PREFIX + DomainId.randomToken());
     }
 
     @Override

@@ -26,7 +26,7 @@ public record EvaluationId(@JsonValue String value) implements DomainId {
     }
 
     public static EvaluationId generate() {
-        return new EvaluationId(PREFIX + UUID.randomUUID());
+        return new EvaluationId(PREFIX + DomainId.randomToken());
     }
 
     @Override

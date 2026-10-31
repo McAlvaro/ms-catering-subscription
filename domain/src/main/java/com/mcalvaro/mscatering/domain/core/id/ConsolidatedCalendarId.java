@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.mcalvaro.mscatering.domain.core.DomainId;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -25,8 +27,13 @@ public record ConsolidatedCalendarId(@JsonValue String value) implements DomainI
         return new ConsolidatedCalendarId(PREFIX + uuid);
     }
 
+    public static ConsolidatedCalendarId ofDate(LocalDate date) {
+        Objects.requireNonNull(date, "date must not be null");
+        return new ConsolidatedCalendarId(PREFIX + date.format(DateTimeFormatter.BASIC_ISO_DATE));
+    }
+
     public static ConsolidatedCalendarId generate() {
-        return new ConsolidatedCalendarId(PREFIX + UUID.randomUUID());
+        return new ConsolidatedCalendarId(PREFIX + DomainId.randomToken());
     }
 
     @Override

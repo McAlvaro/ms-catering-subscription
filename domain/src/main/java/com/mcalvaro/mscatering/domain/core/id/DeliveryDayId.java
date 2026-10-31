@@ -26,7 +26,7 @@ public record DeliveryDayId(@JsonValue String value) implements DomainId {
     }
 
     public static DeliveryDayId generate() {
-        return new DeliveryDayId(PREFIX + UUID.randomUUID());
+        return new DeliveryDayId(PREFIX + DomainId.randomToken());
     }
 
     @Override

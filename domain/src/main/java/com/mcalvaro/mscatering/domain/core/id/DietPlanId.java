@@ -26,7 +26,7 @@ public record DietPlanId(@JsonValue String value) implements DomainId {
     }
 
     public static DietPlanId generate() {
-        return new DietPlanId(PREFIX + UUID.randomUUID());
+        return new DietPlanId(PREFIX + DomainId.randomToken());
     }
 
     @Override

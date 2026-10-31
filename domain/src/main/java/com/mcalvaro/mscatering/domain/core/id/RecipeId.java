@@ -26,7 +26,7 @@ public record RecipeId(@JsonValue String value) implements DomainId {
     }
 
     public static RecipeId generate() {
-        return new RecipeId(PREFIX + UUID.randomUUID());
+        return new RecipeId(PREFIX + DomainId.randomToken());
     }
 
     @Override

@@ -26,7 +26,7 @@ public record AddressId(@JsonValue String value) implements DomainId {
     }
 
     public static AddressId generate() {
-        return new AddressId(PREFIX + UUID.randomUUID());
+        return new AddressId(PREFIX + DomainId.randomToken());
     }
 
     @Override

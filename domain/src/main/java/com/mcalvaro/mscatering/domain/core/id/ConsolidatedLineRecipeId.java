@@ -26,7 +26,7 @@ public record ConsolidatedLineRecipeId(@JsonValue String value) implements Domai
     }
 
     public static ConsolidatedLineRecipeId generate() {
-        return new ConsolidatedLineRecipeId(PREFIX + UUID.randomUUID());
+        return new ConsolidatedLineRecipeId(PREFIX + DomainId.randomToken());
     }
 
     @Override
