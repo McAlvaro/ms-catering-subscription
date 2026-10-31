@@ -60,7 +60,7 @@ services:
       start_period: 30s
 
   app:
-    image: ${APP_IMAGE:-alv641/ms-catering-subscription:1.0.2}
+    image: ${APP_IMAGE:-alv641/ms-catering-subscription:1.1.0}
     container_name: ms-catering-app
     restart: unless-stopped
 
@@ -75,6 +75,12 @@ services:
         &useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       SPRING_DATASOURCE_USERNAME: ${MYSQL_USER}
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
+      EUREKA_SERVER_URL: ${EUREKA_SERVER_URL:-http://localhost:8761/eureka/}
+      EUREKA_PREFER_IP_ADDRESS: ${EUREKA_PREFER_IP_ADDRESS:-true}
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-localhost:9092}
+      KAFKA_PATIENT_TOPIC: ${KAFKA_PATIENT_TOPIC:-bc1.pacientes.eventos}
+      KAFKA_PLAN_TOPIC: ${KAFKA_PLAN_TOPIC:-bc2.planes.eventos}
+      KAFKA_DELIVERY_TOPIC: ${KAFKA_DELIVERY_TOPIC:-bc5.logistica.eventos}
 
     ports:
       - "${APP_HOST_PORT:-8080}:8080"

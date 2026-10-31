@@ -106,57 +106,109 @@ A continuación se presentan los diagramas de clases del modelo de dominio. Dich
 
 ### 2.1 Imagen publicada en Docker Hub
 
-| Tag      | URL                                                      |
-| :------- | :------------------------------------------------------- |
-| `1.0.2`  | https://hub.docker.com/r/alv641/ms-catering-subscription |
-| `latest` | https://hub.docker.com/r/alv641/ms-catering-subscription |
+| Tag      | Estado      | URL                                                      | Descripción |
+| :------- | :---------- | :------------------------------------------------------- | :---------- |
+| `1.1.0`  | **Nueva**   | https://hub.docker.com/r/alv641/ms-catering-subscription | Netflix Eureka Client, Kafka Consumers/Producers e IDs compactos (8 chars). |
+| `latest` | **Actual**  | https://hub.docker.com/r/alv641/ms-catering-subscription | Apunta a la última versión estable (`1.1.0`). |
+| `1.0.2`  | Anterior    | https://hub.docker.com/r/alv641/ms-catering-subscription | Versión inicial monolítica con base de datos MySQL. |
+
+Para descargar la última versión:
 
 ```bash
 docker pull alv641/ms-catering-subscription:latest
 ```
 
-### 2.2 Pre-requisitos
+---
 
-- Docker Engine ≥ 24
-- Docker Compose V2 (`docker compose` sin guion)
+### 2.2 Variables de Entorno del Contenedor
 
-### 2.3 Configuración del entorno
+El contenedor de `ms-catering-subscription` se configura mediante las siguientes variables de entorno:
 
-Copiar el archivo de variables de entorno y ajustar si es necesario:
+#### Base de Datos (MySQL)
+| Variable | Descripción | Valor por defecto |
+| :--- | :--- | :--- |
+| `SPRING_DATASOURCE_URL` | URL JDBC de conexión a MySQL | `jdbc:mysql://127.0.0.1:3325/ms_catering_subscription?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC` |
+| `SPRING_DATASOURCE_USERNAME` | Usuario de la base de datos | `admin_db` |
+| `SPRING_DATASOURCE_PASSWORD` | Contraseña de la base de datos | `123456` |
+
+#### Service Discovery (Netflix Eureka)
+| Variable | Descripción | Valor por defecto |
+| :--- | :--- | :--- |
+| `EUREKA_SERVER_URL` | URL del endpoint `defaultZone` de Eureka Server | `http://localhost:8761/eureka/` |
+| `EUREKA_REGISTER_WITH_EUREKA` | Habilitar auto-registro en Eureka (`true`/`false`) | `true` |
+| `EUREKA_FETCH_REGISTRY` | Habilitar descarga del registro de servicios (`true`/`false`) | `true` |
+| `EUREKA_PREFER_IP_ADDRESS` | Registrar la IP del contenedor en Eureka en vez de su hostname | `true` |
+
+#### Mensajería de Eventos (Apache Kafka)
+| Variable | Descripción | Valor por defecto |
+| :--- | :--- | :--- |
+| `KAFKA_BOOTSTRAP_SERVERS` | Dirección del broker de Kafka | `localhost:9092` |
+| `KAFKA_PATIENT_TOPIC` | Tópico de eventos de pacientes (BC1) | `bc1.pacientes.eventos` |
+| `KAFKA_PLAN_TOPIC` | Tópico de eventos de planes nutricionales (BC2) | `bc2.planes.eventos` |
+| `KAFKA_DELIVERY_TOPIC` | Tópico de eventos de entregas y logística (BC5) | `bc5.logistica.eventos` |
+| `KAFKA_PATIENT_GROUP_ID` | Consumer group para eventos de pacientes | `ms-catering-bc1-patient-consumer` |
+
+#### Servidor HTTP y Actuator
+| Variable | Descripción | Valor por defecto |
+| :--- | :--- | :--- |
+| `SERVER_PORT` | Puerto HTTP interno en el contenedor | `8080` |
+
+---
+
+### 2.3 Formas de Ejecución
+
+#### Opción A: Contenedor Independiente (`docker run`)
+Ideal para integrar el microservicio conectándolo a un Eureka Server, Kafka y MySQL existentes (en el host o en otra red):
 
 ```bash
-cp .env.example .env
+docker run -d \
+  --name ms-catering-subscription \
+  -p 8080:8080 \
+  -e EUREKA_SERVER_URL=http://<eureka-host>:8761/eureka/ \
+  -e EUREKA_PREFER_IP_ADDRESS=true \
+  -e SPRING_DATASOURCE_URL="jdbc:mysql://<db-host>:3306/ms_catering_subscription?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC" \
+  -e SPRING_DATASOURCE_USERNAME=admin_db \
+  -e SPRING_DATASOURCE_PASSWORD=123456 \
+  -e KAFKA_BOOTSTRAP_SERVERS=<kafka-host>:9092 \
+  alv641/ms-catering-subscription:latest
 ```
 
-Variables disponibles en `.env`:
+#### Opción B: Entorno Local con Docker Compose
 
-| Variable              | Descripción                        | Valor por defecto                       |
-| :-------------------- | :--------------------------------- | :-------------------------------------- |
-| `MYSQL_ROOT_PASSWORD` | Password del usuario root de MySQL | `root_secret`                           |
-| `MYSQL_DATABASE`      | Nombre de la base de datos         | `ms_catering_subscription`              |
-| `MYSQL_USER`          | Usuario de la aplicación           | `admin_db`                              |
-| `MYSQL_PASSWORD`      | Password del usuario de la app     | `123456`                                |
-| `MYSQL_HOST_PORT`     | Puerto del host para MySQL         | `3325`                                  |
-| `APP_HOST_PORT`       | Puerto del host para la app        | `8080`                                  |
-| `APP_IMAGE`           | Imagen Docker de la app            | `alv641/ms-catering-subscription:1.0.2` |
+1. Copiar el archivo de variables de entorno y ajustar si es necesario:
+   ```bash
+   cp .env.example .env
+   ```
 
-### 2.4 Levantar el entorno
+2. Levantar todos los servicios en segundo plano:
+   ```bash
+   docker compose up -d
+   ```
 
-```bash
-# Levantar todos los servicios en segundo plano
-docker compose up -d
+3. Ver los logs de la aplicación en tiempo real:
+   ```bash
+   docker compose logs -f app
+   ```
 
-# Ver los logs de la aplicación en tiempo real
-docker compose logs -f app
-```
+---
 
-La aplicación estará disponible en:
+### 2.4 Endpoints de Verificación y Documentación
 
-- **API:** http://localhost:8080
-- **Swagger UI:** http://localhost:8080/swagger-ui.html
-- **Health check:** http://localhost:8080/actuator/health
+Una vez levantado el contenedor:
 
-### 2.5 Detener el entorno
+- **Health check (Actuator):** `GET http://localhost:8080/actuator/health`
+- **Contrato OpenAPI 3.0 (JSON):** `GET http://localhost:8080/api-docs`
+- **Rutas de Negocio Principales:**
+  - `POST /api/subscriptions` (Crear suscripción)
+  - `GET /api/subscriptions/{id}` (Consultar suscripción por ID)
+  - `POST /api/subscriptions/{id}/pause` (Pausar suscripción)
+  - `POST /api/subscriptions/{id}/cancel` (Cancelar suscripción)
+  - `GET /api/consolidated-calendars?date=YYYY-MM-DD` (Consultar calendario consolidado diario)
+  - `POST /api/consolidated-calendars/close` (Ejecutar cierre y consolidación de catering)
+
+---
+
+### 2.5 Detener el entorno Docker Compose
 
 ```bash
 # Detener servicios (conserva los datos de la BD)
