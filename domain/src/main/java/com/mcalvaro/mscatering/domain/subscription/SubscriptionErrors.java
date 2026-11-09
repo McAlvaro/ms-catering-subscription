@@ -1,6 +1,7 @@
 package com.mcalvaro.mscatering.domain.subscription;
 
 import com.mcalvaro.mscatering.domain.core.DomainException;
+import com.mcalvaro.mscatering.domain.subscription.enums.SubscriptionStatus;
 
 /**
  * Catalog of domain exceptions for the Subscription aggregate.
@@ -76,5 +77,9 @@ public final class SubscriptionErrors {
 
     public static DomainException correlationIdBlank() {
         return new DomainException("SUB-016", "Correlation ID must not be blank.");
+    }
+
+    public static DomainException subscriptionNotCancellable(SubscriptionStatus status) {
+        return new DomainException("SUB-017", "Subscription cannot be cancelled: current status is " + status + ".");
     }
 }

@@ -232,6 +232,57 @@ class SubscriptionOutboundLifecycleTest {
         assertThat(subscription.getDomainEvents()).isEmpty();
     }
 
+    @Test
+    @DisplayName("Should reject cancelling an already cancelled subscription without side effects")
+    void shouldRejectCancellationWhenSubscriptionIsAlreadyCancelled() {
+        // Arrange
+        Subscription subscription = buildFutureSubscription();
+        subscription.cancel("Patient request", "first-cancel");
+        subscription.clearDomainEvents();
+
+        // Act & Assert
+        assertThatThrownBy(() -> subscription.cancel("Second attempt", "second-cancel"))
+                .isInstanceOf(DomainException.class)
+                .hasFieldOrPropertyWithValue("code", "SUB-017");
+        assertThat(subscription.getStatus()).isEqualTo(SubscriptionStatus.CANCELLED);
+        assertThat(subscription.getDomainEvents()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Should reject cancelling a completed subscription without side effects")
+    void shouldRejectCancellationWhenSubscriptionIsCompleted() {
+        // Arrange
+        Subscription subscription = buildPastSubscription();
+        subscription.complete("complete-correlation");
+        java.util.List<DeliveryDayStatus> statusesBefore = subscription.getDeliveryCalendar().getDeliveryDays().stream()
+                .map(DeliveryDay::getStatus).toList();
+        subscription.clearDomainEvents();
+
+        // Act & Assert
+        assertThatThrownBy(() -> subscription.cancel("Too late", "cancel-correlation"))
+                .isInstanceOf(DomainException.class)
+                .hasFieldOrPropertyWithValue("code", "SUB-017");
+        assertThat(subscription.getStatus()).isEqualTo(SubscriptionStatus.COMPLETED);
+        assertThat(subscription.getDeliveryCalendar().getDeliveryDays().stream().map(DeliveryDay::getStatus).toList())
+                .isEqualTo(statusesBefore);
+        assertThat(subscription.getDomainEvents()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Should report the status guard before blank reason and correlation validations")
+    void shouldCheckStatusGuardBeforeReasonAndCorrelationValidation() {
+        // Arrange
+        Subscription subscription = buildFutureSubscription();
+        subscription.cancel("Patient request", "first-cancel");
+        subscription.clearDomainEvents();
+
+        // Act & Assert
+        assertThatThrownBy(() -> subscription.cancel(" ", " "))
+                .isInstanceOf(DomainException.class)
+                .hasFieldOrPropertyWithValue("code", "SUB-017");
+        assertThat(subscription.getDomainEvents()).isEmpty();
+    }
+
     private Subscription buildFutureSubscription() {
         LocalDate start = LocalDate.now().plusDays(10);
         return buildSubscription(start);

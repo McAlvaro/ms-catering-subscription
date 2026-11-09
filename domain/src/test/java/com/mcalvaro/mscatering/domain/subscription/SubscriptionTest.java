@@ -376,6 +376,28 @@ class SubscriptionTest {
         assertThat(subscription.getDomainEvents()).isEmpty();
     }
 
+    @Test
+    @DisplayName("Should keep a paused subscription cancellable and count its paused days as cancelled deliveries")
+    void shouldCancelPausedSubscriptionAndCancelItsPausedDays() {
+        // Arrange
+        Subscription subscription = buildSubscription(LocalDate.of(2099, 6, 1));
+        subscription.pause(new PauseRange(LocalDate.of(2099, 6, 4), LocalDate.of(2099, 6, 6)), "Travel");
+        subscription.clearDomainEvents();
+
+        // Act
+        subscription.cancel("Patient request", "cancel-paused");
+
+        // Assert
+        assertThat(subscription.getStatus()).isEqualTo(SubscriptionStatus.CANCELLED);
+        assertThat(subscription.getDeliveryCalendar().getDeliveryDays())
+                .filteredOn(d -> !d.getDate().isBefore(LocalDate.of(2099, 6, 4))
+                        && !d.getDate().isAfter(LocalDate.of(2099, 6, 6)))
+                .hasSize(3)
+                .allSatisfy(d -> assertThat(d.getStatus()).isEqualTo(DeliveryDayStatus.CANCELLED));
+        assertThat(subscription.getDomainEvents()).singleElement().isInstanceOfSatisfying(SubscriptionCancelled.class,
+                event -> assertThat(event.cancelledPendingDeliveries()).isGreaterThanOrEqualTo(3));
+    }
+
     private Subscription buildSubscription(LocalDate startDate) {
         return Subscription.create(SubscriptionId.generate(), PatientId.generate(), DietPlanId.generate(), buildContract(startDate),
                 buildPreferences("Leave at reception"), 1);

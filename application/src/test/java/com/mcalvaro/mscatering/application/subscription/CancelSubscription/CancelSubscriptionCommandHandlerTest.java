@@ -76,6 +76,22 @@ class CancelSubscriptionCommandHandlerTest {
         verify(subscriptionRepository, never()).save(any());
     }
 
+    @Test
+    @DisplayName("Should throw SUB-017 and not save when the subscription is already cancelled")
+    void shouldThrowDomainErrorAndNotSaveWhenSubscriptionIsAlreadyCancelled() {
+        // Arrange
+        Subscription subscription = buildSubscription();
+        subscription.cancel("Patient request");
+        CancelSubscriptionCommand command = new CancelSubscriptionCommand(subscription.getId(), "Second attempt");
+        when(subscriptionRepository.findById(command.subscriptionId())).thenReturn(Optional.of(subscription));
+
+        // Act & Assert
+        assertThatThrownBy(() -> handler.handle(command))
+                .isInstanceOf(com.mcalvaro.mscatering.domain.core.DomainException.class)
+                .hasFieldOrPropertyWithValue("code", "SUB-017");
+        verify(subscriptionRepository, never()).save(any());
+    }
+
     private Subscription buildSubscription() {
         LocalDate startDate = LocalDate.now().plusDays(10);
         DietPlanId planId = DietPlanId.generate();

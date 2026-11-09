@@ -273,13 +273,16 @@ public class Subscription extends AggregateRoot<SubscriptionId> {
 
     /**
      * Cancels the subscription and all its pending/scheduled deliveries and
-     * evaluations.
+     * evaluations. Allowed only from ACTIVE or PAUSED.
      */
     public void cancel(String reason) {
         cancel(reason, UUID.randomUUID().toString());
     }
 
     public void cancel(String reason, String correlationId) {
+        if (status != SubscriptionStatus.ACTIVE && status != SubscriptionStatus.PAUSED) {
+            throw SubscriptionErrors.subscriptionNotCancellable(status);
+        }
         if (reason == null || reason.isBlank()) {
             throw SubscriptionErrors.blankCancellationReason();
         }

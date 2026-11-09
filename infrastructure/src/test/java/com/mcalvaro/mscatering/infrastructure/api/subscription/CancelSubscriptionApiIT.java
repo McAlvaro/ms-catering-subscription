@@ -49,6 +49,16 @@ class CancelSubscriptionApiIT extends BaseIntegrationTest {
             mockMvc.perform(delete(URL, "SUS-" + UUID.randomUUID()).param("reason", "Patient request"))
                     .andExpect(status().isNotFound()).andExpect(jsonPath("$.code").value("NOT_FOUND"));
         }
+
+        @Test
+        @DisplayName("Should return 400 SUB-017 when the subscription is already cancelled")
+        void shouldReturn400WhenSubscriptionIsAlreadyCancelled() throws Exception {// Arrange
+            mockMvc.perform(delete(URL, subscriptionId.value()).param("reason", "Patient request")).andExpect(status().isOk());
+
+            // Act & Assert
+            mockMvc.perform(delete(URL, subscriptionId.value()).param("reason", "Second attempt"))
+                    .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("SUB-017"));
+        }
     }
 
     @Nested
