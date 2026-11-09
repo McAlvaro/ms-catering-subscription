@@ -69,11 +69,11 @@ class CompleteSubscriptionApiIT extends BaseIntegrationTest {
     @DisplayName("Malformed Payload")
     class MalformedPayload {
         @Test
-        @DisplayName("Should return 500 INTERNAL_SERVER_ERROR when subscription ID is malformed")
-        void shouldReturn500WhenIdIsMalformed() throws Exception {// Arrange
+        @DisplayName("Should return 400 BAD_REQUEST with ID-002 when subscription ID is malformed")
+        void shouldReturn400WhenIdIsMalformed() throws Exception {// Arrange
             // Act & Assert
-            mockMvc.perform(post(URL, "invalid")).andExpect(status().isInternalServerError())
-                    .andExpect(jsonPath("$.code").value("INTERNAL_SERVER_ERROR"));
+            mockMvc.perform(post(URL, "invalid")).andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("ID-002"));
         }
     }
 

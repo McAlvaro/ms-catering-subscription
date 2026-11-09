@@ -24,6 +24,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.kafka.KafkaContainer;
 import org.testcontainers.utility.DockerImageName;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -58,7 +59,7 @@ class KafkaIntegrationEventPublisherIT {
     }
 
     @Test
-    void publishesOnlyToTheConfiguredTopicWithAggregateKeysAndNoCustomHeaders() throws Exception {
+    void publishesToTheConfiguredTopicWithAggregateKeysAndEventNameHeader() throws Exception {
         try (KafkaConsumer<String, String> consumer = consumer()) {
             consumer.subscribe(List.of(TOPIC));
             consumer.poll(Duration.ofMillis(200));
@@ -82,13 +83,19 @@ class KafkaIntegrationEventPublisherIT {
             assertThat(calendarRecord.key()).isEqualTo(KafkaIntegrationEventFixtures.CALENDAR_ID.toString());
             assertThat(eventName(calendarRecord.value())).isEqualTo("bc3.CalendarioConsolidadoCerrado");
             assertThat(records).allSatisfy(record -> {
-                assertThat(record.headers().lastHeader("eventName")).isNull();
+                assertThat(record.headers().lastHeader("eventName")).isNotNull();
+                assertThat(new String(record.headers().lastHeader("eventName").value(), StandardCharsets.UTF_8))
+                        .isEqualTo(eventName(record.value()));
                 assertThat(eventId(record.value())).isEqualTo(KafkaIntegrationEventFixtures.EVENT_ID.toString());
             });
         }
 
         try (AdminClient admin = AdminClient.create(Map.of(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA.getBootstrapServers()))) {
-            assertThat(admin.listTopics().names().get()).containsExactly(TOPIC);
+            // Inbound listeners auto-create their own topics, so only BC3's outbound topic is checked.
+            assertThat(admin.listTopics().names().get())
+                    .contains(TOPIC)
+                    .filteredOn(topic -> topic.startsWith("bc3."))
+                    .containsExactly(TOPIC);
         }
     }
 

@@ -140,23 +140,11 @@
               "size": 20,
               "type": "RandomString"
             },
-            "$.deliveryDays[*].id": {
-              "size": 20,
-              "type": "RandomString"
-            },
             "$.deliveryDays[*].status": {
               "size": 20,
               "type": "RandomString"
             },
-            "$.dietPlanId": {
-              "size": 20,
-              "type": "RandomString"
-            },
             "$.endDate": {
-              "size": 20,
-              "type": "RandomString"
-            },
-            "$.evaluations[*].id": {
               "size": 20,
               "type": "RandomString"
             },
@@ -165,14 +153,6 @@
               "type": "RandomString"
             },
             "$.evaluations[*].status": {
-              "size": 20,
-              "type": "RandomString"
-            },
-            "$.id": {
-              "size": 20,
-              "type": "RandomString"
-            },
-            "$.patientId": {
               "size": 20,
               "type": "RandomString"
             },
@@ -187,10 +167,6 @@
             "$.status": {
               "size": 20,
               "type": "RandomString"
-            },
-            "$.totalPrice": {
-              "digits": 10,
-              "type": "RandomDecimal"
             }
           }
         },
