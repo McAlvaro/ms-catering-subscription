@@ -65,12 +65,23 @@ class MarkEvaluationCompletedApiIT extends BaseIntegrationTest {
     @DisplayName("Malformed Payload")
     class MalformedPayload {
         @Test
-        @DisplayName("Should return 500 INTERNAL_SERVER_ERROR when completedAt is malformed")
-        void shouldReturn500WhenCompletedAtIsMalformed() throws Exception {// Arrange
+        @DisplayName("Should return 400 INVALID_PAYLOAD when completedAt is malformed")
+        void shouldReturn400WhenCompletedAtIsMalformed() throws Exception {// Arrange
             // Act & Assert
             mockMvc.perform(post(URL, subscriptionId.value(), evaluationId.value()).param("completedAt", "invalid"))
-                    .andExpect(status().isInternalServerError())
-                    .andExpect(jsonPath("$.code").value("INTERNAL_SERVER_ERROR"));
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("INVALID_PAYLOAD"))
+                    .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("completedAt")));
+        }
+
+        @Test
+        @DisplayName("Should return 400 INVALID_PAYLOAD when required completedAt is absent")
+        void shouldReturn400WhenCompletedAtIsMissing() throws Exception {
+            // Act & Assert
+            mockMvc.perform(post(URL, subscriptionId.value(), evaluationId.value()))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("INVALID_PAYLOAD"))
+                    .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("completedAt")));
         }
     }
 

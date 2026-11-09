@@ -60,11 +60,12 @@ class RegisterFailedDeliveryApiIT extends BaseIntegrationTest {
     @DisplayName("Malformed Payload")
     class MalformedPayload {
         @Test
-        @DisplayName("Should return 500 INTERNAL_SERVER_ERROR when required reason is absent")
-        void shouldReturn500WhenReasonIsMissing() throws Exception {// Arrange
+        @DisplayName("Should return 400 INVALID_PAYLOAD when required reason is absent")
+        void shouldReturn400WhenReasonIsMissing() throws Exception {// Arrange
             // Act & Assert
-            mockMvc.perform(post(URL, subscriptionId.value(), deliveryDayId.value())).andExpect(status().isInternalServerError())
-                    .andExpect(jsonPath("$.code").value("INTERNAL_SERVER_ERROR"));
+            mockMvc.perform(post(URL, subscriptionId.value(), deliveryDayId.value())).andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("INVALID_PAYLOAD"))
+                    .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("reason")));
         }
     }
 

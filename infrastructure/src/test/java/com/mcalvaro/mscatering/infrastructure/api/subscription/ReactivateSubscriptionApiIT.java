@@ -63,13 +63,34 @@ class ReactivateSubscriptionApiIT extends BaseIntegrationTest {
     @DisplayName("Malformed Payload")
     class MalformedPayload {
         @Test
-        @DisplayName("Should return 500 INTERNAL_SERVER_ERROR when reactivationDate is malformed")
-        void shouldReturn500WhenReactivationDateIsMalformed() throws Exception {
+        @DisplayName("Should return 400 INVALID_PAYLOAD when reactivationDate is malformed")
+        void shouldReturn400WhenReactivationDateIsMalformed() throws Exception {
             // Arrange
             // Act & Assert
             mockMvc.perform(post(URL, subscriptionId.value()).param("reactivationDate", "invalid"))
-                    .andExpect(status().isInternalServerError())
-                    .andExpect(jsonPath("$.code").value("INTERNAL_SERVER_ERROR"));
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("INVALID_PAYLOAD"))
+                    .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("reactivationDate")));
+        }
+
+        @Test
+        @DisplayName("Should return 400 INVALID_PAYLOAD when required reactivationDate is absent")
+        void shouldReturn400WhenReactivationDateIsMissing() throws Exception {
+            // Act & Assert
+            mockMvc.perform(post(URL, subscriptionId.value()))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("INVALID_PAYLOAD"))
+                    .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("reactivationDate")));
+        }
+
+        @Test
+        @DisplayName("Should return 400 INVALID_PAYLOAD when reactivationDate is empty")
+        void shouldReturn400WhenReactivationDateIsEmpty() throws Exception {
+            // Act & Assert
+            mockMvc.perform(post(URL, subscriptionId.value()).param("reactivationDate", ""))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("INVALID_PAYLOAD"))
+                    .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("reactivationDate")));
         }
     }
 

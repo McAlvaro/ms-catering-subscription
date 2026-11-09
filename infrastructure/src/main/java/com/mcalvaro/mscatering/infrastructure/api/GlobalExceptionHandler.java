@@ -2,20 +2,28 @@ package com.mcalvaro.mscatering.infrastructure.api;
 
 import com.mcalvaro.mscatering.domain.core.DomainException;
 import com.mcalvaro.mscatering.infrastructure.api.subscription.dto.ApiErrorResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+    private static final String INVALID_PAYLOAD = "INVALID_PAYLOAD";
 
     @ExceptionHandler(DomainException.class)
     public ResponseEntity<ApiErrorResponse> handleDomainException(DomainException ex) {
@@ -109,6 +117,23 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<ApiErrorResponse> handleMissingRequestParameter(MissingServletRequestParameterException ex) {
+        log.debug("Missing required request parameter '{}'", ex.getParameterName());
+        return badRequest(INVALID_PAYLOAD,
+                String.format("El parámetro requerido '%s' no fue enviado.", ex.getParameterName()));
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ApiErrorResponse> handleArgumentTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        log.debug("Invalid format for request parameter '{}'", ex.getName());
+        String message = String.format("El parámetro '%s' tiene un formato inválido.", ex.getName());
+        if (LocalDate.class.equals(ex.getRequiredType())) {
+            message += " Formato esperado: yyyy-MM-dd.";
+        }
+        return badRequest(INVALID_PAYLOAD, message);
+    }
+
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<Void> handleNoResourceFoundException(NoResourceFoundException ex) {
         return ResponseEntity.notFound().build();
@@ -119,5 +144,9 @@ public class GlobalExceptionHandler {
         ApiErrorResponse response = new ApiErrorResponse("INTERNAL_SERVER_ERROR",
                 "Ocurrió un error inesperado en el servidor. Por favor, intente más tarde.");
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+    }
+
+    private static ResponseEntity<ApiErrorResponse> badRequest(String code, String message) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiErrorResponse(code, message));
     }
 }

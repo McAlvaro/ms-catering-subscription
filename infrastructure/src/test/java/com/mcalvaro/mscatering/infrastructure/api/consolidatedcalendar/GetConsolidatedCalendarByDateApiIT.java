@@ -101,15 +101,26 @@ class GetConsolidatedCalendarByDateApiIT extends BaseIntegrationTest {
     class MalformedPayload {
 
         @Test
-        @DisplayName("Should return 500 INTERNAL_SERVER_ERROR when the date query parameter has an invalid format")
-        void shouldReturn500WhenDateQueryParameterHasInvalidFormat() throws Exception {
+        @DisplayName("Should return 400 INVALID_PAYLOAD when the date query parameter has an invalid format")
+        void shouldReturn400WhenDateQueryParameterHasInvalidFormat() throws Exception {
             // Arrange
             String invalidDate = "not-a-date";
 
             // Act & Assert
             mockMvc.perform(get(URL).param("date", invalidDate))
-                    .andExpect(status().isInternalServerError())
-                    .andExpect(jsonPath("$.code").value("INTERNAL_SERVER_ERROR"));
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("INVALID_PAYLOAD"))
+                    .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("date")));
+        }
+
+        @Test
+        @DisplayName("Should return 400 INVALID_PAYLOAD when the required date query parameter is absent")
+        void shouldReturn400WhenDateQueryParameterIsMissing() throws Exception {
+            // Act & Assert
+            mockMvc.perform(get(URL))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("INVALID_PAYLOAD"))
+                    .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("date")));
         }
     }
 
