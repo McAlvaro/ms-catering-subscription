@@ -1,26 +1,25 @@
 package com.mcalvaro.mscatering.application.subscription.service;
 
-import com.mcalvaro.mscatering.domain.core.DomainException;
-import com.mcalvaro.mscatering.domain.core.id.PatientId;
-import com.mcalvaro.mscatering.domain.patient.IPatientReferenceRepository;
-import com.mcalvaro.mscatering.domain.patient.PatientReference;
-import com.mcalvaro.mscatering.domain.subscription.ISubscriptionRepository;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.time.Instant;
-import java.util.Optional;
-
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import com.mcalvaro.mscatering.domain.core.DomainException;
+import com.mcalvaro.mscatering.domain.core.id.PatientId;
+import com.mcalvaro.mscatering.domain.patient.IPatientReferenceRepository;
+import com.mcalvaro.mscatering.domain.patient.PatientReference;
+import com.mcalvaro.mscatering.domain.subscription.ISubscriptionRepository;
+import java.time.Instant;
+import java.util.Optional;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class DefaultSubscriptionDuplicationValidatorTest {

@@ -1,5 +1,11 @@
 package com.mcalvaro.mscatering.infrastructure.integration.inbound.bc5.delivery;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
+
 import an.awesome.pipelinr.Pipeline;
 import com.mcalvaro.mscatering.application.subscription.ConfirmDelivery.ConfirmDeliveryCommand;
 import com.mcalvaro.mscatering.application.subscription.RegisterFailedDelivery.RegisterFailedDeliveryCommand;
@@ -12,23 +18,16 @@ import com.mcalvaro.mscatering.domain.subscription.entity.DeliveryDay;
 import com.mcalvaro.mscatering.infrastructure.persistence.inboundevent.entity.ProcessedInboundEventReceiptJpaEntity;
 import com.mcalvaro.mscatering.infrastructure.persistence.inboundevent.entity.ReceiptSubjectKind;
 import com.mcalvaro.mscatering.infrastructure.persistence.inboundevent.repository.SpringDataProcessedInboundEventReceiptRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 class DeliveryInboundAdapterTest {
 
@@ -79,13 +78,17 @@ class DeliveryInboundAdapterTest {
 
             UUID eventId = UUID.randomUUID();
             DeliveryConfirmedData data = new DeliveryConfirmedData(
-                    "ENT-" + UUID.randomUUID(), "PKG-" + UUID.randomUUID(), dayId.value(), subscriptionId.value(), "PAC-" + UUID.randomUUID(),
-                    "2026-10-30T14:30:00Z", "Juan Perez", "https://img.com/photo.png", null
-            );
+                    "ENT-" + UUID.randomUUID(),
+                    "PKG-" + UUID.randomUUID(),
+                    dayId.value(),
+                    subscriptionId.value(),
+                    "PAC-" + UUID.randomUUID(),
+                    "2026-10-30T14:30:00Z",
+                    "Juan Perez",
+                    "https://img.com/photo.png",
+                    null);
             DeliveryConfirmedEvent event = new DeliveryConfirmedEvent(
-                    eventId, "bc5.EntregaConfirmada", "1.0", Instant.now(), "MsLogisticDelivery", "corr-101",
-                    data
-            );
+                    eventId, "bc5.EntregaConfirmada", "1.0", Instant.now(), "MsLogisticDelivery", "corr-101", data);
 
             adapter.receiveConfirmed(event);
 
@@ -104,7 +107,8 @@ class DeliveryInboundAdapterTest {
         }
 
         @Test
-        @DisplayName("Resolves day directly when idCalendarioDia is present and dispatches RegisterFailedDeliveryCommand")
+        @DisplayName(
+                "Resolves day directly when idCalendarioDia is present and dispatches RegisterFailedDeliveryCommand")
         void resolvesDayDirectlyAndDispatchesRegisterFailedDelivery() {
             DeliveryDay day = mock(DeliveryDay.class);
             when(day.getId()).thenReturn(dayId);
@@ -112,17 +116,23 @@ class DeliveryInboundAdapterTest {
 
             UUID eventId = UUID.randomUUID();
             DeliveryFailedData data = new DeliveryFailedData(
-                    "ENT-" + UUID.randomUUID(), "PKG-" + UUID.randomUUID(), dayId.value(), subscriptionId.value(), "PAC-" + UUID.randomUUID(),
-                    deliveryDate, 3, "Paciente no respondio el timbre", false, null
-            );
+                    "ENT-" + UUID.randomUUID(),
+                    "PKG-" + UUID.randomUUID(),
+                    dayId.value(),
+                    subscriptionId.value(),
+                    "PAC-" + UUID.randomUUID(),
+                    deliveryDate,
+                    3,
+                    "Paciente no respondio el timbre",
+                    false,
+                    null);
             DeliveryFailedEvent event = new DeliveryFailedEvent(
-                    eventId, "bc5.EntregaNoConcretada", "1.0", Instant.now(), "MsLogisticDelivery", "corr-102",
-                    data
-            );
+                    eventId, "bc5.EntregaNoConcretada", "1.0", Instant.now(), "MsLogisticDelivery", "corr-102", data);
 
             adapter.receiveFailed(event);
 
-            ArgumentCaptor<RegisterFailedDeliveryCommand> cmdCaptor = ArgumentCaptor.forClass(RegisterFailedDeliveryCommand.class);
+            ArgumentCaptor<RegisterFailedDeliveryCommand> cmdCaptor =
+                    ArgumentCaptor.forClass(RegisterFailedDeliveryCommand.class);
             verify(pipeline).send(cmdCaptor.capture());
             assertThat(cmdCaptor.getValue().subscriptionId()).isEqualTo(subscriptionId);
             assertThat(cmdCaptor.getValue().deliveryDayId()).isEqualTo(dayId);
@@ -144,13 +154,23 @@ class DeliveryInboundAdapterTest {
             when(deliveryCalendar.getDaysForDate(LocalDate.of(2026, 10, 30))).thenReturn(List.of(day));
 
             DeliveryConfirmedData data = new DeliveryConfirmedData(
-                    "ENT-" + UUID.randomUUID(), "PKG-" + UUID.randomUUID(), null, subscriptionId.value(), "PAC-" + UUID.randomUUID(),
-                    "2026-10-30T10:15:00-04:00", "Maria Gomez", "https://img.com/evidence.png", null
-            );
+                    "ENT-" + UUID.randomUUID(),
+                    "PKG-" + UUID.randomUUID(),
+                    null,
+                    subscriptionId.value(),
+                    "PAC-" + UUID.randomUUID(),
+                    "2026-10-30T10:15:00-04:00",
+                    "Maria Gomez",
+                    "https://img.com/evidence.png",
+                    null);
             DeliveryConfirmedEvent event = new DeliveryConfirmedEvent(
-                    UUID.randomUUID(), "bc5.EntregaConfirmada", "1.0", Instant.now(), "MsLogisticDelivery", "corr-201",
-                    data
-            );
+                    UUID.randomUUID(),
+                    "bc5.EntregaConfirmada",
+                    "1.0",
+                    Instant.now(),
+                    "MsLogisticDelivery",
+                    "corr-201",
+                    data);
 
             adapter.receiveConfirmed(event);
 
@@ -168,17 +188,29 @@ class DeliveryInboundAdapterTest {
             when(deliveryCalendar.getDaysForDate(deliveryDate)).thenReturn(List.of(day));
 
             DeliveryFailedData data = new DeliveryFailedData(
-                    "ENT-" + UUID.randomUUID(), "PKG-" + UUID.randomUUID(), null, subscriptionId.value(), "PAC-" + UUID.randomUUID(),
-                    deliveryDate, 2, "Direccion inaccesible por obras", true, "REPROGRAMACION"
-            );
+                    "ENT-" + UUID.randomUUID(),
+                    "PKG-" + UUID.randomUUID(),
+                    null,
+                    subscriptionId.value(),
+                    "PAC-" + UUID.randomUUID(),
+                    deliveryDate,
+                    2,
+                    "Direccion inaccesible por obras",
+                    true,
+                    "REPROGRAMACION");
             DeliveryFailedEvent event = new DeliveryFailedEvent(
-                    UUID.randomUUID(), "bc5.EntregaNoConcretada", "1.0", Instant.now(), "MsLogisticDelivery", "corr-202",
-                    data
-            );
+                    UUID.randomUUID(),
+                    "bc5.EntregaNoConcretada",
+                    "1.0",
+                    Instant.now(),
+                    "MsLogisticDelivery",
+                    "corr-202",
+                    data);
 
             adapter.receiveFailed(event);
 
-            ArgumentCaptor<RegisterFailedDeliveryCommand> cmdCaptor = ArgumentCaptor.forClass(RegisterFailedDeliveryCommand.class);
+            ArgumentCaptor<RegisterFailedDeliveryCommand> cmdCaptor =
+                    ArgumentCaptor.forClass(RegisterFailedDeliveryCommand.class);
             verify(pipeline).send(cmdCaptor.capture());
             assertThat(cmdCaptor.getValue().deliveryDayId()).isEqualTo(dayId);
             assertThat(cmdCaptor.getValue().reason()).isEqualTo("Direccion inaccesible por obras");
@@ -196,13 +228,23 @@ class DeliveryInboundAdapterTest {
             when(deliveryCalendar.getDaysForDate(deliveryDate)).thenReturn(List.of(day));
 
             DeliveryConfirmedData data = new DeliveryConfirmedData(
-                    "ENT-" + UUID.randomUUID(), "PKG-" + UUID.randomUUID(), unknownDayId.value(), subscriptionId.value(), "PAC-" + UUID.randomUUID(),
-                    "2026-10-30T18:00:00Z", "John Doe", null, null
-            );
+                    "ENT-" + UUID.randomUUID(),
+                    "PKG-" + UUID.randomUUID(),
+                    unknownDayId.value(),
+                    subscriptionId.value(),
+                    "PAC-" + UUID.randomUUID(),
+                    "2026-10-30T18:00:00Z",
+                    "John Doe",
+                    null,
+                    null);
             DeliveryConfirmedEvent event = new DeliveryConfirmedEvent(
-                    UUID.randomUUID(), "bc5.EntregaConfirmada", "1.0", Instant.now(), "MsLogisticDelivery", "corr-203",
-                    data
-            );
+                    UUID.randomUUID(),
+                    "bc5.EntregaConfirmada",
+                    "1.0",
+                    Instant.now(),
+                    "MsLogisticDelivery",
+                    "corr-203",
+                    data);
 
             adapter.receiveConfirmed(event);
 
@@ -222,17 +264,29 @@ class DeliveryInboundAdapterTest {
             when(deliveryCalendar.getDaysForDate(deliveryDate)).thenReturn(List.of(day));
 
             DeliveryFailedData data = new DeliveryFailedData(
-                    "ENT-" + UUID.randomUUID(), "PKG-" + UUID.randomUUID(), unknownDayId.value(), subscriptionId.value(), "PAC-" + UUID.randomUUID(),
-                    deliveryDate, 2, "Direccion inaccesible", false, null
-            );
+                    "ENT-" + UUID.randomUUID(),
+                    "PKG-" + UUID.randomUUID(),
+                    unknownDayId.value(),
+                    subscriptionId.value(),
+                    "PAC-" + UUID.randomUUID(),
+                    deliveryDate,
+                    2,
+                    "Direccion inaccesible",
+                    false,
+                    null);
             DeliveryFailedEvent event = new DeliveryFailedEvent(
-                    UUID.randomUUID(), "bc5.EntregaNoConcretada", "1.0", Instant.now(), "MsLogisticDelivery", "corr-203-b",
-                    data
-            );
+                    UUID.randomUUID(),
+                    "bc5.EntregaNoConcretada",
+                    "1.0",
+                    Instant.now(),
+                    "MsLogisticDelivery",
+                    "corr-203-b",
+                    data);
 
             adapter.receiveFailed(event);
 
-            ArgumentCaptor<RegisterFailedDeliveryCommand> cmdCaptor = ArgumentCaptor.forClass(RegisterFailedDeliveryCommand.class);
+            ArgumentCaptor<RegisterFailedDeliveryCommand> cmdCaptor =
+                    ArgumentCaptor.forClass(RegisterFailedDeliveryCommand.class);
             verify(pipeline).send(cmdCaptor.capture());
             assertThat(cmdCaptor.getValue().deliveryDayId()).isEqualTo(dayId);
         }
@@ -244,13 +298,23 @@ class DeliveryInboundAdapterTest {
             when(deliveryCalendar.getDaysForDate(any())).thenReturn(List.of());
 
             DeliveryConfirmedData data = new DeliveryConfirmedData(
-                    "ENT-" + UUID.randomUUID(), "PKG-" + UUID.randomUUID(), "CD-" + UUID.randomUUID(), subscriptionId.value(), "PAC-" + UUID.randomUUID(),
-                    "2026-10-30T10:00:00Z", "John Doe", null, null
-            );
+                    "ENT-" + UUID.randomUUID(),
+                    "PKG-" + UUID.randomUUID(),
+                    "CD-" + UUID.randomUUID(),
+                    subscriptionId.value(),
+                    "PAC-" + UUID.randomUUID(),
+                    "2026-10-30T10:00:00Z",
+                    "John Doe",
+                    null,
+                    null);
             DeliveryConfirmedEvent event = new DeliveryConfirmedEvent(
-                    UUID.randomUUID(), "bc5.EntregaConfirmada", "1.0", Instant.now(), "MsLogisticDelivery", "corr-204",
-                    data
-            );
+                    UUID.randomUUID(),
+                    "bc5.EntregaConfirmada",
+                    "1.0",
+                    Instant.now(),
+                    "MsLogisticDelivery",
+                    "corr-204",
+                    data);
 
             assertThatThrownBy(() -> adapter.receiveConfirmed(event))
                     .isInstanceOf(DeliveryContractException.class)
@@ -267,13 +331,23 @@ class DeliveryInboundAdapterTest {
             when(subscriptionRepository.findById(unknownSubId)).thenReturn(Optional.empty());
 
             DeliveryConfirmedData data = new DeliveryConfirmedData(
-                    "ENT-" + UUID.randomUUID(), "PKG-" + UUID.randomUUID(), dayId.value(), unknownSubId.value(), "PAC-" + UUID.randomUUID(),
-                    "2026-10-30T10:00:00Z", "John Doe", null, null
-            );
+                    "ENT-" + UUID.randomUUID(),
+                    "PKG-" + UUID.randomUUID(),
+                    dayId.value(),
+                    unknownSubId.value(),
+                    "PAC-" + UUID.randomUUID(),
+                    "2026-10-30T10:00:00Z",
+                    "John Doe",
+                    null,
+                    null);
             DeliveryConfirmedEvent event = new DeliveryConfirmedEvent(
-                    UUID.randomUUID(), "bc5.EntregaConfirmada", "1.0", Instant.now(), "MsLogisticDelivery", "corr-205",
-                    data
-            );
+                    UUID.randomUUID(),
+                    "bc5.EntregaConfirmada",
+                    "1.0",
+                    Instant.now(),
+                    "MsLogisticDelivery",
+                    "corr-205",
+                    data);
 
             assertThatThrownBy(() -> adapter.receiveConfirmed(event))
                     .isInstanceOf(DeliveryContractException.class)
@@ -298,13 +372,17 @@ class DeliveryInboundAdapterTest {
             UUID eventId = UUID.randomUUID();
             Instant occurredOn = Instant.parse("2026-10-30T10:00:00Z");
             DeliveryConfirmedData data = new DeliveryConfirmedData(
-                    "ENT-" + UUID.randomUUID(), "PKG-" + UUID.randomUUID(), dayId.value(), subscriptionId.value(), "PAC-" + UUID.randomUUID(),
-                    "2026-10-30T10:00:00Z", "John Doe", null, null
-            );
+                    "ENT-" + UUID.randomUUID(),
+                    "PKG-" + UUID.randomUUID(),
+                    dayId.value(),
+                    subscriptionId.value(),
+                    "PAC-" + UUID.randomUUID(),
+                    "2026-10-30T10:00:00Z",
+                    "John Doe",
+                    null,
+                    null);
             DeliveryConfirmedEvent event = new DeliveryConfirmedEvent(
-                    eventId, "bc5.EntregaConfirmada", "1.0", occurredOn, "MsLogisticDelivery", "corr-301",
-                    data
-            );
+                    eventId, "bc5.EntregaConfirmada", "1.0", occurredOn, "MsLogisticDelivery", "corr-301", data);
 
             ProcessedInboundEventReceiptJpaEntity existingReceipt = mock(ProcessedInboundEventReceiptJpaEntity.class);
             when(receiptRepository.findById(eventId)).thenReturn(Optional.of(existingReceipt));
@@ -315,12 +393,14 @@ class DeliveryInboundAdapterTest {
                     data.idCalendarioDia(),
                     data.subscriptionId(),
                     dayId.value(),
-                    data.fechaHoraEntrega()
-            );
+                    data.fechaHoraEntrega());
             String eventFp = adapterSha256(
-                    event.eventName(), event.eventVersion(), occurredOn.toString(),
-                    event.source(), event.correlationId(), payloadFp
-            );
+                    event.eventName(),
+                    event.eventVersion(),
+                    occurredOn.toString(),
+                    event.source(),
+                    event.correlationId(),
+                    payloadFp);
             when(existingReceipt.getEventFingerprint()).thenReturn(eventFp);
 
             adapter.receiveConfirmed(event);
@@ -338,13 +418,17 @@ class DeliveryInboundAdapterTest {
 
             UUID eventId = UUID.randomUUID();
             DeliveryConfirmedData data = new DeliveryConfirmedData(
-                    "ENT-" + UUID.randomUUID(), "PKG-" + UUID.randomUUID(), dayId.value(), subscriptionId.value(), "PAC-" + UUID.randomUUID(),
-                    "2026-10-30T10:00:00Z", "John Doe", null, null
-            );
+                    "ENT-" + UUID.randomUUID(),
+                    "PKG-" + UUID.randomUUID(),
+                    dayId.value(),
+                    subscriptionId.value(),
+                    "PAC-" + UUID.randomUUID(),
+                    "2026-10-30T10:00:00Z",
+                    "John Doe",
+                    null,
+                    null);
             DeliveryConfirmedEvent event = new DeliveryConfirmedEvent(
-                    eventId, "bc5.EntregaConfirmada", "1.0", Instant.now(), "MsLogisticDelivery", "corr-302",
-                    data
-            );
+                    eventId, "bc5.EntregaConfirmada", "1.0", Instant.now(), "MsLogisticDelivery", "corr-302", data);
 
             ProcessedInboundEventReceiptJpaEntity existingReceipt = mock(ProcessedInboundEventReceiptJpaEntity.class);
             when(receiptRepository.findById(eventId)).thenReturn(Optional.of(existingReceipt));
@@ -359,7 +443,8 @@ class DeliveryInboundAdapterTest {
         }
 
         @Test
-        @DisplayName("Returns early without dispatching when delivery day already processed with matching payload fingerprint")
+        @DisplayName(
+                "Returns early without dispatching when delivery day already processed with matching payload fingerprint")
         void returnsEarlyWhenDeliveryDayAlreadyProcessedWithMatchingPayload() {
             DeliveryDay day = mock(DeliveryDay.class);
             when(day.getId()).thenReturn(dayId);
@@ -367,18 +452,22 @@ class DeliveryInboundAdapterTest {
 
             UUID eventId = UUID.randomUUID();
             DeliveryConfirmedData data = new DeliveryConfirmedData(
-                    "ENT-" + UUID.randomUUID(), "PKG-" + UUID.randomUUID(), dayId.value(), subscriptionId.value(), "PAC-" + UUID.randomUUID(),
-                    "2026-10-30T10:00:00Z", "John Doe", null, null
-            );
+                    "ENT-" + UUID.randomUUID(),
+                    "PKG-" + UUID.randomUUID(),
+                    dayId.value(),
+                    subscriptionId.value(),
+                    "PAC-" + UUID.randomUUID(),
+                    "2026-10-30T10:00:00Z",
+                    "John Doe",
+                    null,
+                    null);
             DeliveryConfirmedEvent event = new DeliveryConfirmedEvent(
-                    eventId, "bc5.EntregaConfirmada", "1.0", Instant.now(), "MsLogisticDelivery", "corr-303",
-                    data
-            );
+                    eventId, "bc5.EntregaConfirmada", "1.0", Instant.now(), "MsLogisticDelivery", "corr-303", data);
 
             when(receiptRepository.findById(eventId)).thenReturn(Optional.empty());
             when(receiptRepository.existsBySubjectKindAndSubjectIdAndPayloadFingerprint(
-                    eq(ReceiptSubjectKind.DELIVERY.name()), eq(dayId.value()), any()
-            )).thenReturn(true);
+                            eq(ReceiptSubjectKind.DELIVERY.name()), eq(dayId.value()), any()))
+                    .thenReturn(true);
 
             adapter.receiveConfirmed(event);
 

@@ -6,7 +6,6 @@ import com.mcalvaro.mscatering.integration.contracts.SubscriptionCancelledIntegr
 import com.mcalvaro.mscatering.integration.contracts.SubscriptionCreatedIntegrationEvent;
 import com.mcalvaro.mscatering.integration.contracts.SubscriptionPausedIntegrationEvent;
 import com.mcalvaro.mscatering.integration.contracts.SubscriptionReactivatedIntegrationEvent;
-
 import java.util.Objects;
 
 /** Closed routing table from the approved BC3 event contracts to Kafka records. */
@@ -44,12 +43,14 @@ public final class KafkaIntegrationEventRouter {
             validateDestination(closed, ConsolidatedCalendarClosedIntegrationEvent.LOGICAL_DESTINATION);
             return routeFor(closed.data().calendarId().toString());
         }
-        throw new IllegalArgumentException("Unsupported integration event type: " + event.getClass().getName());
+        throw new IllegalArgumentException(
+                "Unsupported integration event type: " + event.getClass().getName());
     }
 
     private static void validateDestination(IntegrationEvent event, String expectedDestination) {
         if (!expectedDestination.equals(event.logicalDestination())) {
-            throw new IllegalArgumentException("Unexpected integration event destination: " + event.logicalDestination());
+            throw new IllegalArgumentException(
+                    "Unexpected integration event destination: " + event.logicalDestination());
         }
     }
 
@@ -57,6 +58,5 @@ public final class KafkaIntegrationEventRouter {
         return new Route(topic, Objects.requireNonNull(key, "Kafka record key must not be null"));
     }
 
-    public record Route(String topic, String key) {
-    }
+    public record Route(String topic, String key) {}
 }

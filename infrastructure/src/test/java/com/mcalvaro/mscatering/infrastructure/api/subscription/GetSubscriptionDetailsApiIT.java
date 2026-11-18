@@ -1,5 +1,9 @@
 package com.mcalvaro.mscatering.infrastructure.api.subscription;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.mcalvaro.mscatering.domain.core.id.AddressId;
 import com.mcalvaro.mscatering.domain.core.id.DietPlanId;
 import com.mcalvaro.mscatering.domain.core.id.PatientId;
@@ -13,21 +17,16 @@ import com.mcalvaro.mscatering.domain.subscription.vo.ServiceContract;
 import com.mcalvaro.mscatering.domain.subscription.vo.TimeWindow;
 import com.mcalvaro.mscatering.domain.subscription.vo.ValidityPeriod;
 import com.mcalvaro.mscatering.infrastructure.BaseIntegrationTest;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.UUID;
-
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /** Integration tests for GET /api/subscriptions/{id}. */
 class GetSubscriptionDetailsApiIT extends BaseIntegrationTest {
@@ -67,7 +66,8 @@ class GetSubscriptionDetailsApiIT extends BaseIntegrationTest {
                     .andExpect(jsonPath("$.dietPlanId").value(dietPlanId.value()))
                     .andExpect(jsonPath("$.status").value("ACTIVE"))
                     .andExpect(jsonPath("$.startDate").value(expectedStartDate.toString()))
-                    .andExpect(jsonPath("$.endDate").value(expectedStartDate.plusDays(14).toString()))
+                    .andExpect(jsonPath("$.endDate")
+                            .value(expectedStartDate.plusDays(14).toString()))
                     .andExpect(jsonPath("$.serviceType").value("FULL"))
                     .andExpect(jsonPath("$.totalPrice").value(250.00))
                     .andExpect(jsonPath("$.deliveryDays.length()").value(15))
@@ -120,7 +120,16 @@ class GetSubscriptionDetailsApiIT extends BaseIntegrationTest {
                 "Terms accepted",
                 Instant.now());
         DeliveryPreferences preferences = new DeliveryPreferences(
-                new DeliveryAddress(AddressId.of("DIR-" + UUID.randomUUID()), "Home", "Main Street", "10", "Madrid", "Door A", 40.4168, -3.7038, "600000000"),
+                new DeliveryAddress(
+                        AddressId.of("DIR-" + UUID.randomUUID()),
+                        "Home",
+                        "Main Street",
+                        "10",
+                        "Madrid",
+                        "Door A",
+                        40.4168,
+                        -3.7038,
+                        "600000000"),
                 new TimeWindow(LocalTime.of(9, 0), LocalTime.of(11, 0)),
                 "Leave at reception");
         return Subscription.create(subscriptionId, patientId, dietPlanId, contract, preferences, 1);

@@ -1,12 +1,12 @@
 package com.mcalvaro.mscatering.domain.core;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class DomainIdTest {
 
@@ -15,10 +15,7 @@ class DomainIdTest {
     void shouldGenerateDefault8CharToken() {
         String token = DomainId.randomToken();
 
-        assertThat(token)
-                .isNotNull()
-                .hasSize(8)
-                .matches("^[0-9A-F]{8}$");
+        assertThat(token).isNotNull().hasSize(8).matches("^[0-9A-F]{8}$");
     }
 
     @ParameterizedTest
@@ -27,10 +24,7 @@ class DomainIdTest {
     void shouldGenerateTokenWithCustomLength(int length) {
         String token = DomainId.randomToken(length);
 
-        assertThat(token)
-                .isNotNull()
-                .hasSize(length)
-                .matches("^[0-9A-F]{" + length + "}$");
+        assertThat(token).isNotNull().hasSize(length).matches("^[0-9A-F]{" + length + "}$");
     }
 
     @ParameterizedTest

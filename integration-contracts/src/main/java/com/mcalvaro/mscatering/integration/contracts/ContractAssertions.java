@@ -7,8 +7,7 @@ import java.util.List;
 import java.util.UUID;
 
 final class ContractAssertions {
-    private ContractAssertions() {
-    }
+    private ContractAssertions() {}
 
     static void envelope(UUID eventId, Instant occurredOn, String correlationId, Object data) {
         required(eventId, "eventId");

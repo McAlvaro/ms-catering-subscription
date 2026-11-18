@@ -19,8 +19,8 @@ public class GetSubscriptionDetailsQueryHandler
 
     @Override
     public SubscriptionDetailsDto handle(GetSubscriptionDetailsQuery query) {
-        return queryService.getSubscriptionDetails(query.subscriptionId())
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Subscription not found: " + query.subscriptionId()));
+        return queryService
+                .getSubscriptionDetails(query.subscriptionId())
+                .orElseThrow(() -> new IllegalArgumentException("Subscription not found: " + query.subscriptionId()));
     }
 }

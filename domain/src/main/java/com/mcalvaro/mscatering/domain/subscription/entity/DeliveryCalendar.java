@@ -5,11 +5,10 @@ import com.mcalvaro.mscatering.domain.core.id.DeliveryCalendarId;
 import com.mcalvaro.mscatering.domain.core.id.DeliveryDayId;
 import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
 import com.mcalvaro.mscatering.domain.subscription.enums.DeliveryDayStatus;
-import com.mcalvaro.mscatering.domain.subscription.vo.PauseRange;
 import com.mcalvaro.mscatering.domain.subscription.vo.DeliveryAddress;
+import com.mcalvaro.mscatering.domain.subscription.vo.PauseRange;
 import com.mcalvaro.mscatering.domain.subscription.vo.TimeWindow;
 import com.mcalvaro.mscatering.domain.subscription.vo.ValidityPeriod;
-
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -42,8 +41,8 @@ public class DeliveryCalendar extends Entity<DeliveryCalendarId> {
     public void pauseRange(PauseRange range) {
         deliveryDays.stream()
                 .filter(d -> d.getStatus() == DeliveryDayStatus.SCHEDULED)
-                .filter(d -> !d.getDate().isBefore(range.startDate())
-                        && !d.getDate().isAfter(range.endDate()))
+                .filter(d ->
+                        !d.getDate().isBefore(range.startDate()) && !d.getDate().isAfter(range.endDate()))
                 .forEach(DeliveryDay::pause);
     }
 
@@ -53,26 +52,29 @@ public class DeliveryCalendar extends Entity<DeliveryCalendarId> {
     public void reactivateRange(PauseRange range) {
         deliveryDays.stream()
                 .filter(d -> d.getStatus() == DeliveryDayStatus.PAUSED)
-                .filter(d -> !d.getDate().isBefore(range.startDate())
-                        && !d.getDate().isAfter(range.endDate()))
+                .filter(d ->
+                        !d.getDate().isBefore(range.startDate()) && !d.getDate().isAfter(range.endDate()))
                 .forEach(DeliveryDay::reactivate);
     }
 
     public boolean hasProcessedDays(PauseRange range) {
         return deliveryDays.stream()
-                .filter(d -> !d.getDate().isBefore(range.startDate()) && !d.getDate().isAfter(range.endDate()))
+                .filter(d ->
+                        !d.getDate().isBefore(range.startDate()) && !d.getDate().isAfter(range.endDate()))
                 .anyMatch(this::isProcessed);
     }
 
     public boolean hasProcessedDaysAfter(LocalDate date) {
-        return deliveryDays.stream()
-                .filter(d -> d.getDate().isAfter(date))
-                .anyMatch(this::isProcessed);
+        return deliveryDays.stream().filter(d -> d.getDate().isAfter(date)).anyMatch(this::isProcessed);
     }
 
-    public void extendTo(ValidityPeriod newPeriod, DeliveryAddress address, TimeWindow timeWindow, String instructions) {
+    public void extendTo(
+            ValidityPeriod newPeriod, DeliveryAddress address, TimeWindow timeWindow, String instructions) {
         LocalDate previousEnd = period.endDate();
-        for (LocalDate day : previousEnd.plusDays(1).datesUntil(newPeriod.endDate().plusDays(1)).toList()) {
+        for (LocalDate day : previousEnd
+                .plusDays(1)
+                .datesUntil(newPeriod.endDate().plusDays(1))
+                .toList()) {
             deliveryDays.add(new DeliveryDay(DeliveryDayId.generate(), day, address, timeWindow, instructions));
         }
         period = newPeriod;
@@ -86,16 +88,16 @@ public class DeliveryCalendar extends Entity<DeliveryCalendarId> {
     public long countFuturePendingDeliveries(LocalDate effectiveDate) {
         return deliveryDays.stream()
                 .filter(day -> day.getDate().isAfter(effectiveDate))
-                .filter(day -> day.getStatus() == DeliveryDayStatus.SCHEDULED
-                        || day.getStatus() == DeliveryDayStatus.PAUSED)
+                .filter(day ->
+                        day.getStatus() == DeliveryDayStatus.SCHEDULED || day.getStatus() == DeliveryDayStatus.PAUSED)
                 .count();
     }
 
     public void cancelFuturePendingDeliveries(LocalDate effectiveDate) {
         deliveryDays.stream()
                 .filter(day -> day.getDate().isAfter(effectiveDate))
-                .filter(day -> day.getStatus() == DeliveryDayStatus.SCHEDULED
-                        || day.getStatus() == DeliveryDayStatus.PAUSED)
+                .filter(day ->
+                        day.getStatus() == DeliveryDayStatus.SCHEDULED || day.getStatus() == DeliveryDayStatus.PAUSED)
                 .forEach(DeliveryDay::cancel);
     }
 
@@ -106,9 +108,7 @@ public class DeliveryCalendar extends Entity<DeliveryCalendarId> {
     }
 
     public Optional<DeliveryDay> findDayById(DeliveryDayId dayId) {
-        return deliveryDays.stream()
-                .filter(d -> d.getId().equals(dayId))
-                .findFirst();
+        return deliveryDays.stream().filter(d -> d.getId().equals(dayId)).findFirst();
     }
 
     /**
@@ -126,9 +126,7 @@ public class DeliveryCalendar extends Entity<DeliveryCalendarId> {
     }
 
     public List<DeliveryDay> getDaysForDate(LocalDate date) {
-        return deliveryDays.stream()
-                .filter(d -> d.getDate().equals(date))
-                .toList();
+        return deliveryDays.stream().filter(d -> d.getDate().equals(date)).toList();
     }
 
     public List<DeliveryDay> getDeliveryDays() {

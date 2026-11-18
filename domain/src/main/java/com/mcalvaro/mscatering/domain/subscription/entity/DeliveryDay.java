@@ -1,10 +1,5 @@
 package com.mcalvaro.mscatering.domain.subscription.entity;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-
 import com.mcalvaro.mscatering.domain.core.DomainException;
 import com.mcalvaro.mscatering.domain.core.Entity;
 import com.mcalvaro.mscatering.domain.core.id.DeliveryDayId;
@@ -12,6 +7,10 @@ import com.mcalvaro.mscatering.domain.subscription.SubscriptionErrors;
 import com.mcalvaro.mscatering.domain.subscription.enums.DeliveryDayStatus;
 import com.mcalvaro.mscatering.domain.subscription.vo.DeliveryAddress;
 import com.mcalvaro.mscatering.domain.subscription.vo.TimeWindow;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 /**
  * Entity representing a single physical delivery on a given date (DiaDeEntrega).
@@ -27,8 +26,8 @@ public class DeliveryDay extends Entity<DeliveryDayId> {
     private Instant deliveredAt;
     private String failureReason;
 
-    public DeliveryDay(DeliveryDayId id, LocalDate date, DeliveryAddress address,
-            TimeWindow timeWindow, String instructions) {
+    public DeliveryDay(
+            DeliveryDayId id, LocalDate date, DeliveryAddress address, TimeWindow timeWindow, String instructions) {
         super(id);
         this.date = date;
         this.address = address;
@@ -42,13 +41,13 @@ public class DeliveryDay extends Entity<DeliveryDayId> {
      * 48 hours away and the current status is {@code SCHEDULED}.
      */
     public void modify(DeliveryAddress newAddress, TimeWindow newTimeWindow, String newInstructions) {
-        if (status == DeliveryDayStatus.CONSOLIDATED || status == DeliveryDayStatus.DELIVERED
+        if (status == DeliveryDayStatus.CONSOLIDATED
+                || status == DeliveryDayStatus.DELIVERED
                 || status == DeliveryDayStatus.FAILED) {
             throw SubscriptionErrors.deliveryDayBlocked();
         }
         if (status != DeliveryDayStatus.SCHEDULED) {
-            throw new DomainException("SUB-002",
-                    "Delivery day cannot be modified: current status is " + status);
+            throw new DomainException("SUB-002", "Delivery day cannot be modified: current status is " + status);
         }
         LocalDateTime deliveryMidnight = date.atStartOfDay();
         LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);

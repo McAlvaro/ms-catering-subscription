@@ -1,7 +1,6 @@
 package com.mcalvaro.mscatering.integration.contracts;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -38,8 +37,7 @@ public record SubscriptionPausedIntegrationEvent(UUID eventId, Instant occurredO
             ContractAssertions.text(patientId, "patientId");
             ContractAssertions.date(startDate, "startDate");
             ContractAssertions.date(endDate, "endDate");
-            if (startDate.isAfter(endDate))
-                throw new IllegalArgumentException("startDate must not follow endDate");
+            if (startDate.isAfter(endDate)) throw new IllegalArgumentException("startDate must not follow endDate");
             ContractAssertions.text(reason, "reason");
             ContractAssertions.date(newEndDate, "newEndDate");
             ContractAssertions.date(requestedOn, "requestedOn");

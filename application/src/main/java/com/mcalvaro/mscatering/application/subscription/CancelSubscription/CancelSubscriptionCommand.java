@@ -2,7 +2,6 @@ package com.mcalvaro.mscatering.application.subscription.CancelSubscription;
 
 import an.awesome.pipelinr.Command;
 import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
-
 import java.util.UUID;
 
 /**
@@ -11,10 +10,8 @@ import java.util.UUID;
  * <p>
  * Maps to use case CU-06: Cancelar Suscripción.
  */
-public record CancelSubscriptionCommand(
-        SubscriptionId subscriptionId,
-        String reason,
-        String correlationId) implements Command<Void> {
+public record CancelSubscriptionCommand(SubscriptionId subscriptionId, String reason, String correlationId)
+        implements Command<Void> {
 
     public CancelSubscriptionCommand(SubscriptionId subscriptionId, String reason) {
         this(subscriptionId, reason, UUID.randomUUID().toString());

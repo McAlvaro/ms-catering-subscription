@@ -1,5 +1,8 @@
 package com.mcalvaro.mscatering.infrastructure.api.subscription;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 import com.mcalvaro.mscatering.domain.core.id.AddressId;
 import com.mcalvaro.mscatering.domain.core.id.DietPlanId;
 import com.mcalvaro.mscatering.domain.core.id.PatientId;
@@ -8,25 +11,26 @@ import com.mcalvaro.mscatering.domain.subscription.*;
 import com.mcalvaro.mscatering.domain.subscription.enums.ServiceType;
 import com.mcalvaro.mscatering.domain.subscription.vo.*;
 import com.mcalvaro.mscatering.infrastructure.BaseIntegrationTest;
-import org.junit.jupiter.api.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import java.math.BigDecimal;
 import java.time.*;
 import java.util.UUID;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import org.junit.jupiter.api.*;
+import org.springframework.beans.factory.annotation.Autowired;
 
 class ReactivateSubscriptionApiIT extends BaseIntegrationTest {
     private static final String URL = "/api/subscriptions/{id}/reactivate";
+
     @Autowired
     private ISubscriptionRepository subscriptionRepository;
+
     private SubscriptionId subscriptionId;
 
     @BeforeEach
     void setUp() {
         subscriptionId = SubscriptionId.of("SUS-" + UUID.randomUUID());
         Subscription subscription = buildValidCommand();
-        subscription.pause(new PauseRange(LocalDate.now().plusDays(12), LocalDate.now().plusDays(14)), "Holiday");
+        subscription.pause(
+                new PauseRange(LocalDate.now().plusDays(12), LocalDate.now().plusDays(14)), "Holiday");
         subscriptionRepository.save(subscription);
     }
 
@@ -54,8 +58,12 @@ class ReactivateSubscriptionApiIT extends BaseIntegrationTest {
             SubscriptionId activeId = SubscriptionId.of("SUS-" + UUID.randomUUID());
             subscriptionRepository.save(buildValidCommand(activeId));
             // Act & Assert
-            mockMvc.perform(post(URL, activeId.value()).param("reactivationDate", LocalDate.now().plusDays(3).toString()))
-                    .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("SUB-004"));
+            mockMvc.perform(post(URL, activeId.value())
+                            .param(
+                                    "reactivationDate",
+                                    LocalDate.now().plusDays(3).toString()))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("SUB-004"));
         }
     }
 
@@ -102,11 +110,23 @@ class ReactivateSubscriptionApiIT extends BaseIntegrationTest {
         LocalDate start = LocalDate.now().plusDays(10);
         PatientId patientId = PatientId.of("PAC-" + UUID.randomUUID());
         DietPlanId dietPlanId = DietPlanId.of("PLAN-" + UUID.randomUUID());
-        return Subscription.create(id, patientId, dietPlanId,
-                new ServiceContract(dietPlanId, com.mcalvaro.mscatering.domain.dietplan.PlanType.BASE, new ValidityPeriod(start, start.plusDays(14)), ServiceType.FULL,
-                        new BigDecimal("250"), "Terms", Instant.now()),
-                new DeliveryPreferences(new DeliveryAddress(AddressId.of("DIR-" + UUID.randomUUID()), "Home", "Main", "1", "Lima", null, 0, 0, "1"),
-                        new TimeWindow(LocalTime.NOON, LocalTime.of(14, 0)), null),
+        return Subscription.create(
+                id,
+                patientId,
+                dietPlanId,
+                new ServiceContract(
+                        dietPlanId,
+                        com.mcalvaro.mscatering.domain.dietplan.PlanType.BASE,
+                        new ValidityPeriod(start, start.plusDays(14)),
+                        ServiceType.FULL,
+                        new BigDecimal("250"),
+                        "Terms",
+                        Instant.now()),
+                new DeliveryPreferences(
+                        new DeliveryAddress(
+                                AddressId.of("DIR-" + UUID.randomUUID()), "Home", "Main", "1", "Lima", null, 0, 0, "1"),
+                        new TimeWindow(LocalTime.NOON, LocalTime.of(14, 0)),
+                        null),
                 1);
     }
 }

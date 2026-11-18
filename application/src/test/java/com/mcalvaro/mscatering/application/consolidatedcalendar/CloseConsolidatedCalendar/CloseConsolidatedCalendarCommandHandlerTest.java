@@ -1,5 +1,10 @@
 package com.mcalvaro.mscatering.application.consolidatedcalendar.CloseConsolidatedCalendar;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.ConsolidatedCalendar;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.IConsolidatedCalendarRepository;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.entity.ConsolidatedLine;
@@ -10,21 +15,15 @@ import com.mcalvaro.mscatering.domain.core.id.*;
 import com.mcalvaro.mscatering.domain.subscription.enums.ServiceType;
 import com.mcalvaro.mscatering.domain.subscription.vo.DeliveryAddress;
 import com.mcalvaro.mscatering.domain.subscription.vo.TimeWindow;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 /**
  * Unit tests for {@link CloseConsolidatedCalendarCommandHandler}.
@@ -120,10 +119,18 @@ class CloseConsolidatedCalendarCommandHandlerTest {
     private ConsolidatedCalendar buildCalendarWithOneLine(LocalDate date) {
         ConsolidatedCalendar calendar = ConsolidatedCalendar.create(ConsolidatedCalendarId.generate(), date);
 
-        ConsolidatedLine line = new ConsolidatedLine(ConsolidatedLineId.generate(), calendar.getId(), SubscriptionId.generate(),
-                PatientId.generate(), "Ada", DietPlanId.generate(), 1, ServiceType.LUNCH,
+        ConsolidatedLine line = new ConsolidatedLine(
+                ConsolidatedLineId.generate(),
+                calendar.getId(),
+                SubscriptionId.generate(),
+                PatientId.generate(),
+                "Ada",
+                DietPlanId.generate(),
+                1,
+                ServiceType.LUNCH,
                 new DeliveryAddress(AddressId.generate(), "Home", "Main", null, "Madrid", "Desk", 0, 0, null),
-                new TimeWindow(LocalTime.NOON, LocalTime.of(14, 0)), null,
+                new TimeWindow(LocalTime.NOON, LocalTime.of(14, 0)),
+                null,
                 List.of(new ConsolidatedRecipeSnapshot(RecipeId.generate(), "Lunch", LocalTime.NOON, 100)));
         calendar.addLine(line);
 

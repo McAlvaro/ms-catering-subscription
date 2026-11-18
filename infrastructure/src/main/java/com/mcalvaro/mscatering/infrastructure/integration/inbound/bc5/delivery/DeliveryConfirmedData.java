@@ -2,7 +2,6 @@ package com.mcalvaro.mscatering.infrastructure.integration.inbound.bc5.delivery;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.time.Instant;
 import java.time.OffsetDateTime;
 
@@ -19,23 +18,50 @@ public record DeliveryConfirmedData(
         @JsonProperty("fechaHoraEntrega") String fechaHoraEntrega,
         @JsonProperty("recibidoPor") String recibidoPor,
         @JsonProperty("evidenciaFotoUrl") String evidenciaFotoUrl,
-        @JsonProperty("geolocalizacion") Geolocation geolocalizacion
-) {
+        @JsonProperty("geolocalizacion") Geolocation geolocalizacion) {
 
-    public DeliveryConfirmedData(String idEntrega, String idPaquete, String idCalendarioDia, String idSuscripcion,
-                                 String idPaciente, Instant fechaHoraEntrega, String recibidoPor,
-                                 String evidenciaFotoUrl, Geolocation geolocalizacion) {
-        this(idEntrega, idPaquete, idCalendarioDia, idSuscripcion, idPaciente,
+    public DeliveryConfirmedData(
+            String idEntrega,
+            String idPaquete,
+            String idCalendarioDia,
+            String idSuscripcion,
+            String idPaciente,
+            Instant fechaHoraEntrega,
+            String recibidoPor,
+            String evidenciaFotoUrl,
+            Geolocation geolocalizacion) {
+        this(
+                idEntrega,
+                idPaquete,
+                idCalendarioDia,
+                idSuscripcion,
+                idPaciente,
                 fechaHoraEntrega != null ? fechaHoraEntrega.toString() : null,
-                recibidoPor, evidenciaFotoUrl, geolocalizacion);
+                recibidoPor,
+                evidenciaFotoUrl,
+                geolocalizacion);
     }
 
-    public DeliveryConfirmedData(String idEntrega, String idPaquete, String idCalendarioDia, String idSuscripcion,
-                                 String idPaciente, OffsetDateTime fechaHoraEntrega, String recibidoPor,
-                                 String evidenciaFotoUrl, Geolocation geolocalizacion) {
-        this(idEntrega, idPaquete, idCalendarioDia, idSuscripcion, idPaciente,
+    public DeliveryConfirmedData(
+            String idEntrega,
+            String idPaquete,
+            String idCalendarioDia,
+            String idSuscripcion,
+            String idPaciente,
+            OffsetDateTime fechaHoraEntrega,
+            String recibidoPor,
+            String evidenciaFotoUrl,
+            Geolocation geolocalizacion) {
+        this(
+                idEntrega,
+                idPaquete,
+                idCalendarioDia,
+                idSuscripcion,
+                idPaciente,
                 fechaHoraEntrega != null ? fechaHoraEntrega.toString() : null,
-                recibidoPor, evidenciaFotoUrl, geolocalizacion);
+                recibidoPor,
+                evidenciaFotoUrl,
+                geolocalizacion);
     }
 
     public String subscriptionId() {
@@ -61,7 +87,5 @@ public record DeliveryConfirmedData(
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Geolocation(
             @JsonProperty("latitud") Double latitude,
-            @JsonProperty("longitud") Double longitude
-    ) {
-    }
+            @JsonProperty("longitud") Double longitude) {}
 }

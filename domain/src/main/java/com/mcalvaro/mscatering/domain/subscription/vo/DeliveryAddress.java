@@ -18,13 +18,26 @@ public record DeliveryAddress(
         double longitude,
         String phone) {
 
-    public DeliveryAddress(String street, String number, String city, String reference,
-            double latitude, double longitude, String phone) {
+    public DeliveryAddress(
+            String street,
+            String number,
+            String city,
+            String reference,
+            double latitude,
+            double longitude,
+            String phone) {
         this(null, null, street, number, city, reference, latitude, longitude, phone);
     }
 
-    public DeliveryAddress(AddressId addressId, String street, String number, String city, String reference,
-            double latitude, double longitude, String phone) {
+    public DeliveryAddress(
+            AddressId addressId,
+            String street,
+            String number,
+            String city,
+            String reference,
+            double latitude,
+            double longitude,
+            String phone) {
         this(addressId, null, street, number, city, reference, latitude, longitude, phone);
     }
 

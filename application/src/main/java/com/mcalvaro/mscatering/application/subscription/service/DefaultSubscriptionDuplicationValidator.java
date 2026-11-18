@@ -13,8 +13,7 @@ public class DefaultSubscriptionDuplicationValidator implements SubscriptionDupl
     private final IPatientReferenceRepository patientRepository;
 
     public DefaultSubscriptionDuplicationValidator(
-            ISubscriptionRepository subscriptionRepository,
-            IPatientReferenceRepository patientRepository) {
+            ISubscriptionRepository subscriptionRepository, IPatientReferenceRepository patientRepository) {
         this.subscriptionRepository = subscriptionRepository;
         this.patientRepository = patientRepository;
     }
@@ -22,7 +21,8 @@ public class DefaultSubscriptionDuplicationValidator implements SubscriptionDupl
     @Override
     public void validate(PatientId patientId) {
         // 1. Validar que el paciente exista y esté activo (Read Model local)
-        PatientReference patient = patientRepository.findById(patientId)
+        PatientReference patient = patientRepository
+                .findById(patientId)
                 .orElseThrow(() -> new DomainException("SUB-014", "Patient not found."));
 
         if (!patient.isActive()) {

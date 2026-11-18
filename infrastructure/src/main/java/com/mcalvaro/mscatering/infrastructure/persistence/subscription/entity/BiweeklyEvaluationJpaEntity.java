@@ -1,13 +1,12 @@
 package com.mcalvaro.mscatering.infrastructure.persistence.subscription.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
 import jakarta.persistence.Column;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import java.time.LocalDate;
 
 @Entity
@@ -37,8 +36,7 @@ public class BiweeklyEvaluationJpaEntity {
     @Column(name = "completed_date")
     private LocalDate completedDate;
 
-    public BiweeklyEvaluationJpaEntity() {
-    }
+    public BiweeklyEvaluationJpaEntity() {}
 
     public String getId() {
         return id;

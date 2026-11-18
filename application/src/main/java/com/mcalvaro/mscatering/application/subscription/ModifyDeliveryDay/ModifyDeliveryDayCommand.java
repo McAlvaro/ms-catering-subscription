@@ -3,7 +3,6 @@ package com.mcalvaro.mscatering.application.subscription.ModifyDeliveryDay;
 import an.awesome.pipelinr.Command;
 import com.mcalvaro.mscatering.domain.core.id.DeliveryDayId;
 import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
-
 import java.time.LocalTime;
 
 /**
@@ -25,7 +24,8 @@ public record ModifyDeliveryDayCommand(
         String phone,
         LocalTime startTime,
         LocalTime endTime,
-        String instructions) implements Command<Void> {
+        String instructions)
+        implements Command<Void> {
 
     public ModifyDeliveryDayCommand(
             String subscriptionId,
@@ -40,7 +40,18 @@ public record ModifyDeliveryDayCommand(
             LocalTime startTime,
             LocalTime endTime,
             String instructions) {
-        this(SubscriptionId.of(subscriptionId), DeliveryDayId.of(deliveryDayId),
-                street, number, city, reference, latitude, longitude, phone, startTime, endTime, instructions);
+        this(
+                SubscriptionId.of(subscriptionId),
+                DeliveryDayId.of(deliveryDayId),
+                street,
+                number,
+                city,
+                reference,
+                latitude,
+                longitude,
+                phone,
+                startTime,
+                endTime,
+                instructions);
     }
 }

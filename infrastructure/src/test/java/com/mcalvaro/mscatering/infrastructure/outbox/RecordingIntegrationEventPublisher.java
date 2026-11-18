@@ -2,10 +2,9 @@ package com.mcalvaro.mscatering.infrastructure.outbox;
 
 import com.mcalvaro.mscatering.application.integration.IntegrationEventPublisher;
 import com.mcalvaro.mscatering.integration.contracts.IntegrationEvent;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
-
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**
  * Test transport that records actual publisher calls without a broker or

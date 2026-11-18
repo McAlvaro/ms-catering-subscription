@@ -2,10 +2,8 @@ package com.mcalvaro.mscatering.domain.subscription.vo;
 
 import com.mcalvaro.mscatering.domain.core.DomainException;
 import com.mcalvaro.mscatering.domain.core.id.DietPlanId;
-import com.mcalvaro.mscatering.domain.subscription.enums.PlanDuration;
-import com.mcalvaro.mscatering.domain.subscription.enums.ServiceType;
 import com.mcalvaro.mscatering.domain.dietplan.PlanType;
-
+import com.mcalvaro.mscatering.domain.subscription.enums.ServiceType;
 import java.math.BigDecimal;
 import java.time.Instant;
 

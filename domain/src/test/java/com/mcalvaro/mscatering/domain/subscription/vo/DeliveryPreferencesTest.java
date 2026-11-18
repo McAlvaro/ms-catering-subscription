@@ -1,13 +1,12 @@
 package com.mcalvaro.mscatering.domain.subscription.vo;
 
-import com.mcalvaro.mscatering.domain.core.DomainException;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-
-import java.time.LocalTime;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import com.mcalvaro.mscatering.domain.core.DomainException;
+import java.time.LocalTime;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 class DeliveryPreferencesTest {
 

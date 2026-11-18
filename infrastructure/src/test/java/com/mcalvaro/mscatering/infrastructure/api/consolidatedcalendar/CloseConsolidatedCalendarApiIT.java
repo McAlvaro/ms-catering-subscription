@@ -1,5 +1,12 @@
 package com.mcalvaro.mscatering.infrastructure.api.consolidatedcalendar;
 
+import static org.hamcrest.Matchers.isEmptyOrNullString;
+import static org.hamcrest.Matchers.not;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mcalvaro.mscatering.domain.core.id.AddressId;
 import com.mcalvaro.mscatering.domain.core.id.DietPlanId;
@@ -17,25 +24,17 @@ import com.mcalvaro.mscatering.infrastructure.BaseIntegrationTest;
 import com.mcalvaro.mscatering.infrastructure.api.consolidatedcalendar.dto.CloseConsolidatedCalendarRequest;
 import com.mcalvaro.mscatering.infrastructure.support.DietPlanProjectionFixture;
 import com.mcalvaro.mscatering.infrastructure.support.PatientRegistrationFixture;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.UUID;
-
-import static org.hamcrest.Matchers.isEmptyOrNullString;
-import static org.hamcrest.Matchers.not;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /** Integration tests for POST /api/consolidated-calendars/close. */
 class CloseConsolidatedCalendarApiIT extends BaseIntegrationTest {
@@ -44,8 +43,12 @@ class CloseConsolidatedCalendarApiIT extends BaseIntegrationTest {
 
     @Autowired
     private ISubscriptionRepository subscriptionRepository;
-    @Autowired private DietPlanProjectionFixture dietPlanProjectionFixture;
-    @Autowired private PatientRegistrationFixture patientRegistrationFixture;
+
+    @Autowired
+    private DietPlanProjectionFixture dietPlanProjectionFixture;
+
+    @Autowired
+    private PatientRegistrationFixture patientRegistrationFixture;
 
     private SubscriptionId subscriptionId;
     private PatientId patientId;
@@ -74,9 +77,7 @@ class CloseConsolidatedCalendarApiIT extends BaseIntegrationTest {
             String body = buildValidCommandJson(deliveryDate);
 
             // Act & Assert
-            mockMvc.perform(post(URL)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(body))
+            mockMvc.perform(post(URL).contentType(MediaType.APPLICATION_JSON).content(body))
                     .andExpect(status().isCreated())
                     .andExpect(content().string(not(isEmptyOrNullString())));
         }
@@ -93,9 +94,7 @@ class CloseConsolidatedCalendarApiIT extends BaseIntegrationTest {
             String body = buildValidCommandJson(deliveryDate.plusDays(30));
 
             // Act & Assert
-            mockMvc.perform(post(URL)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(body))
+            mockMvc.perform(post(URL).contentType(MediaType.APPLICATION_JSON).content(body))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("CAL-002"));
         }
@@ -112,9 +111,7 @@ class CloseConsolidatedCalendarApiIT extends BaseIntegrationTest {
             String body = "{\"date\":\"not-a-date\",\"closedBy\":\"daily-operator\"}";
 
             // Act & Assert
-            mockMvc.perform(post(URL)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(body))
+            mockMvc.perform(post(URL).contentType(MediaType.APPLICATION_JSON).content(body))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("INVALID_PAYLOAD"));
         }
@@ -126,9 +123,7 @@ class CloseConsolidatedCalendarApiIT extends BaseIntegrationTest {
             String body = "{}";
 
             // Act & Assert
-            mockMvc.perform(post(URL)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(body))
+            mockMvc.perform(post(URL).contentType(MediaType.APPLICATION_JSON).content(body))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("CAL-002"));
         }
@@ -144,7 +139,15 @@ class CloseConsolidatedCalendarApiIT extends BaseIntegrationTest {
                 "Accepted terms",
                 Instant.now());
         DeliveryPreferences preferences = new DeliveryPreferences(
-                new DeliveryAddress(AddressId.of("DIR-" + UUID.randomUUID()), "Home", "Main Street", "123", "Madrid", "Reception", 40.4168, -3.7038,
+                new DeliveryAddress(
+                        AddressId.of("DIR-" + UUID.randomUUID()),
+                        "Home",
+                        "Main Street",
+                        "123",
+                        "Madrid",
+                        "Reception",
+                        40.4168,
+                        -3.7038,
                         "+34123456789"),
                 new TimeWindow(LocalTime.of(12, 0), LocalTime.of(14, 0)),
                 "Ring the doorbell");

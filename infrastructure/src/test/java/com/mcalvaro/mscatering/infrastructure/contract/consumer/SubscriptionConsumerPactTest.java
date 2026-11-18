@@ -1,5 +1,7 @@
 package com.mcalvaro.mscatering.infrastructure.contract.consumer;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import au.com.dius.pact.consumer.MockServer;
 import au.com.dius.pact.consumer.dsl.PactDslJsonBody;
 import au.com.dius.pact.consumer.dsl.PactDslJsonRootValue;
@@ -11,14 +13,11 @@ import au.com.dius.pact.core.model.RequestResponsePact;
 import au.com.dius.pact.core.model.annotations.Pact;
 import au.com.dius.pact.core.model.annotations.PactDirectory;
 import com.mcalvaro.mscatering.infrastructure.contract.consumer.client.SubscriptionClient;
+import java.net.http.HttpResponse;
+import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
-import java.net.http.HttpResponse;
-import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Prueba de Contrato — Lado del CONSUMIDOR.
@@ -58,30 +57,29 @@ class SubscriptionConsumerPactTest {
 
     @Pact(consumer = "NutricenterPortalConsumer", provider = "ms-catering-subscription")
     RequestResponsePact createSubscriptionPact(PactDslWithProvider builder) {
-        return builder
-                .given("a patient with ID PAC-550e8400-e29b-41d4-a716-446655440000 exists and owns address DIR-770e8400-e29b-41d4-a716-446655440010")
+        return builder.given(
+                        "a patient with ID PAC-550e8400-e29b-41d4-a716-446655440000 exists and owns address DIR-770e8400-e29b-41d4-a716-446655440010")
                 .uponReceiving("una solicitud para crear una nueva suscripcion de catering de 15 dias")
-                    .method("POST")
-                    .path("/api/subscriptions")
-                    .headers(Map.of("Content-Type", "application/json"))
-                    .body(new PactDslJsonBody()
-                            .stringMatcher("patientId", ID_REGEX_PAC, "PAC-550e8400-e29b-41d4-a716-446655440000")
-                            .stringMatcher("dietPlanId", ID_REGEX_PLAN, "PLAN-660e8400-e29b-41d4-a716-446655440001")
-                            .stringValue("startDate", "2026-10-01")
-                            .stringValue("endDate", "2026-10-15")
-                            .stringValue("serviceType", "LUNCH")
-                            .decimalType("totalPrice", 250.00)
-                            .stringValue("acceptedConditions",
-                                    "Acepto los terminos y condiciones del servicio de catering.")
-                            .stringMatcher("deliveryAddressId", ID_REGEX_DIR, "DIR-770e8400-e29b-41d4-a716-446655440010")
-                            .stringValue("prefTimeStart", "12:00:00")
-                            .stringValue("prefTimeEnd", "14:00:00")
-                            .stringValue("prefSpecialInstructions", "Sin picante"))
+                .method("POST")
+                .path("/api/subscriptions")
+                .headers(Map.of("Content-Type", "application/json"))
+                .body(new PactDslJsonBody()
+                        .stringMatcher("patientId", ID_REGEX_PAC, "PAC-550e8400-e29b-41d4-a716-446655440000")
+                        .stringMatcher("dietPlanId", ID_REGEX_PLAN, "PLAN-660e8400-e29b-41d4-a716-446655440001")
+                        .stringValue("startDate", "2026-10-01")
+                        .stringValue("endDate", "2026-10-15")
+                        .stringValue("serviceType", "LUNCH")
+                        .decimalType("totalPrice", 250.00)
+                        .stringValue(
+                                "acceptedConditions", "Acepto los terminos y condiciones del servicio de catering.")
+                        .stringMatcher("deliveryAddressId", ID_REGEX_DIR, "DIR-770e8400-e29b-41d4-a716-446655440010")
+                        .stringValue("prefTimeStart", "12:00:00")
+                        .stringValue("prefTimeEnd", "14:00:00")
+                        .stringValue("prefSpecialInstructions", "Sin picante"))
                 .willRespondWith()
-                    .status(201)
-                    .headers(Map.of("Content-Type", "application/json"))
-                    .body(PactDslJsonRootValue.stringMatcher(
-                            ID_REGEX_SUS, "SUS-550e8400-e29b-41d4-a716-446655440099"))
+                .status(201)
+                .headers(Map.of("Content-Type", "application/json"))
+                .body(PactDslJsonRootValue.stringMatcher(ID_REGEX_SUS, "SUS-550e8400-e29b-41d4-a716-446655440099"))
                 .toPact();
     }
 
@@ -91,35 +89,38 @@ class SubscriptionConsumerPactTest {
 
     @Pact(consumer = "NutricenterPortalConsumer", provider = "ms-catering-subscription")
     RequestResponsePact getSubscriptionDetailsPact(PactDslWithProvider builder) {
-        return builder
-                .given("a subscription with ID SUS-770e8400-e29b-41d4-a716-446655440002 exists")
+        return builder.given("a subscription with ID SUS-770e8400-e29b-41d4-a716-446655440002 exists")
                 .uponReceiving("una solicitud para consultar los detalles de una suscripcion existente")
-                    .method("GET")
-                    .path("/api/subscriptions/SUS-770e8400-e29b-41d4-a716-446655440002")
-                    .headers(Map.of("Accept", "application/json"))
+                .method("GET")
+                .path("/api/subscriptions/SUS-770e8400-e29b-41d4-a716-446655440002")
+                .headers(Map.of("Accept", "application/json"))
                 .willRespondWith()
-                    .status(200)
-                    .headers(Map.of("Content-Type", "application/json"))
-                    .body(new PactDslJsonBody()
-                            .stringMatcher("id", ID_REGEX_SUS, "SUS-e2490de5-5bd3-43d5-b7c4-526e33f71304")
-                            .stringMatcher("patientId", ID_REGEX_PAC, "PAC-e2490de5-5bd3-43d5-b7c4-526e33f71304")
-                            .stringMatcher("dietPlanId", ID_REGEX_PLAN, "PLAN-e2490de5-5bd3-43d5-b7c4-526e33f71304")
-                            .stringType("contractCode")
-                            .stringType("status")
-                            .stringType("startDate")
-                            .stringType("endDate")
-                            .stringType("serviceType")
-                            .decimalType("totalPrice", 100.0)
-                            .minArrayLike("deliveryDays", 1,
-                                    new PactDslJsonBody()
-                                            .stringMatcher("id", ID_REGEX_CD, "CD-e2490de5-5bd3-43d5-b7c4-526e33f71304")
-                                            .stringType("date")
-                                            .stringType("status"))
-                            .minArrayLike("evaluations", 1,
-                                    new PactDslJsonBody()
-                                            .stringMatcher("id", ID_REGEX_EVAL, "EVAL-e2490de5-5bd3-43d5-b7c4-526e33f71304")
-                                            .stringType("scheduledDate")
-                                            .stringType("status")))
+                .status(200)
+                .headers(Map.of("Content-Type", "application/json"))
+                .body(new PactDslJsonBody()
+                        .stringMatcher("id", ID_REGEX_SUS, "SUS-e2490de5-5bd3-43d5-b7c4-526e33f71304")
+                        .stringMatcher("patientId", ID_REGEX_PAC, "PAC-e2490de5-5bd3-43d5-b7c4-526e33f71304")
+                        .stringMatcher("dietPlanId", ID_REGEX_PLAN, "PLAN-e2490de5-5bd3-43d5-b7c4-526e33f71304")
+                        .stringType("contractCode")
+                        .stringType("status")
+                        .stringType("startDate")
+                        .stringType("endDate")
+                        .stringType("serviceType")
+                        .decimalType("totalPrice", 100.0)
+                        .minArrayLike(
+                                "deliveryDays",
+                                1,
+                                new PactDslJsonBody()
+                                        .stringMatcher("id", ID_REGEX_CD, "CD-e2490de5-5bd3-43d5-b7c4-526e33f71304")
+                                        .stringType("date")
+                                        .stringType("status"))
+                        .minArrayLike(
+                                "evaluations",
+                                1,
+                                new PactDslJsonBody()
+                                        .stringMatcher("id", ID_REGEX_EVAL, "EVAL-e2490de5-5bd3-43d5-b7c4-526e33f71304")
+                                        .stringType("scheduledDate")
+                                        .stringType("status")))
                 .toPact();
     }
 

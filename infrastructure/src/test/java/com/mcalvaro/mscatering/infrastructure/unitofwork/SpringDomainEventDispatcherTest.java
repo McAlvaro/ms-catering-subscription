@@ -1,24 +1,23 @@
 package com.mcalvaro.mscatering.infrastructure.unitofwork;
 
-import an.awesome.pipelinr.Pipeline;
-import com.mcalvaro.mscatering.application.abstractions.DomainEventNotification;
-import com.mcalvaro.mscatering.domain.core.AggregateRoot;
-import com.mcalvaro.mscatering.domain.core.DomainEvent;
-import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.time.Instant;
-import java.util.UUID;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
+
+import an.awesome.pipelinr.Pipeline;
+import com.mcalvaro.mscatering.application.abstractions.DomainEventNotification;
+import com.mcalvaro.mscatering.domain.core.AggregateRoot;
+import com.mcalvaro.mscatering.domain.core.DomainEvent;
+import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
+import java.time.Instant;
+import java.util.UUID;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class SpringDomainEventDispatcherTest {
@@ -36,7 +35,8 @@ class SpringDomainEventDispatcherTest {
 
         dispatcher.dispatch();
 
-        ArgumentCaptor<DomainEventNotification> notificationCaptor = ArgumentCaptor.forClass(DomainEventNotification.class);
+        ArgumentCaptor<DomainEventNotification> notificationCaptor =
+                ArgumentCaptor.forClass(DomainEventNotification.class);
         verify(pipeline).send(notificationCaptor.capture());
         assertThat(notificationCaptor.getValue().domainEvent()).isSameAs(event);
         assertThat(aggregate.getDomainEvents()).isEmpty();
@@ -67,6 +67,5 @@ class SpringDomainEventDispatcherTest {
         }
     }
 
-    private record TestEvent(UUID eventId, Instant occurredAt) implements DomainEvent {
-    }
+    private record TestEvent(UUID eventId, Instant occurredAt) implements DomainEvent {}
 }

@@ -1,5 +1,12 @@
 package com.mcalvaro.mscatering.infrastructure.api.consolidatedcalendar;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.mcalvaro.mscatering.domain.consolidatedcalendar.ConsolidatedCalendar;
+import com.mcalvaro.mscatering.domain.consolidatedcalendar.IConsolidatedCalendarRepository;
+import com.mcalvaro.mscatering.domain.consolidatedcalendar.entity.ConsolidatedLine;
 import com.mcalvaro.mscatering.domain.core.id.AddressId;
 import com.mcalvaro.mscatering.domain.core.id.ConsolidatedCalendarId;
 import com.mcalvaro.mscatering.domain.core.id.ConsolidatedLineId;
@@ -7,27 +14,19 @@ import com.mcalvaro.mscatering.domain.core.id.DietPlanId;
 import com.mcalvaro.mscatering.domain.core.id.PatientId;
 import com.mcalvaro.mscatering.domain.core.id.RecipeId;
 import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
-import com.mcalvaro.mscatering.domain.consolidatedcalendar.ConsolidatedCalendar;
-import com.mcalvaro.mscatering.domain.consolidatedcalendar.IConsolidatedCalendarRepository;
-import com.mcalvaro.mscatering.domain.consolidatedcalendar.entity.ConsolidatedLine;
 import com.mcalvaro.mscatering.domain.subscription.enums.ServiceType;
 import com.mcalvaro.mscatering.domain.subscription.vo.DeliveryAddress;
 import com.mcalvaro.mscatering.domain.subscription.vo.TimeWindow;
 import com.mcalvaro.mscatering.infrastructure.BaseIntegrationTest;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.List;
-import java.util.UUID;
-
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /** Integration tests for GET /api/consolidated-calendars?date={date}. */
 class GetConsolidatedCalendarByDateApiIT extends BaseIntegrationTest {
@@ -135,10 +134,20 @@ class GetConsolidatedCalendarByDateApiIT extends BaseIntegrationTest {
                 dietPlanId,
                 1,
                 ServiceType.LUNCH,
-                new DeliveryAddress(AddressId.of("DIR-" + UUID.randomUUID()), "Home", "Main Street", "123", "Madrid", "Reception", 40.4168, -3.7038,
+                new DeliveryAddress(
+                        AddressId.of("DIR-" + UUID.randomUUID()),
+                        "Home",
+                        "Main Street",
+                        "123",
+                        "Madrid",
+                        "Reception",
+                        40.4168,
+                        -3.7038,
                         "+34123456789"),
                 new TimeWindow(LocalTime.of(12, 0), LocalTime.of(14, 0)),
-                "Ring the doorbell", List.of(new com.mcalvaro.mscatering.domain.consolidatedcalendar.entity.ConsolidatedRecipeSnapshot(RecipeId.of("REC-" + UUID.randomUUID()), "Lunch", LocalTime.NOON, 100))));
+                "Ring the doorbell",
+                List.of(new com.mcalvaro.mscatering.domain.consolidatedcalendar.entity.ConsolidatedRecipeSnapshot(
+                        RecipeId.of("REC-" + UUID.randomUUID()), "Lunch", LocalTime.NOON, 100))));
         calendar.close("daily-operator");
         return calendar;
     }

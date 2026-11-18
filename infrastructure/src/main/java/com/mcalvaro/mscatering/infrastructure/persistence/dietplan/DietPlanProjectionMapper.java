@@ -5,10 +5,9 @@ import com.mcalvaro.mscatering.domain.core.id.PatientId;
 import com.mcalvaro.mscatering.domain.core.id.RecipeId;
 import com.mcalvaro.mscatering.domain.dietplan.*;
 import com.mcalvaro.mscatering.infrastructure.persistence.dietplan.entity.*;
-import org.springframework.stereotype.Component;
-
 import java.time.LocalTime;
 import java.util.UUID;
+import org.springframework.stereotype.Component;
 
 @Component
 public class DietPlanProjectionMapper {
@@ -17,7 +16,8 @@ public class DietPlanProjectionMapper {
         DietPlanProjectionJpaEntity entity = new DietPlanProjectionJpaEntity();
         entity.setId(plan.id().value());
         entity.setPlanType(plan.type().name());
-        entity.setOwnerPatientId(plan.ownerPatientId() != null ? plan.ownerPatientId().value() : null);
+        entity.setOwnerPatientId(
+                plan.ownerPatientId() != null ? plan.ownerPatientId().value() : null);
         entity.setActive(plan.active());
         entity.setEffectiveStart(plan.effectiveStart());
         entity.setDurationDays(plan.durationDays());
@@ -34,22 +34,26 @@ public class DietPlanProjectionMapper {
                 entity.isActive(),
                 entity.getEffectiveStart(),
                 entity.getDurationDays(),
-                entity.getDays().stream().map(day -> new DietPlanDay(
-                        day.getId(),
-                        day.getDayNumber(),
-                        day.getMealCount(),
-                        day.getMeals().stream().map(meal -> new DietPlanMeal(
-                                meal.getId(),
-                                meal.getMealType() != null ? MealType.valueOf(meal.getMealType()) : null,
-                                LocalTime.parse(meal.getMealTime()),
-                                meal.getRecipes().stream().map(recipe -> new DietPlanRecipe(
-                                        RecipeId.of(recipe.getRecipeId()),
-                                        recipe.getRecipeName(),
-                                        recipe.getPortionGrams()
-                                )).toList()
-                        )).toList()
-                )).toList()
-        );
+                entity.getDays().stream()
+                        .map(day -> new DietPlanDay(
+                                day.getId(),
+                                day.getDayNumber(),
+                                day.getMealCount(),
+                                day.getMeals().stream()
+                                        .map(meal -> new DietPlanMeal(
+                                                meal.getId(),
+                                                meal.getMealType() != null
+                                                        ? MealType.valueOf(meal.getMealType())
+                                                        : null,
+                                                LocalTime.parse(meal.getMealTime()),
+                                                meal.getRecipes().stream()
+                                                        .map(recipe -> new DietPlanRecipe(
+                                                                RecipeId.of(recipe.getRecipeId()),
+                                                                recipe.getRecipeName(),
+                                                                recipe.getPortionGrams()))
+                                                        .toList()))
+                                        .toList()))
+                        .toList());
     }
 
     private DietPlanDayJpaEntity day(DietPlanDay day) {

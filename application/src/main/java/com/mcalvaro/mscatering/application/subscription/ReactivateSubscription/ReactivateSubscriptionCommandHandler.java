@@ -1,7 +1,6 @@
 package com.mcalvaro.mscatering.application.subscription.ReactivateSubscription;
 
 import an.awesome.pipelinr.Command;
-
 import com.mcalvaro.mscatering.domain.subscription.ISubscriptionRepository;
 import com.mcalvaro.mscatering.domain.subscription.Subscription;
 
@@ -22,9 +21,9 @@ public class ReactivateSubscriptionCommandHandler implements Command.Handler<Rea
 
     @Override
     public Void handle(ReactivateSubscriptionCommand command) {
-        Subscription subscription = subscriptionRepository.findById(command.subscriptionId())
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Subscription not found: " + command.subscriptionId()));
+        Subscription subscription = subscriptionRepository
+                .findById(command.subscriptionId())
+                .orElseThrow(() -> new IllegalArgumentException("Subscription not found: " + command.subscriptionId()));
 
         subscription.reactivate(command.reactivationDate());
 

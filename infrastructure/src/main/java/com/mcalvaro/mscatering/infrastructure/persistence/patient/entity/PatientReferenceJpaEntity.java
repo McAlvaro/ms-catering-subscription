@@ -1,10 +1,9 @@
 package com.mcalvaro.mscatering.infrastructure.persistence.patient.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.persistence.Column;
-
 import java.time.Instant;
 
 @Entity
@@ -24,8 +23,7 @@ public class PatientReferenceJpaEntity {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
-    public PatientReferenceJpaEntity() {
-    }
+    public PatientReferenceJpaEntity() {}
 
     public String getPatientId() {
         return patientId;
@@ -35,8 +33,13 @@ public class PatientReferenceJpaEntity {
         this.patientId = patientId;
     }
 
-    public String getPatientName() { return patientName; }
-    public void setPatientName(String patientName) { this.patientName = patientName; }
+    public String getPatientName() {
+        return patientName;
+    }
+
+    public void setPatientName(String patientName) {
+        this.patientName = patientName;
+    }
 
     public boolean isActive() {
         return active;

@@ -1,16 +1,15 @@
 package com.mcalvaro.mscatering.domain.subscription.vo;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import com.mcalvaro.mscatering.domain.core.DomainException;
+import java.time.LocalDate;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-
-import java.time.LocalDate;
-import java.util.stream.Stream;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class PauseRangeTest {
 
@@ -89,14 +88,11 @@ class PauseRangeTest {
     private static Stream<LocalDate[]> rangesWithNullDate() {
         LocalDate validDate = LocalDate.now().plusDays(3);
         return Stream.of(
-                new LocalDate[] { null, validDate },
-                new LocalDate[] { validDate, null },
-                new LocalDate[] { null, null });
+                new LocalDate[] {null, validDate}, new LocalDate[] {validDate, null}, new LocalDate[] {null, null});
     }
 
     private static Stream<LocalDate[]> rangesNotInAscendingOrder() {
         LocalDate start = LocalDate.now().plusDays(3);
-        return Stream.<LocalDate[]>of(
-                new LocalDate[] { start, start.minusDays(1) });
+        return Stream.<LocalDate[]>of(new LocalDate[] {start, start.minusDays(1)});
     }
 }

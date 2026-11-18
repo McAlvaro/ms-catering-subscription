@@ -23,10 +23,19 @@ public class DeliveryAddressResolver {
         if (patientId == null || addressId == null) {
             throw new DomainException("ADR-001", ADDRESS_NOT_AVAILABLE_MESSAGE);
         }
-        return addressRepository.findByAddressId(addressId)
+        return addressRepository
+                .findByAddressId(addressId)
                 .filter(address -> address.patientId().equals(patientId))
-                .map(address -> new DeliveryAddress(address.addressId(), address.alias(), address.street(), null,
-                        address.city(), address.reference(), address.latitude(), address.longitude(), null))
+                .map(address -> new DeliveryAddress(
+                        address.addressId(),
+                        address.alias(),
+                        address.street(),
+                        null,
+                        address.city(),
+                        address.reference(),
+                        address.latitude(),
+                        address.longitude(),
+                        null))
                 .orElseThrow(() -> new DomainException("ADR-001", ADDRESS_NOT_AVAILABLE_MESSAGE));
     }
 }

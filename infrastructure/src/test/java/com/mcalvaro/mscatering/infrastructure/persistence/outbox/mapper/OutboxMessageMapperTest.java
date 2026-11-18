@@ -1,13 +1,12 @@
 package com.mcalvaro.mscatering.infrastructure.persistence.outbox.mapper;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.mcalvaro.mscatering.application.outbox.OutboxMessage;
 import com.mcalvaro.mscatering.infrastructure.persistence.outbox.entity.OutboxMessageJpaEntity;
-import org.junit.jupiter.api.Test;
-
 import java.time.Instant;
 import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
 
 class OutboxMessageMapperTest {
 
@@ -15,11 +14,21 @@ class OutboxMessageMapperTest {
 
     @Test
     void roundTripsEveryOutboxMessageFieldAtMicrosecondPrecision() {
-        OutboxMessage source = new OutboxMessage(UUID.fromString("00000000-0000-0000-0000-000000000001"),
-                "bc3.SubscriptionCreated", "{\"subscriptionId\":\"42\"}",
-                Instant.parse("2026-10-28T10:15:30.123456789Z"), false, null, 3, "Transient failure",
-                Instant.parse("2026-10-28T10:16:30.123456789Z"), Instant.parse("2026-10-28T10:17:30.123456789Z"),
-                "outbox-worker-1", "correlation-42", "0123456789abcdef0123456789abcdef", "0123456789abcdef");
+        OutboxMessage source = new OutboxMessage(
+                UUID.fromString("00000000-0000-0000-0000-000000000001"),
+                "bc3.SubscriptionCreated",
+                "{\"subscriptionId\":\"42\"}",
+                Instant.parse("2026-10-28T10:15:30.123456789Z"),
+                false,
+                null,
+                3,
+                "Transient failure",
+                Instant.parse("2026-10-28T10:16:30.123456789Z"),
+                Instant.parse("2026-10-28T10:17:30.123456789Z"),
+                "outbox-worker-1",
+                "correlation-42",
+                "0123456789abcdef0123456789abcdef",
+                "0123456789abcdef");
 
         OutboxMessageJpaEntity entity = mapper.toJpaEntity(source);
         OutboxMessage result = mapper.toApplication(entity);

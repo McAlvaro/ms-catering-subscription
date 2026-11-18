@@ -23,10 +23,6 @@ public class PatientReferenceMapper {
         if (jpa == null) return null;
 
         return new PatientReference(
-                PatientId.of(jpa.getPatientId()),
-                jpa.getPatientName(),
-                jpa.isActive(),
-                jpa.getUpdatedAt()
-        );
+                PatientId.of(jpa.getPatientId()), jpa.getPatientName(), jpa.isActive(), jpa.getUpdatedAt());
     }
 }

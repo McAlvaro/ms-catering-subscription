@@ -5,7 +5,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
-
 import java.time.Instant;
 import java.util.UUID;
 
@@ -16,32 +15,45 @@ public class OutboxMessageJpaEntity {
     @Id
     @Column(name = "id", nullable = false, updatable = false)
     private UUID id;
+
     @Column(name = "type", nullable = false, length = 128)
     private String type;
+
     @Lob
     @Column(name = "content", nullable = false)
     private String content;
+
     @Column(name = "created", nullable = false)
     private Instant created;
+
     @Column(name = "processed", nullable = false)
     private boolean processed;
+
     @Column(name = "processed_on")
     private Instant processedOn;
+
     @Column(name = "attempt_count", nullable = false)
     private int attemptCount;
+
     @Lob
     @Column(name = "last_error")
     private String lastError;
+
     @Column(name = "available_at", nullable = false)
     private Instant availableAt;
+
     @Column(name = "locked_until")
     private Instant lockedUntil;
+
     @Column(name = "locked_by", length = 128)
     private String lockedBy;
+
     @Column(name = "correlation_id", length = 255)
     private String correlationId;
+
     @Column(name = "trace_id", length = 64)
     private String traceId;
+
     @Column(name = "span_id", length = 32)
     private String spanId;
 

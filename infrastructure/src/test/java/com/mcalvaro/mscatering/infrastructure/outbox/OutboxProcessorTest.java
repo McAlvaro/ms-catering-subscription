@@ -1,31 +1,5 @@
 package com.mcalvaro.mscatering.infrastructure.outbox;
 
-import com.mcalvaro.mscatering.application.integration.IntegrationEventPublisher;
-import com.mcalvaro.mscatering.application.outbox.OutboxMessage;
-import com.mcalvaro.mscatering.application.outbox.OutboxMessageRepository;
-import com.mcalvaro.mscatering.application.outbox.translation.OutboxEventTranslatorRegistry;
-import com.mcalvaro.mscatering.domain.core.DomainEvent;
-import com.mcalvaro.mscatering.domain.core.id.PatientId;
-import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
-import com.mcalvaro.mscatering.domain.subscription.event.SubscriptionCreated;
-import com.mcalvaro.mscatering.domain.subscription.vo.ContractCode;
-import com.mcalvaro.mscatering.infrastructure.persistence.outbox.codec.JacksonDomainEventCodec;
-import com.mcalvaro.mscatering.integration.contracts.IntegrationEvent;
-import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InOrder;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
-
-import java.time.Clock;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -38,6 +12,31 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+
+import com.mcalvaro.mscatering.application.integration.IntegrationEventPublisher;
+import com.mcalvaro.mscatering.application.outbox.OutboxMessage;
+import com.mcalvaro.mscatering.application.outbox.OutboxMessageRepository;
+import com.mcalvaro.mscatering.application.outbox.translation.OutboxEventTranslatorRegistry;
+import com.mcalvaro.mscatering.domain.core.DomainEvent;
+import com.mcalvaro.mscatering.domain.core.id.PatientId;
+import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
+import com.mcalvaro.mscatering.domain.subscription.event.SubscriptionCreated;
+import com.mcalvaro.mscatering.domain.subscription.vo.ContractCode;
+import com.mcalvaro.mscatering.infrastructure.persistence.outbox.codec.JacksonDomainEventCodec;
+import com.mcalvaro.mscatering.integration.contracts.IntegrationEvent;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 class OutboxProcessorTest {
     private static final Instant NOW = Instant.parse("2026-10-29T12:00:00Z");
@@ -97,15 +96,19 @@ class OutboxProcessorTest {
         when(codec.decode(anyString(), anyString())).thenReturn(decoded);
         when(translators.translate(decoded)).thenReturn(translated);
 
-        new OutboxProcessor(repository, codec, translators, publisher,
-                new SequenceClock(NOW, NOW, NOW, secondClaimTime, secondClaimTime))
+        new OutboxProcessor(
+                        repository,
+                        codec,
+                        translators,
+                        publisher,
+                        new SequenceClock(NOW, NOW, NOW, secondClaimTime, secondClaimTime))
                 .processAvailable(2, LEASE);
 
         ArgumentCaptor<Instant> claims = ArgumentCaptor.forClass(Instant.class);
         ArgumentCaptor<Instant> leases = ArgumentCaptor.forClass(Instant.class);
         ArgumentCaptor<String> tokens = ArgumentCaptor.forClass(String.class);
-        verify(repository, org.mockito.Mockito.times(2)).tryClaim(any(), claims.capture(), leases.capture(),
-                tokens.capture());
+        verify(repository, org.mockito.Mockito.times(2))
+                .tryClaim(any(), claims.capture(), leases.capture(), tokens.capture());
         assertThat(claims.getAllValues()).containsExactly(NOW, secondClaimTime);
         assertThat(leases.getAllValues()).containsExactly(NOW.plus(LEASE), secondClaimTime.plus(LEASE));
         assertThat(leases.getAllValues().get(1)).isAfter(secondClaimTime);
@@ -133,26 +136,45 @@ class OutboxProcessorTest {
 
     @Test
     void translatorFailureReschedulesTheOwnedMessageWithoutPublishing() {
-        assertFailureReschedules(new IllegalStateException("translation failed"), FailurePoint.TRANSLATOR,
-                "java.lang.IllegalStateException: translation failed", Duration.ofSeconds(5));
+        assertFailureReschedules(
+                new IllegalStateException("translation failed"),
+                FailurePoint.TRANSLATOR,
+                "java.lang.IllegalStateException: translation failed",
+                Duration.ofSeconds(5));
     }
 
     @Test
     void codecAndPublisherFailuresRescheduleWithConfiguredBackoffAndCappedDelay() {
-        assertFailureReschedules(new IllegalArgumentException("bad payload"), FailurePoint.CODEC,
-                "java.lang.IllegalArgumentException: bad payload", Duration.ofSeconds(7));
-        assertFailureReschedules(new IllegalStateException("publisher down"), FailurePoint.PUBLISHER,
-                "java.lang.IllegalStateException: publisher down", Duration.ofSeconds(7));
-        assertFailureReschedules(new IllegalStateException("publisher down"), FailurePoint.PUBLISHER,
-                "java.lang.IllegalStateException: publisher down", Duration.ofSeconds(30), 10);
+        assertFailureReschedules(
+                new IllegalArgumentException("bad payload"),
+                FailurePoint.CODEC,
+                "java.lang.IllegalArgumentException: bad payload",
+                Duration.ofSeconds(7));
+        assertFailureReschedules(
+                new IllegalStateException("publisher down"),
+                FailurePoint.PUBLISHER,
+                "java.lang.IllegalStateException: publisher down",
+                Duration.ofSeconds(7));
+        assertFailureReschedules(
+                new IllegalStateException("publisher down"),
+                FailurePoint.PUBLISHER,
+                "java.lang.IllegalStateException: publisher down",
+                Duration.ofSeconds(30),
+                10);
     }
 
     @Test
     void nullAndBlankFailureMessagesUseOnlyTheFullyQualifiedExceptionClass() {
-        assertFailureReschedules(new IllegalStateException(), FailurePoint.PUBLISHER,
-                "java.lang.IllegalStateException", Duration.ofSeconds(5));
-        assertFailureReschedules(new IllegalStateException(" \t"), FailurePoint.PUBLISHER,
-                "java.lang.IllegalStateException", Duration.ofSeconds(5));
+        assertFailureReschedules(
+                new IllegalStateException(),
+                FailurePoint.PUBLISHER,
+                "java.lang.IllegalStateException",
+                Duration.ofSeconds(5));
+        assertFailureReschedules(
+                new IllegalStateException(" \t"),
+                FailurePoint.PUBLISHER,
+                "java.lang.IllegalStateException",
+                Duration.ofSeconds(5));
     }
 
     @Test
@@ -171,7 +193,8 @@ class OutboxProcessorTest {
             when(translators.translate(decoded)).thenReturn(translated);
             if (exceptionalAck) {
                 doThrow(new IllegalStateException("database unavailable"))
-                        .when(repository).markProcessedIfOwned(any(), anyString(), any());
+                        .when(repository)
+                        .markProcessedIfOwned(any(), anyString(), any());
             } else {
                 when(repository.markProcessedIfOwned(any(), anyString(), any())).thenReturn(false);
             }
@@ -194,13 +217,18 @@ class OutboxProcessorTest {
         when(repository.findPendingAvailable(NOW, 1)).thenReturn(List.of(message));
         when(repository.tryClaim(any(), any(), any(), anyString())).thenReturn(Optional.of(message));
         when(codec.decode(anyString(), anyString())).thenThrow(new IllegalStateException("decode failed"));
-        when(repository.rescheduleAfterFailureIfOwned(any(), anyString(), any(), anyString())).thenReturn(false);
+        when(repository.rescheduleAfterFailureIfOwned(any(), anyString(), any(), anyString()))
+                .thenReturn(false);
 
         new OutboxProcessor(repository, codec, translators, publisher, Clock.fixed(NOW, ZoneOffset.UTC))
                 .processAvailable(1, LEASE);
 
-        verify(repository).rescheduleAfterFailureIfOwned(eq(message.id()), anyString(), eq(NOW.plusSeconds(5)),
-                eq("java.lang.IllegalStateException: decode failed"));
+        verify(repository)
+                .rescheduleAfterFailureIfOwned(
+                        eq(message.id()),
+                        anyString(),
+                        eq(NOW.plusSeconds(5)),
+                        eq("java.lang.IllegalStateException: decode failed"));
         verifyNoInteractions(translators, publisher);
     }
 
@@ -216,9 +244,9 @@ class OutboxProcessorTest {
         when(repository.tryClaim(any(), any(), any(), anyString())).thenReturn(Optional.of(message));
         when(codec.decode(message.type(), message.content())).thenReturn(decoded);
         when(translators.translate(decoded)).thenReturn(translated);
-        IntegrationEventPublisher publisher = event -> assertThat(
-                TransactionSynchronizationManager.isActualTransactionActive())
-                .isFalse();
+        IntegrationEventPublisher publisher =
+                event -> assertThat(TransactionSynchronizationManager.isActualTransactionActive())
+                        .isFalse();
 
         new OutboxProcessor(repository, codec, translators, publisher, Clock.fixed(NOW, ZoneOffset.UTC))
                 .processAvailable(1, LEASE);
@@ -231,13 +259,13 @@ class OutboxProcessorTest {
         assertThat(OutboxProcessor.backoffFor(10)).isEqualTo(Duration.ofMinutes(5));
     }
 
-    private static void assertFailureReschedules(Exception failure, FailurePoint failurePoint, String expectedError,
-            Duration expectedDelay) {
+    private static void assertFailureReschedules(
+            Exception failure, FailurePoint failurePoint, String expectedError, Duration expectedDelay) {
         assertFailureReschedules(failure, failurePoint, expectedError, expectedDelay, 0);
     }
 
-    private static void assertFailureReschedules(Exception failure, FailurePoint failurePoint, String expectedError,
-            Duration expectedDelay, int attempts) {
+    private static void assertFailureReschedules(
+            Exception failure, FailurePoint failurePoint, String expectedError, Duration expectedDelay, int attempts) {
         OutboxMessageRepository repository = mock(OutboxMessageRepository.class);
         JacksonDomainEventCodec codec = mock(JacksonDomainEventCodec.class);
         OutboxEventTranslatorRegistry translators = mock(OutboxEventTranslatorRegistry.class);
@@ -257,17 +285,22 @@ class OutboxProcessorTest {
             doThrow(failure).when(publisher).publish(translated);
         }
         OutboxProcessor processor = (expectedDelay.equals(Duration.ofSeconds(7))
-                || expectedDelay.equals(Duration.ofSeconds(30)))
-                        ? new OutboxProcessor(repository, codec, translators, publisher,
-                                Clock.fixed(NOW, ZoneOffset.UTC),
-                                Duration.ofSeconds(7), Duration.ofSeconds(30))
-                        : new OutboxProcessor(repository, codec, translators, publisher,
-                                Clock.fixed(NOW, ZoneOffset.UTC));
+                        || expectedDelay.equals(Duration.ofSeconds(30)))
+                ? new OutboxProcessor(
+                        repository,
+                        codec,
+                        translators,
+                        publisher,
+                        Clock.fixed(NOW, ZoneOffset.UTC),
+                        Duration.ofSeconds(7),
+                        Duration.ofSeconds(30))
+                : new OutboxProcessor(repository, codec, translators, publisher, Clock.fixed(NOW, ZoneOffset.UTC));
 
         processor.processAvailable(1, LEASE);
 
-        verify(repository).rescheduleAfterFailureIfOwned(eq(message.id()), anyString(),
-                eq(NOW.plus(expectedDelay)), eq(expectedError));
+        verify(repository)
+                .rescheduleAfterFailureIfOwned(
+                        eq(message.id()), anyString(), eq(NOW.plus(expectedDelay)), eq(expectedError));
         verify(repository, never()).markProcessedIfOwned(any(), anyString(), any());
         if (failurePoint != FailurePoint.PUBLISHER) {
             verifyNoInteractions(publisher);
@@ -275,24 +308,48 @@ class OutboxProcessorTest {
     }
 
     private static SubscriptionCreated decodedEvent() {
-        return new SubscriptionCreated(UUID.fromString("00000000-0000-0000-0000-000000000011"),
-                NOW.minusSeconds(1), SubscriptionId.of("SUS-00000000-0000-0000-0000-000000000012"),
-                PatientId.of("PAC-00000000-0000-0000-0000-000000000013"), ContractCode.generate(2026, 1), null, null,
-                null, null, 0, List.of(), null, "correlation-1");
-    }
-
-    private static IntegrationEvent translatedEvent() {
-        return new TestIntegrationEvent(UUID.fromString("00000000-0000-0000-0000-000000000021"), NOW,
+        return new SubscriptionCreated(
+                UUID.fromString("00000000-0000-0000-0000-000000000011"),
+                NOW.minusSeconds(1),
+                SubscriptionId.of("SUS-00000000-0000-0000-0000-000000000012"),
+                PatientId.of("PAC-00000000-0000-0000-0000-000000000013"),
+                ContractCode.generate(2026, 1),
+                null,
+                null,
+                null,
+                null,
+                0,
+                List.of(),
+                null,
                 "correlation-1");
     }
 
+    private static IntegrationEvent translatedEvent() {
+        return new TestIntegrationEvent(UUID.fromString("00000000-0000-0000-0000-000000000021"), NOW, "correlation-1");
+    }
+
     private static OutboxMessage message(int attempts) {
-        return new OutboxMessage(UUID.randomUUID(), "subscription.created", "{\"event\":true}", NOW.minusSeconds(1),
-                false, null, attempts, null, NOW.minusSeconds(1), null, null, null, null, null);
+        return new OutboxMessage(
+                UUID.randomUUID(),
+                "subscription.created",
+                "{\"event\":true}",
+                NOW.minusSeconds(1),
+                false,
+                null,
+                attempts,
+                null,
+                NOW.minusSeconds(1),
+                null,
+                null,
+                null,
+                null,
+                null);
     }
 
     private enum FailurePoint {
-        CODEC, TRANSLATOR, PUBLISHER
+        CODEC,
+        TRANSLATOR,
+        PUBLISHER
     }
 
     private record TestIntegrationEvent(UUID eventId, Instant occurredOn, String correlationId)

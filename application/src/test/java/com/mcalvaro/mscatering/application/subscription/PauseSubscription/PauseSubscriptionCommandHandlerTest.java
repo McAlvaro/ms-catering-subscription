@@ -1,5 +1,13 @@
 package com.mcalvaro.mscatering.application.subscription.PauseSubscription;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.mcalvaro.mscatering.domain.core.DomainException;
 import com.mcalvaro.mscatering.domain.core.id.AddressId;
 import com.mcalvaro.mscatering.domain.core.id.DietPlanId;
@@ -15,26 +23,17 @@ import com.mcalvaro.mscatering.domain.subscription.vo.DeliveryPreferences;
 import com.mcalvaro.mscatering.domain.subscription.vo.ServiceContract;
 import com.mcalvaro.mscatering.domain.subscription.vo.TimeWindow;
 import com.mcalvaro.mscatering.domain.subscription.vo.ValidityPeriod;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class PauseSubscriptionCommandHandlerTest {
@@ -64,8 +63,11 @@ class PauseSubscriptionCommandHandlerTest {
             assertThat(request.getReason()).isEqualTo(command.reason());
             assertThat(request.getCorrelationId()).isEqualTo(command.correlationId());
         });
-        assertThat(subscription.getDomainEvents()).filteredOn(SubscriptionPaused.class::isInstance).singleElement()
-                .isInstanceOfSatisfying(SubscriptionPaused.class,
+        assertThat(subscription.getDomainEvents())
+                .filteredOn(SubscriptionPaused.class::isInstance)
+                .singleElement()
+                .isInstanceOfSatisfying(
+                        SubscriptionPaused.class,
                         event -> assertThat(event.correlationId()).isEqualTo(command.correlationId()));
         verify(subscriptionRepository, times(1)).findById(command.subscriptionId());
         verify(subscriptionRepository, times(1)).save(subscription);
@@ -92,8 +94,10 @@ class PauseSubscriptionCommandHandlerTest {
     void shouldPropagateDomainExceptionAndNotSaveWhenSubscriptionIsAlreadyPaused() {
         // Arrange
         Subscription subscription = buildSubscription(LocalDate.now().plusDays(10));
-        subscription.pause(new com.mcalvaro.mscatering.domain.subscription.vo.PauseRange(
-                LocalDate.now().plusDays(12), LocalDate.now().plusDays(14)), "Travel");
+        subscription.pause(
+                new com.mcalvaro.mscatering.domain.subscription.vo.PauseRange(
+                        LocalDate.now().plusDays(12), LocalDate.now().plusDays(14)),
+                "Travel");
         PauseSubscriptionCommand command = buildValidCommand(subscription.getId());
         when(subscriptionRepository.findById(command.subscriptionId())).thenReturn(Optional.of(subscription));
 
@@ -108,17 +112,29 @@ class PauseSubscriptionCommandHandlerTest {
     }
 
     private PauseSubscriptionCommand buildValidCommand(SubscriptionId subscriptionId) {
-        return new PauseSubscriptionCommand(subscriptionId, LocalDate.now().plusDays(12), LocalDate.now().plusDays(14),
-                "Travel", "application-pause-correlation");
+        return new PauseSubscriptionCommand(
+                subscriptionId,
+                LocalDate.now().plusDays(12),
+                LocalDate.now().plusDays(14),
+                "Travel",
+                "application-pause-correlation");
     }
 
     private Subscription buildSubscription(LocalDate startDate) {
         DietPlanId planId = DietPlanId.generate();
-        ServiceContract contract = new ServiceContract(planId, com.mcalvaro.mscatering.domain.dietplan.PlanType.BASE, new ValidityPeriod(startDate, startDate.plusDays(14)),
-                ServiceType.FULL, new BigDecimal("250.00"), "Terms accepted", Instant.parse("2025-01-01T10:00:00Z"));
+        ServiceContract contract = new ServiceContract(
+                planId,
+                com.mcalvaro.mscatering.domain.dietplan.PlanType.BASE,
+                new ValidityPeriod(startDate, startDate.plusDays(14)),
+                ServiceType.FULL,
+                new BigDecimal("250.00"),
+                "Terms accepted",
+                Instant.parse("2025-01-01T10:00:00Z"));
         DeliveryPreferences preferences = new DeliveryPreferences(
-                new DeliveryAddress(AddressId.generate(), "Main Street", "10", "Madrid", "Door A", 40.4168, -3.7038, "600000000"),
-                new TimeWindow(LocalTime.of(9, 0), LocalTime.of(11, 0)), "Leave at reception");
+                new DeliveryAddress(
+                        AddressId.generate(), "Main Street", "10", "Madrid", "Door A", 40.4168, -3.7038, "600000000"),
+                new TimeWindow(LocalTime.of(9, 0), LocalTime.of(11, 0)),
+                "Leave at reception");
         return Subscription.create(SubscriptionId.generate(), PatientId.generate(), planId, contract, preferences, 1);
     }
 }

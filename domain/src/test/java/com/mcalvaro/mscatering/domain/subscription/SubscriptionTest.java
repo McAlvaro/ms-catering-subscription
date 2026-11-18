@@ -1,5 +1,8 @@
 package com.mcalvaro.mscatering.domain.subscription;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import com.mcalvaro.mscatering.domain.core.DomainException;
 import com.mcalvaro.mscatering.domain.core.id.DeliveryDayId;
 import com.mcalvaro.mscatering.domain.core.id.DietPlanId;
@@ -28,17 +31,12 @@ import com.mcalvaro.mscatering.domain.subscription.vo.PauseRange;
 import com.mcalvaro.mscatering.domain.subscription.vo.ServiceContract;
 import com.mcalvaro.mscatering.domain.subscription.vo.TimeWindow;
 import com.mcalvaro.mscatering.domain.subscription.vo.ValidityPeriod;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 class SubscriptionTest {
 
@@ -53,7 +51,8 @@ class SubscriptionTest {
         DeliveryPreferences preferences = buildPreferences("Leave at reception");
 
         // Act
-        Subscription subscription = Subscription.create(subscriptionId, patientId, dietPlanId, contract, preferences, 42);
+        Subscription subscription =
+                Subscription.create(subscriptionId, patientId, dietPlanId, contract, preferences, 42);
 
         // Assert
         assertThat(subscription.getId()).isEqualTo(subscriptionId);
@@ -69,7 +68,8 @@ class SubscriptionTest {
                     assertThat(day.getAddress()).isEqualTo(preferences.primaryAddress());
                     assertThat(day.getTimeWindow()).isEqualTo(preferences.timeWindow());
                 });
-        assertThat(subscription.getDomainEvents()).singleElement()
+        assertThat(subscription.getDomainEvents())
+                .singleElement()
                 .isInstanceOfSatisfying(SubscriptionCreated.class, event -> {
                     assertThat(event.subscriptionId()).isEqualTo(subscriptionId);
                     assertThat(event.patientId()).isEqualTo(patientId);
@@ -97,18 +97,23 @@ class SubscriptionTest {
             assertThat(request.getActualEndDate()).isEqualTo(reactivationDate);
         });
         assertThat(subscription.getDeliveryCalendar().getDaysForDate(LocalDate.of(2099, 1, 4)))
-                .singleElement().extracting(DeliveryDay::getStatus).isEqualTo(DeliveryDayStatus.PAUSED);
+                .singleElement()
+                .extracting(DeliveryDay::getStatus)
+                .isEqualTo(DeliveryDayStatus.PAUSED);
         assertThat(subscription.getDeliveryCalendar().getDaysForDate(reactivationDate))
-                .singleElement().extracting(DeliveryDay::getStatus).isEqualTo(DeliveryDayStatus.SCHEDULED);
+                .singleElement()
+                .extracting(DeliveryDay::getStatus)
+                .isEqualTo(DeliveryDayStatus.SCHEDULED);
         assertThat(subscription.getDomainEvents()).hasSize(2);
         assertThat(subscription.getDomainEvents().get(0)).isInstanceOfSatisfying(SubscriptionPaused.class, event -> {
             assertThat(event.subscriptionId()).isEqualTo(subscription.getId());
             assertThat(event.pauseRange()).isEqualTo(range);
         });
-        assertThat(subscription.getDomainEvents().get(1)).isInstanceOfSatisfying(SubscriptionReactivated.class, event -> {
-            assertThat(event.subscriptionId()).isEqualTo(subscription.getId());
-            assertThat(event.reactivatedOn()).isEqualTo(reactivationDate);
-        });
+        assertThat(subscription.getDomainEvents().get(1))
+                .isInstanceOfSatisfying(SubscriptionReactivated.class, event -> {
+                    assertThat(event.subscriptionId()).isEqualTo(subscription.getId());
+                    assertThat(event.reactivatedOn()).isEqualTo(reactivationDate);
+                });
     }
 
     @Test
@@ -134,9 +139,12 @@ class SubscriptionTest {
         // Arrange
         Subscription subscription = buildSubscription(LocalDate.of(2099, 2, 1));
         DeliveryPreferences newPreferences = buildPreferences("Ring the bell twice");
-        DeliveryDay deliveredDay = subscription.getDeliveryCalendar().getDeliveryDays().get(0);
-        DeliveryDay failedDay = subscription.getDeliveryCalendar().getDeliveryDays().get(1);
-        DeliveryDay noDeliveryDay = subscription.getDeliveryCalendar().getDeliveryDays().get(2);
+        DeliveryDay deliveredDay =
+                subscription.getDeliveryCalendar().getDeliveryDays().get(0);
+        DeliveryDay failedDay =
+                subscription.getDeliveryCalendar().getDeliveryDays().get(1);
+        DeliveryDay noDeliveryDay =
+                subscription.getDeliveryCalendar().getDeliveryDays().get(2);
         String failureReason = "Recipient unavailable";
         subscription.clearDomainEvents();
 
@@ -173,10 +181,10 @@ class SubscriptionTest {
     void shouldCompleteAndCancelEvaluationsWhenTheirOperationsAreRequested() {
         // Arrange
         Subscription subscription = buildSubscription(LocalDate.of(2099, 3, 1));
-        BiweeklyEvaluation completed = new BiweeklyEvaluation(EvaluationId.generate(), subscription.getPatientId(), 1,
-                LocalDate.of(2099, 3, 15));
-        BiweeklyEvaluation pending = new BiweeklyEvaluation(EvaluationId.generate(), subscription.getPatientId(), 2,
-                LocalDate.of(2099, 3, 29));
+        BiweeklyEvaluation completed = new BiweeklyEvaluation(
+                EvaluationId.generate(), subscription.getPatientId(), 1, LocalDate.of(2099, 3, 15));
+        BiweeklyEvaluation pending = new BiweeklyEvaluation(
+                EvaluationId.generate(), subscription.getPatientId(), 2, LocalDate.of(2099, 3, 29));
         LocalDate completedAt = LocalDate.of(2099, 3, 16);
         String cancellationReason = "Patient requested cancellation";
         subscription.scheduleEvaluations(java.util.List.of(completed, pending));
@@ -194,8 +202,8 @@ class SubscriptionTest {
         assertThat(subscription.getDeliveryCalendar().getDeliveryDays())
                 .allSatisfy(day -> assertThat(day.getStatus()).isEqualTo(DeliveryDayStatus.CANCELLED));
         assertThat(subscription.getDomainEvents()).hasSize(2);
-        assertThat(subscription.getDomainEvents().get(0)).isInstanceOfSatisfying(BiweeklyEvaluationCompleted.class,
-                event -> {
+        assertThat(subscription.getDomainEvents().get(0))
+                .isInstanceOfSatisfying(BiweeklyEvaluationCompleted.class, event -> {
                     assertThat(event.subscriptionId()).isEqualTo(subscription.getId());
                     assertThat(event.evaluationId()).isEqualTo(completed.getId());
                     assertThat(event.completedAt()).isEqualTo(completedAt);
@@ -218,8 +226,10 @@ class SubscriptionTest {
 
         // Assert
         assertThat(subscription.getStatus()).isEqualTo(SubscriptionStatus.COMPLETED);
-        assertThat(subscription.getDomainEvents()).singleElement()
-                .isInstanceOfSatisfying(SubscriptionCompleted.class,
+        assertThat(subscription.getDomainEvents())
+                .singleElement()
+                .isInstanceOfSatisfying(
+                        SubscriptionCompleted.class,
                         event -> assertThat(event.subscriptionId()).isEqualTo(subscription.getId()));
     }
 
@@ -228,9 +238,10 @@ class SubscriptionTest {
     void shouldModifyDeliveryDayWhenItIsMoreThanFortyEightHoursInTheFuture() {
         // Arrange
         Subscription subscription = buildSubscription(LocalDate.of(2099, 9, 1));
-        DeliveryDay deliveryDay = subscription.getDeliveryCalendar().getDeliveryDays().get(0);
-        DeliveryAddress newAddress = new DeliveryAddress("New Street", "25", "Madrid", "Floor 2", 40.4200,
-                -3.7000, "600000001");
+        DeliveryDay deliveryDay =
+                subscription.getDeliveryCalendar().getDeliveryDays().get(0);
+        DeliveryAddress newAddress =
+                new DeliveryAddress("New Street", "25", "Madrid", "Floor 2", 40.4200, -3.7000, "600000001");
         TimeWindow newTimeWindow = new TimeWindow(LocalTime.of(12, 0), LocalTime.of(14, 0));
         String newInstructions = "Call on arrival";
         subscription.clearDomainEvents();
@@ -242,7 +253,8 @@ class SubscriptionTest {
         assertThat(deliveryDay.getAddress()).isEqualTo(newAddress);
         assertThat(deliveryDay.getTimeWindow()).isEqualTo(newTimeWindow);
         assertThat(deliveryDay.getInstructions()).isEqualTo(newInstructions);
-        assertThat(subscription.getDomainEvents()).singleElement()
+        assertThat(subscription.getDomainEvents())
+                .singleElement()
                 .isInstanceOfSatisfying(DeliveryDayModified.class, event -> {
                     assertThat(event.subscriptionId()).isEqualTo(subscription.getId());
                     assertThat(event.deliveryDayId()).isEqualTo(deliveryDay.getId());
@@ -256,8 +268,8 @@ class SubscriptionTest {
         // Arrange
         Subscription subscription = buildSubscription(LocalDate.of(2099, 4, 1));
         subscription.pause(new PauseRange(LocalDate.of(2099, 4, 4), LocalDate.of(2099, 4, 6)), "Medical leave");
-        subscription.scheduleEvaluations(java.util.List.of(new BiweeklyEvaluation(EvaluationId.generate(), subscription.getPatientId(),
-                1, LocalDate.of(2099, 4, 15))));
+        subscription.scheduleEvaluations(java.util.List.of(new BiweeklyEvaluation(
+                EvaluationId.generate(), subscription.getPatientId(), 1, LocalDate.of(2099, 4, 15))));
 
         // Act & Assert
         assertThatThrownBy(() -> subscription.getPauseRequests().clear())
@@ -275,7 +287,7 @@ class SubscriptionTest {
 
         // Act & Assert
         assertThatThrownBy(() -> subscription.pause(
-                new PauseRange(LocalDate.of(2099, 5, 7), LocalDate.of(2099, 5, 9)), "Extension"))
+                        new PauseRange(LocalDate.of(2099, 5, 7), LocalDate.of(2099, 5, 9)), "Extension"))
                 .isInstanceOf(DomainException.class)
                 .hasFieldOrPropertyWithValue("code", "SUB-003");
         assertThat(subscription.getStatus()).isEqualTo(SubscriptionStatus.PAUSED);
@@ -328,8 +340,10 @@ class SubscriptionTest {
     void shouldThrowDomainExceptionWhenMarkingTheOnlyActiveDeliveryAsNoDelivery() {
         // Arrange
         Subscription subscription = buildSubscription(LocalDate.of(2099, 10, 1));
-        java.util.List<DeliveryDay> deliveryDays = subscription.getDeliveryCalendar().getDeliveryDays();
-        deliveryDays.subList(0, deliveryDays.size() - 1)
+        java.util.List<DeliveryDay> deliveryDays =
+                subscription.getDeliveryCalendar().getDeliveryDays();
+        deliveryDays
+                .subList(0, deliveryDays.size() - 1)
                 .forEach(deliveryDay -> subscription.markNoDelivery(deliveryDay.getId()));
         DeliveryDay lastActiveDay = deliveryDays.get(deliveryDays.size() - 1);
         subscription.clearDomainEvents();
@@ -347,13 +361,14 @@ class SubscriptionTest {
     void shouldThrowIllegalArgumentExceptionWhenEvaluationDoesNotExist() {
         // Arrange
         Subscription subscription = buildSubscription(LocalDate.of(2099, 11, 1));
-        BiweeklyEvaluation scheduledEvaluation = new BiweeklyEvaluation(EvaluationId.generate(), subscription.getPatientId(), 1,
-                LocalDate.of(2099, 11, 15));
+        BiweeklyEvaluation scheduledEvaluation = new BiweeklyEvaluation(
+                EvaluationId.generate(), subscription.getPatientId(), 1, LocalDate.of(2099, 11, 15));
         subscription.scheduleEvaluations(java.util.List.of(scheduledEvaluation));
         subscription.clearDomainEvents();
 
         // Act & Assert
-        assertThatThrownBy(() -> subscription.markEvaluationCompleted(EvaluationId.generate(), LocalDate.of(2099, 11, 16)))
+        assertThatThrownBy(
+                        () -> subscription.markEvaluationCompleted(EvaluationId.generate(), LocalDate.of(2099, 11, 16)))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Evaluation not found");
         assertThat(scheduledEvaluation.getStatus()).isEqualTo(EvaluationStatus.PENDING);
@@ -394,23 +409,38 @@ class SubscriptionTest {
                         && !d.getDate().isAfter(LocalDate.of(2099, 6, 6)))
                 .hasSize(3)
                 .allSatisfy(d -> assertThat(d.getStatus()).isEqualTo(DeliveryDayStatus.CANCELLED));
-        assertThat(subscription.getDomainEvents()).singleElement().isInstanceOfSatisfying(SubscriptionCancelled.class,
-                event -> assertThat(event.cancelledPendingDeliveries()).isGreaterThanOrEqualTo(3));
+        assertThat(subscription.getDomainEvents())
+                .singleElement()
+                .isInstanceOfSatisfying(
+                        SubscriptionCancelled.class,
+                        event -> assertThat(event.cancelledPendingDeliveries()).isGreaterThanOrEqualTo(3));
     }
 
     private Subscription buildSubscription(LocalDate startDate) {
-        return Subscription.create(SubscriptionId.generate(), PatientId.generate(), DietPlanId.generate(), buildContract(startDate),
-                buildPreferences("Leave at reception"), 1);
+        return Subscription.create(
+                SubscriptionId.generate(),
+                PatientId.generate(),
+                DietPlanId.generate(),
+                buildContract(startDate),
+                buildPreferences("Leave at reception"),
+                1);
     }
 
     private ServiceContract buildContract(LocalDate startDate) {
-        return new ServiceContract(DietPlanId.generate(), com.mcalvaro.mscatering.domain.dietplan.PlanType.BASE, new ValidityPeriod(startDate, startDate.plusDays(14)),
-                ServiceType.FULL, new BigDecimal("250.00"), "Terms accepted", Instant.parse("2025-01-01T10:00:00Z"));
+        return new ServiceContract(
+                DietPlanId.generate(),
+                com.mcalvaro.mscatering.domain.dietplan.PlanType.BASE,
+                new ValidityPeriod(startDate, startDate.plusDays(14)),
+                ServiceType.FULL,
+                new BigDecimal("250.00"),
+                "Terms accepted",
+                Instant.parse("2025-01-01T10:00:00Z"));
     }
 
     private DeliveryPreferences buildPreferences(String instructions) {
         return new DeliveryPreferences(
                 new DeliveryAddress("Main Street", "10", "Madrid", "Door A", 40.4168, -3.7038, "600000000"),
-                new TimeWindow(LocalTime.of(9, 0), LocalTime.of(11, 0)), instructions);
+                new TimeWindow(LocalTime.of(9, 0), LocalTime.of(11, 0)),
+                instructions);
     }
 }

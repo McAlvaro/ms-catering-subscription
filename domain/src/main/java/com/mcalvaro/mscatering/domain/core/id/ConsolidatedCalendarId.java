@@ -3,7 +3,6 @@ package com.mcalvaro.mscatering.domain.core.id;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.mcalvaro.mscatering.domain.core.DomainId;
-
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;

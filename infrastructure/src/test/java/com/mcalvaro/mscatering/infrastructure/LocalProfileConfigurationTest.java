@@ -23,10 +23,10 @@ import org.springframework.test.web.servlet.MockMvc;
         classes = MsCateringApplication.class,
         webEnvironment = SpringBootTest.WebEnvironment.MOCK,
         properties = {
-                "spring.datasource.url=jdbc:h2:mem:local_profile_configuration;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE",
-                "spring.datasource.driver-class-name=org.h2.Driver",
-                "spring.datasource.username=sa",
-                "spring.datasource.password="
+            "spring.datasource.url=jdbc:h2:mem:local_profile_configuration;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE",
+            "spring.datasource.driver-class-name=org.h2.Driver",
+            "spring.datasource.username=sa",
+            "spring.datasource.password="
         })
 @ActiveProfiles("local")
 @AutoConfigureMockMvc
@@ -50,8 +50,11 @@ class LocalProfileConfigurationTest {
     void localProfileDoesNotCreateEurekaClientsOrRegistration() throws Exception {
         assertEquals("false", environment.getProperty("eureka.client.enabled"));
         assertTrue(applicationContext.getBeansOfType(EurekaClient.class).isEmpty());
-        assertTrue(applicationContext.getBeansOfType(EurekaDiscoveryClient.class).isEmpty());
-        assertTrue(applicationContext.getBeansOfType(EurekaAutoServiceRegistration.class).isEmpty());
+        assertTrue(
+                applicationContext.getBeansOfType(EurekaDiscoveryClient.class).isEmpty());
+        assertTrue(applicationContext
+                .getBeansOfType(EurekaAutoServiceRegistration.class)
+                .isEmpty());
 
         mockMvc.perform(get("/actuator/health"))
                 .andExpect(status().isOk())

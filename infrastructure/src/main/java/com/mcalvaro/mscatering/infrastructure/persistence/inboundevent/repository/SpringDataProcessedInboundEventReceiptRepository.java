@@ -1,9 +1,8 @@
 package com.mcalvaro.mscatering.infrastructure.persistence.inboundevent.repository;
 
 import com.mcalvaro.mscatering.infrastructure.persistence.inboundevent.entity.ProcessedInboundEventReceiptJpaEntity;
-import org.springframework.data.jpa.repository.JpaRepository;
-
 import java.util.UUID;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface SpringDataProcessedInboundEventReceiptRepository
         extends JpaRepository<ProcessedInboundEventReceiptJpaEntity, UUID> {
@@ -14,5 +13,6 @@ public interface SpringDataProcessedInboundEventReceiptRepository
 
     boolean existsByAddressIdAndPayloadFingerprint(String addressId, String payloadFingerprint);
 
-    boolean existsBySubjectKindAndSubjectIdAndPayloadFingerprint(String subjectKind, String subjectId, String payloadFingerprint);
+    boolean existsBySubjectKindAndSubjectIdAndPayloadFingerprint(
+            String subjectKind, String subjectId, String payloadFingerprint);
 }

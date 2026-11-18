@@ -1,5 +1,8 @@
 package com.mcalvaro.mscatering.infrastructure.persistence.outbox.codec;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.entity.ConsolidatedDeliverySnapshot;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.entity.ConsolidatedRecipeSnapshot;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.event.ConsolidatedCalendarClosed;
@@ -14,20 +17,15 @@ import com.mcalvaro.mscatering.domain.core.id.PatientId;
 import com.mcalvaro.mscatering.domain.core.id.RecipeId;
 import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
 import com.mcalvaro.mscatering.domain.dietplan.PlanType;
+import com.mcalvaro.mscatering.domain.subscription.event.DeliveryConfirmed;
 import com.mcalvaro.mscatering.domain.subscription.event.SubscriptionCancelled;
 import com.mcalvaro.mscatering.domain.subscription.event.SubscriptionCompleted;
 import com.mcalvaro.mscatering.domain.subscription.event.SubscriptionCreated;
-import com.mcalvaro.mscatering.domain.subscription.event.DeliveryConfirmed;
 import com.mcalvaro.mscatering.domain.subscription.event.SubscriptionPaused;
 import com.mcalvaro.mscatering.domain.subscription.event.SubscriptionReactivated;
 import com.mcalvaro.mscatering.domain.subscription.vo.ContractCode;
 import com.mcalvaro.mscatering.domain.subscription.vo.DeliveryAddress;
 import com.mcalvaro.mscatering.domain.subscription.vo.PauseRange;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -35,9 +33,10 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class JacksonDomainEventCodecTest {
 
@@ -60,12 +59,13 @@ class JacksonDomainEventCodecTest {
     void preservesEveryNestedClosedCalendarDeliveryAddressRecipeAndListOrder() {
         ConsolidatedCalendarClosed event = closedCalendarEvent();
 
-        ConsolidatedCalendarClosed decoded = (ConsolidatedCalendarClosed) codec.decode(
-                codec.encode(event).type(), codec.encode(event).content());
+        ConsolidatedCalendarClosed decoded = (ConsolidatedCalendarClosed)
+                codec.decode(codec.encode(event).type(), codec.encode(event).content());
 
         assertThat(decoded.correlationId()).isEqualTo("correlation-calendar");
         assertThat(decoded.deliveries()).containsExactlyElementsOf(event.deliveries());
-        assertThat(decoded.deliveries().get(0).address()).isEqualTo(event.deliveries().get(0).address());
+        assertThat(decoded.deliveries().get(0).address())
+                .isEqualTo(event.deliveries().get(0).address());
         assertThat(decoded.deliveries().get(0).recipes())
                 .containsExactlyElementsOf(event.deliveries().get(0).recipes());
     }
@@ -82,10 +82,12 @@ class JacksonDomainEventCodecTest {
 
     @Test
     void rejectsNullAndUnsupportedEvents() {
-        assertThatIllegalArgumentException().isThrownBy(() -> codec.encode(null))
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> codec.encode(null))
                 .withMessage("Domain event must not be null");
-        assertThatIllegalArgumentException().isThrownBy(() -> codec.encode(
-                new UnsupportedEvent(UUID.fromString("00000000-0000-0000-0000-000000000099"), FIXED_INSTANT)))
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> codec.encode(
+                        new UnsupportedEvent(UUID.fromString("00000000-0000-0000-0000-000000000099"), FIXED_INSTANT)))
                 .withMessage("Unsupported domain event class: %s", UnsupportedEvent.class.getName());
     }
 
@@ -98,28 +100,35 @@ class JacksonDomainEventCodecTest {
     @Test
     void doesNotSupportInternalOrNullEvents() {
         assertThat(codec.supports(new DeliveryConfirmed(
-                SubscriptionId.of("SUS-00000000-0000-0000-0000-000000000002"),
-                DeliveryDayId.of("CD-00000000-0000-0000-0000-000000000003")))).isFalse();
+                        SubscriptionId.of("SUS-00000000-0000-0000-0000-000000000002"),
+                        DeliveryDayId.of("CD-00000000-0000-0000-0000-000000000003"))))
+                .isFalse();
         assertThat(codec.supports(null)).isFalse();
     }
 
     @Test
     void rejectsBlankInputsAndUnknownTypesBeforeDeserialization() {
-        assertThatIllegalArgumentException().isThrownBy(() -> codec.decode(null, "{}"))
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> codec.decode(null, "{}"))
                 .withMessage("Domain event type must not be blank");
-        assertThatIllegalArgumentException().isThrownBy(() -> codec.decode(" ", "{}"))
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> codec.decode(" ", "{}"))
                 .withMessage("Domain event type must not be blank");
-        assertThatIllegalArgumentException().isThrownBy(() -> codec.decode("subscription.created", " "))
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> codec.decode("subscription.created", " "))
                 .withMessage("Domain event content must not be blank");
-        assertThatIllegalArgumentException().isThrownBy(() -> codec.decode("unregistered.event", "{not-json"))
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> codec.decode("unregistered.event", "{not-json"))
                 .withMessage("Unknown domain event type: unregistered.event");
     }
 
     @Test
     void rejectsBlankEncodedEventFields() {
-        assertThatIllegalArgumentException().isThrownBy(() -> new EncodedDomainEvent(" ", "{}"))
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> new EncodedDomainEvent(" ", "{}"))
                 .withMessage("Domain event type must not be blank");
-        assertThatIllegalArgumentException().isThrownBy(() -> new EncodedDomainEvent("subscription.created", null))
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> new EncodedDomainEvent("subscription.created", null))
                 .withMessage("Domain event content must not be blank");
     }
 
@@ -127,7 +136,8 @@ class JacksonDomainEventCodecTest {
     void rejectsMalformedJsonDuplicateKeysAndTrailingTokens() {
         assertMalformed("{not-json");
         String paused = codec.encode(subscriptionPaused()).content();
-        assertMalformed(paused.replace("\"eventId\":\"00000000-0000-0000-0000-000000000007\",",
+        assertMalformed(paused.replace(
+                "\"eventId\":\"00000000-0000-0000-0000-000000000007\",",
                 "\"eventId\":\"00000000-0000-0000-0000-000000000007\","
                         + "\"eventId\":\"00000000-0000-0000-0000-000000000007\","));
         assertMalformed(codec.encode(subscriptionPaused()).content() + " {} ");
@@ -148,13 +158,15 @@ class JacksonDomainEventCodecTest {
     }
 
     private void assertMalformed(String content) {
-        assertThatIllegalArgumentException().isThrownBy(() -> codec.decode("subscription.paused", content))
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> codec.decode("subscription.paused", content))
                 .withMessage("Malformed JSON for domain event type 'subscription.paused'")
                 .havingCause();
     }
 
     private void assertIncompatible(String type, String content) {
-        assertThatIllegalArgumentException().isThrownBy(() -> codec.decode(type, content))
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> codec.decode(type, content))
                 .withMessage("JSON is incompatible with domain event type '%s'", type)
                 .havingCause();
     }
@@ -170,69 +182,118 @@ class JacksonDomainEventCodecTest {
     }
 
     private static SubscriptionCreated subscriptionCreated() {
-        return new SubscriptionCreated(UUID.fromString("00000000-0000-0000-0000-000000000001"), FIXED_INSTANT,
+        return new SubscriptionCreated(
+                UUID.fromString("00000000-0000-0000-0000-000000000001"),
+                FIXED_INSTANT,
                 SubscriptionId.of("SUS-00000000-0000-0000-0000-000000000002"),
-                PatientId.of("PAC-00000000-0000-0000-0000-000000000003"), new ContractCode("NTC-2026-0001"),
-                DietPlanId.of("PLAN-00000000-0000-0000-0000-000000000004"), PlanType.BASE,
-                LocalDate.of(2026, 1, 10), LocalDate.of(2026, 1, 24), 15,
-                List.of(EvaluationId.of("EVAL-00000000-0000-0000-0000-000000000005"),
+                PatientId.of("PAC-00000000-0000-0000-0000-000000000003"),
+                new ContractCode("NTC-2026-0001"),
+                DietPlanId.of("PLAN-00000000-0000-0000-0000-000000000004"),
+                PlanType.BASE,
+                LocalDate.of(2026, 1, 10),
+                LocalDate.of(2026, 1, 24),
+                15,
+                List.of(
+                        EvaluationId.of("EVAL-00000000-0000-0000-0000-000000000005"),
                         EvaluationId.of("EVAL-00000000-0000-0000-0000-000000000006")),
-                new BigDecimal("249.90"), "correlation-created");
+                new BigDecimal("249.90"),
+                "correlation-created");
     }
 
     private static SubscriptionPaused subscriptionPaused() {
-        return new SubscriptionPaused(UUID.fromString("00000000-0000-0000-0000-000000000007"), FIXED_INSTANT,
+        return new SubscriptionPaused(
+                UUID.fromString("00000000-0000-0000-0000-000000000007"),
+                FIXED_INSTANT,
                 SubscriptionId.of("SUS-00000000-0000-0000-0000-000000000002"),
                 PatientId.of("PAC-00000000-0000-0000-0000-000000000003"),
-                new PauseRange(LocalDate.of(2024, 2, 10), LocalDate.of(2024, 2, 12)), "Travel",
-                LocalDate.of(2024, 2, 1), LocalDate.of(2026, 1, 27), "correlation-paused");
+                new PauseRange(LocalDate.of(2024, 2, 10), LocalDate.of(2024, 2, 12)),
+                "Travel",
+                LocalDate.of(2024, 2, 1),
+                LocalDate.of(2026, 1, 27),
+                "correlation-paused");
     }
 
     private static SubscriptionReactivated subscriptionReactivated() {
-        return new SubscriptionReactivated(UUID.fromString("00000000-0000-0000-0000-000000000008"), FIXED_INSTANT,
+        return new SubscriptionReactivated(
+                UUID.fromString("00000000-0000-0000-0000-000000000008"),
+                FIXED_INSTANT,
                 SubscriptionId.of("SUS-00000000-0000-0000-0000-000000000002"),
-                PatientId.of("PAC-00000000-0000-0000-0000-000000000003"), LocalDate.of(2026, 1, 12),
-                LocalDate.of(2026, 1, 25), "correlation-reactivated");
+                PatientId.of("PAC-00000000-0000-0000-0000-000000000003"),
+                LocalDate.of(2026, 1, 12),
+                LocalDate.of(2026, 1, 25),
+                "correlation-reactivated");
     }
 
     private static SubscriptionCancelled subscriptionCancelled() {
-        return new SubscriptionCancelled(UUID.fromString("00000000-0000-0000-0000-000000000009"), FIXED_INSTANT,
+        return new SubscriptionCancelled(
+                UUID.fromString("00000000-0000-0000-0000-000000000009"),
+                FIXED_INSTANT,
                 SubscriptionId.of("SUS-00000000-0000-0000-0000-000000000002"),
                 PatientId.of("PAC-00000000-0000-0000-0000-000000000003"),
-                DietPlanId.of("PLAN-00000000-0000-0000-0000-000000000004"), "Requested by patient",
-                LocalDate.of(2026, 1, 13), 3, "correlation-cancelled");
+                DietPlanId.of("PLAN-00000000-0000-0000-0000-000000000004"),
+                "Requested by patient",
+                LocalDate.of(2026, 1, 13),
+                3,
+                "correlation-cancelled");
     }
 
     private static SubscriptionCompleted subscriptionCompleted() {
-        return new SubscriptionCompleted(UUID.fromString("00000000-0000-0000-0000-000000000010"), FIXED_INSTANT,
+        return new SubscriptionCompleted(
+                UUID.fromString("00000000-0000-0000-0000-000000000010"),
+                FIXED_INSTANT,
                 SubscriptionId.of("SUS-00000000-0000-0000-0000-000000000002"),
                 PatientId.of("PAC-00000000-0000-0000-0000-000000000003"),
-                DietPlanId.of("PLAN-00000000-0000-0000-0000-000000000004"), LocalDate.of(2026, 1, 24), 2,
+                DietPlanId.of("PLAN-00000000-0000-0000-0000-000000000004"),
+                LocalDate.of(2026, 1, 24),
+                2,
                 "correlation-completed");
     }
 
     private static ConsolidatedCalendarClosed closedCalendarEvent() {
-        return new ConsolidatedCalendarClosed(UUID.fromString("00000000-0000-0000-0000-000000000011"), FIXED_INSTANT,
-                ConsolidatedCalendarId.of("CAL-00000000-0000-0000-0000-000000000012"), LocalDate.of(2026, 1, 10), 2,
-                "correlation-calendar", List.of(delivery("013", "Patient One", "First Street"),
+        return new ConsolidatedCalendarClosed(
+                UUID.fromString("00000000-0000-0000-0000-000000000011"),
+                FIXED_INSTANT,
+                ConsolidatedCalendarId.of("CAL-00000000-0000-0000-0000-000000000012"),
+                LocalDate.of(2026, 1, 10),
+                2,
+                "correlation-calendar",
+                List.of(
+                        delivery("013", "Patient One", "First Street"),
                         delivery("014", "Patient Two", "Second Street")));
     }
 
     private static ConsolidatedDeliverySnapshot delivery(String suffix, String patientName, String street) {
-        return new ConsolidatedDeliverySnapshot(ConsolidatedLineId.of("LINE-00000000-0000-0000-0000-000000000" + suffix),
+        return new ConsolidatedDeliverySnapshot(
+                ConsolidatedLineId.of("LINE-00000000-0000-0000-0000-000000000" + suffix),
                 SubscriptionId.of("SUS-00000000-0000-0000-0000-000000000020"),
-                PatientId.of("PAC-00000000-0000-0000-0000-000000000021"), patientName,
-                DietPlanId.of("PLAN-00000000-0000-0000-0000-000000000022"), 1,
-                new DeliveryAddress(AddressId.of("DIR-00000000-0000-0000-0000-000000000023"), "Home", street, "10",
-                        "Madrid", "Reception", 40.4168, -3.7038, "600000000"),
-                List.of(new ConsolidatedRecipeSnapshot(RecipeId.of("REC-00000000-0000-0000-0000-000000000024"),
-                        "Soup", LocalTime.of(12, 30), 250),
-                        new ConsolidatedRecipeSnapshot(RecipeId.of("REC-00000000-0000-0000-0000-000000000025"),
-                                "Salad", LocalTime.of(13, 0), 180)));
+                PatientId.of("PAC-00000000-0000-0000-0000-000000000021"),
+                patientName,
+                DietPlanId.of("PLAN-00000000-0000-0000-0000-000000000022"),
+                1,
+                new DeliveryAddress(
+                        AddressId.of("DIR-00000000-0000-0000-0000-000000000023"),
+                        "Home",
+                        street,
+                        "10",
+                        "Madrid",
+                        "Reception",
+                        40.4168,
+                        -3.7038,
+                        "600000000"),
+                List.of(
+                        new ConsolidatedRecipeSnapshot(
+                                RecipeId.of("REC-00000000-0000-0000-0000-000000000024"),
+                                "Soup",
+                                LocalTime.of(12, 30),
+                                250),
+                        new ConsolidatedRecipeSnapshot(
+                                RecipeId.of("REC-00000000-0000-0000-0000-000000000025"),
+                                "Salad",
+                                LocalTime.of(13, 0),
+                                180)));
     }
 
-    private record UnsupportedEvent(UUID eventId, Instant occurredAt) implements DomainEvent {
-    }
+    private record UnsupportedEvent(UUID eventId, Instant occurredAt) implements DomainEvent {}
 
     private static final Instant FIXED_INSTANT = Instant.parse("2026-01-01T10:15:30.123456789Z");
 }

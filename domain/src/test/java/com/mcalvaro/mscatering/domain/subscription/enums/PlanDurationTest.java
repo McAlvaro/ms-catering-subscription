@@ -1,15 +1,14 @@
 package com.mcalvaro.mscatering.domain.subscription.enums;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import com.mcalvaro.mscatering.domain.core.DomainException;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-
-import java.util.stream.Stream;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class PlanDurationTest {
 
@@ -40,9 +39,7 @@ class PlanDurationTest {
     }
 
     private static Stream<Arguments> validDurations() {
-        return Stream.of(
-                Arguments.of(15, PlanDuration.BIWEEKLY),
-                Arguments.of(30, PlanDuration.MONTHLY));
+        return Stream.of(Arguments.of(15, PlanDuration.BIWEEKLY), Arguments.of(30, PlanDuration.MONTHLY));
     }
 
     private static Stream<Integer> invalidDurations() {

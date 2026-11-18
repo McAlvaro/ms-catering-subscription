@@ -20,7 +20,8 @@ public interface DomainId extends Serializable {
             throw new DomainException("ID-002", idName + " must start with prefix '" + prefix + "', got: " + value);
         }
         if (value.trim().length() <= prefix.length()) {
-            throw new DomainException("ID-003", idName + " must have a non-empty payload after prefix '" + prefix + "'");
+            throw new DomainException(
+                    "ID-003", idName + " must have a non-empty payload after prefix '" + prefix + "'");
         }
     }
 
@@ -32,6 +33,10 @@ public interface DomainId extends Serializable {
         if (length <= 0 || length > 32) {
             throw new IllegalArgumentException("Token length must be between 1 and 32, got: " + length);
         }
-        return UUID.randomUUID().toString().replace("-", "").substring(0, length).toUpperCase();
+        return UUID.randomUUID()
+                .toString()
+                .replace("-", "")
+                .substring(0, length)
+                .toUpperCase();
     }
 }

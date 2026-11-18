@@ -2,7 +2,6 @@ package com.mcalvaro.mscatering.integration.contracts;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.time.Instant;
 import java.util.UUID;
 

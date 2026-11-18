@@ -5,6 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 /** The minimal portion of BC1 event data consumed by BC3. */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record PatientRegisteredData(@JsonProperty("idPaciente") String patientId,
-        @JsonProperty("nombreCompleto") String patientName) {
-}
+public record PatientRegisteredData(
+        @JsonProperty("idPaciente") String patientId,
+        @JsonProperty("nombreCompleto") String patientName) {}

@@ -6,14 +6,13 @@ import com.mcalvaro.mscatering.domain.consolidatedcalendar.IConsolidatedCalendar
 import com.mcalvaro.mscatering.domain.core.id.ConsolidatedCalendarId;
 import com.mcalvaro.mscatering.infrastructure.persistence.consolidatedcalendar.entity.ConsolidatedCalendarJpaEntity;
 import com.mcalvaro.mscatering.infrastructure.persistence.consolidatedcalendar.mapper.ConsolidatedCalendarMapper;
+import java.time.LocalDate;
+import java.util.Optional;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.support.ScopeNotActiveException;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.context.request.RequestContextHolder;
-
-import java.time.LocalDate;
-import java.util.Optional;
 
 @Repository
 public class JpaConsolidatedCalendarRepository implements IConsolidatedCalendarRepository {
@@ -23,9 +22,10 @@ public class JpaConsolidatedCalendarRepository implements IConsolidatedCalendarR
     private final ObjectProvider<DomainEventDispatcher> dispatcherProvider;
 
     @Autowired
-    public JpaConsolidatedCalendarRepository(SpringDataConsolidatedCalendarRepository springRepository,
-                                            ConsolidatedCalendarMapper mapper,
-                                            ObjectProvider<DomainEventDispatcher> dispatcherProvider) {
+    public JpaConsolidatedCalendarRepository(
+            SpringDataConsolidatedCalendarRepository springRepository,
+            ConsolidatedCalendarMapper mapper,
+            ObjectProvider<DomainEventDispatcher> dispatcherProvider) {
         this.springRepository = springRepository;
         this.mapper = mapper;
         this.dispatcherProvider = dispatcherProvider;

@@ -1,5 +1,7 @@
 package com.mcalvaro.mscatering.infrastructure.outbox;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.mcalvaro.mscatering.application.outbox.OutboxMessage;
 import com.mcalvaro.mscatering.application.outbox.OutboxMessageRepository;
 import com.mcalvaro.mscatering.domain.core.id.DietPlanId;
@@ -12,6 +14,11 @@ import com.mcalvaro.mscatering.infrastructure.MsCateringApplication;
 import com.mcalvaro.mscatering.infrastructure.persistence.outbox.codec.EncodedDomainEvent;
 import com.mcalvaro.mscatering.infrastructure.persistence.outbox.codec.JacksonDomainEventCodec;
 import com.mcalvaro.mscatering.integration.contracts.IntegrationEvent;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,28 +31,29 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
-@SpringBootTest(classes = MsCateringApplication.class, properties = {
-        "outbox.relay-enabled=true", "outbox.provider=test", "outbox.poll-interval=1h",
-        "spring.datasource.url=jdbc:h2:mem:outbox_relay_e2e;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE" })
+@SpringBootTest(
+        classes = MsCateringApplication.class,
+        properties = {
+            "outbox.relay-enabled=true",
+            "outbox.provider=test",
+            "outbox.poll-interval=1h",
+            "spring.datasource.url=jdbc:h2:mem:outbox_relay_e2e;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE"
+        })
 @ActiveProfiles("test")
 @Import(OutboxRelayEndToEndIT.FakePublisherConfiguration.class)
 class OutboxRelayEndToEndIT {
     @Autowired
     private OutboxProcessor processor;
+
     @Autowired
     private OutboxMessageRepository repository;
+
     @Autowired
     private JacksonDomainEventCodec codec;
+
     @Autowired
     private RecordingIntegrationEventPublisher publisher;
+
     @Autowired
     private PlatformTransactionManager transactionManager;
 
@@ -84,15 +92,22 @@ class OutboxRelayEndToEndIT {
         Instant after = Instant.now();
         assertThat(publisher.published()).isEmpty();
         assertThat(findCommitted(message.id()))
-                .extracting(OutboxMessage::processed, OutboxMessage::attemptCount, OutboxMessage::lastError,
-                        OutboxMessage::lockedBy, OutboxMessage::lockedUntil)
+                .extracting(
+                        OutboxMessage::processed,
+                        OutboxMessage::attemptCount,
+                        OutboxMessage::lastError,
+                        OutboxMessage::lockedBy,
+                        OutboxMessage::lockedUntil)
                 .containsExactly(false, 1, "java.lang.IllegalStateException: test transport failed", null, null);
         assertThat(findCommitted(message.id()).availableAt()).isBetween(before.plusSeconds(5), after.plusSeconds(5));
     }
 
     private OutboxMessage persistPending(SubscriptionCreated source) {
         EncodedDomainEvent encoded = codec.encode(source);
-        OutboxMessage message = OutboxMessage.pending(UUID.randomUUID(), encoded.type(), encoded.content(),
+        OutboxMessage message = OutboxMessage.pending(
+                UUID.randomUUID(),
+                encoded.type(),
+                encoded.content(),
                 Instant.now().minusSeconds(1));
         TransactionTemplate transaction = new TransactionTemplate(transactionManager);
         transaction.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -108,12 +123,20 @@ class OutboxRelayEndToEndIT {
 
     private static SubscriptionCreated sourceEvent() {
         Instant occurredAt = Instant.now().minusSeconds(2);
-        return new SubscriptionCreated(UUID.randomUUID(), occurredAt,
+        return new SubscriptionCreated(
+                UUID.randomUUID(),
+                occurredAt,
                 SubscriptionId.of("SUS-" + UUID.randomUUID()),
                 PatientId.of("PAC-" + UUID.randomUUID()),
                 ContractCode.generate(2026, 1),
-                DietPlanId.of("PLAN-" + UUID.randomUUID()), PlanType.BASE, LocalDate.of(2026, 10, 1),
-                LocalDate.of(2026, 10, 15), 15, List.of(), BigDecimal.TEN, "relay-e2e");
+                DietPlanId.of("PLAN-" + UUID.randomUUID()),
+                PlanType.BASE,
+                LocalDate.of(2026, 10, 1),
+                LocalDate.of(2026, 10, 15),
+                15,
+                List.of(),
+                BigDecimal.TEN,
+                "relay-e2e");
     }
 
     @TestConfiguration(proxyBeanMethods = false)

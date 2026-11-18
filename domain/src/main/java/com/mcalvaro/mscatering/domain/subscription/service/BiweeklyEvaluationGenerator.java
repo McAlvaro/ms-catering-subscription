@@ -1,11 +1,10 @@
 package com.mcalvaro.mscatering.domain.subscription.service;
 
-import java.time.LocalDate;
-import java.util.List;
-
 import com.mcalvaro.mscatering.domain.core.id.PatientId;
 import com.mcalvaro.mscatering.domain.subscription.entity.BiweeklyEvaluation;
 import com.mcalvaro.mscatering.domain.subscription.enums.PlanDuration;
+import java.time.LocalDate;
+import java.util.List;
 
 /**
  * Domain Service for generating bi-weekly evaluations.

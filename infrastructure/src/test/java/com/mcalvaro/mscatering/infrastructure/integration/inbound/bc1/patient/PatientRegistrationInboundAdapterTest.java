@@ -1,24 +1,23 @@
 package com.mcalvaro.mscatering.infrastructure.integration.inbound.bc1.patient;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+
 import an.awesome.pipelinr.Pipeline;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mcalvaro.mscatering.application.patient.synchronization.SynchronizePatientReferenceCommand;
+import java.lang.reflect.RecordComponent;
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.lang.reflect.RecordComponent;
-import java.time.Instant;
-import java.util.List;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 
 @ExtendWith(MockitoExtension.class)
 class PatientRegistrationInboundAdapterTest {
@@ -50,30 +49,86 @@ class PatientRegistrationInboundAdapterTest {
         assertThat(command.payloadFingerprint()).isNotBlank();
         assertThat(command.getClass().getRecordComponents())
                 .extracting(RecordComponent::getName)
-                .containsExactly("eventId", "eventName", "eventVersion", "occurredOn", "source", "correlationId",
-                         "patientId", "patientName", "payloadFingerprint");
+                .containsExactly(
+                        "eventId",
+                        "eventName",
+                        "eventVersion",
+                        "occurredOn",
+                        "source",
+                        "correlationId",
+                        "patientId",
+                        "patientName",
+                        "payloadFingerprint");
     }
 
     @Test
     void rejectsInvalidEnvelopeOrConsumedDataBeforeDispatching() {
         PatientRegisteredEvent valid = validEvent();
         List<PatientRegisteredEvent> invalidEvents = List.of(
-                new PatientRegisteredEvent(null, valid.eventName(), valid.eventVersion(), valid.occurredOn(),
-                        valid.source(), valid.correlationId(), valid.data()),
-                new PatientRegisteredEvent(valid.eventId(), "PacienteRegistrado", valid.eventVersion(),
-                        valid.occurredOn(), valid.source(), valid.correlationId(), valid.data()),
-                new PatientRegisteredEvent(valid.eventId(), valid.eventName(), "2.0", valid.occurredOn(),
-                        valid.source(), valid.correlationId(), valid.data()),
-                new PatientRegisteredEvent(valid.eventId(), valid.eventName(), valid.eventVersion(), null,
-                        valid.source(), valid.correlationId(), valid.data()),
-                new PatientRegisteredEvent(valid.eventId(), valid.eventName(), valid.eventVersion(), valid.occurredOn(),
-                        "OtherSource", valid.correlationId(), valid.data()),
-                new PatientRegisteredEvent(valid.eventId(), valid.eventName(), valid.eventVersion(), valid.occurredOn(),
-                        valid.source(), "   ", valid.data()),
-                new PatientRegisteredEvent(valid.eventId(), valid.eventName(), valid.eventVersion(), valid.occurredOn(),
-                        valid.source(), valid.correlationId(), null),
-                new PatientRegisteredEvent(valid.eventId(), valid.eventName(), valid.eventVersion(), valid.occurredOn(),
-                         valid.source(), valid.correlationId(), new PatientRegisteredData(null, "Ada Lovelace")));
+                new PatientRegisteredEvent(
+                        null,
+                        valid.eventName(),
+                        valid.eventVersion(),
+                        valid.occurredOn(),
+                        valid.source(),
+                        valid.correlationId(),
+                        valid.data()),
+                new PatientRegisteredEvent(
+                        valid.eventId(),
+                        "PacienteRegistrado",
+                        valid.eventVersion(),
+                        valid.occurredOn(),
+                        valid.source(),
+                        valid.correlationId(),
+                        valid.data()),
+                new PatientRegisteredEvent(
+                        valid.eventId(),
+                        valid.eventName(),
+                        "2.0",
+                        valid.occurredOn(),
+                        valid.source(),
+                        valid.correlationId(),
+                        valid.data()),
+                new PatientRegisteredEvent(
+                        valid.eventId(),
+                        valid.eventName(),
+                        valid.eventVersion(),
+                        null,
+                        valid.source(),
+                        valid.correlationId(),
+                        valid.data()),
+                new PatientRegisteredEvent(
+                        valid.eventId(),
+                        valid.eventName(),
+                        valid.eventVersion(),
+                        valid.occurredOn(),
+                        "OtherSource",
+                        valid.correlationId(),
+                        valid.data()),
+                new PatientRegisteredEvent(
+                        valid.eventId(),
+                        valid.eventName(),
+                        valid.eventVersion(),
+                        valid.occurredOn(),
+                        valid.source(),
+                        "   ",
+                        valid.data()),
+                new PatientRegisteredEvent(
+                        valid.eventId(),
+                        valid.eventName(),
+                        valid.eventVersion(),
+                        valid.occurredOn(),
+                        valid.source(),
+                        valid.correlationId(),
+                        null),
+                new PatientRegisteredEvent(
+                        valid.eventId(),
+                        valid.eventName(),
+                        valid.eventVersion(),
+                        valid.occurredOn(),
+                        valid.source(),
+                        valid.correlationId(),
+                        new PatientRegisteredData(null, "Ada Lovelace")));
 
         invalidEvents.forEach(event -> assertThatThrownBy(() -> adapter.receive(event))
                 .isInstanceOf(PatientRegistrationContractException.class)

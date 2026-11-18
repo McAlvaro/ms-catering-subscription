@@ -3,7 +3,6 @@ package com.mcalvaro.mscatering.application.subscription.UpdateDeliveryPreferenc
 import an.awesome.pipelinr.Command;
 import com.mcalvaro.mscatering.domain.core.id.AddressId;
 import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
-
 import java.time.LocalTime;
 
 /**
@@ -15,7 +14,8 @@ public record UpdateDeliveryPreferencesCommand(
         AddressId deliveryAddressId,
         LocalTime startTime,
         LocalTime endTime,
-        String specialInstructions) implements Command<Void> {
+        String specialInstructions)
+        implements Command<Void> {
 
     public UpdateDeliveryPreferencesCommand(
             String subscriptionId,
@@ -23,7 +23,11 @@ public record UpdateDeliveryPreferencesCommand(
             LocalTime startTime,
             LocalTime endTime,
             String specialInstructions) {
-        this(SubscriptionId.of(subscriptionId), AddressId.of(deliveryAddressId),
-                startTime, endTime, specialInstructions);
+        this(
+                SubscriptionId.of(subscriptionId),
+                AddressId.of(deliveryAddressId),
+                startTime,
+                endTime,
+                specialInstructions);
     }
 }

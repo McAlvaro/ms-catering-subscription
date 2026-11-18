@@ -12,11 +12,15 @@ public final class SubscriptionReactivatedOutboxEventTranslator
 
     @Override
     public SubscriptionReactivatedIntegrationEvent translate(SubscriptionReactivated source) {
-        if (source == null)
-            throw new IntegrationEventTranslationException("SubscriptionReactivated must not be null");
-        return new SubscriptionReactivatedIntegrationEvent(source.eventId(), source.occurredAt(),
+        if (source == null) throw new IntegrationEventTranslationException("SubscriptionReactivated must not be null");
+        return new SubscriptionReactivatedIntegrationEvent(
+                source.eventId(),
+                source.occurredAt(),
                 source.correlationId(),
-                new SubscriptionReactivatedIntegrationEvent.Data(source.subscriptionId().value(), source.patientId().value(),
-                        source.reactivatedOn(), source.effectiveEndDate()));
+                new SubscriptionReactivatedIntegrationEvent.Data(
+                        source.subscriptionId().value(),
+                        source.patientId().value(),
+                        source.reactivatedOn(),
+                        source.effectiveEndDate()));
     }
 }

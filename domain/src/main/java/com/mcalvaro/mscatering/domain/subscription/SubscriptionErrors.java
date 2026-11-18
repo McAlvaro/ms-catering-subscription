@@ -10,8 +10,7 @@ import com.mcalvaro.mscatering.domain.subscription.enums.SubscriptionStatus;
  */
 public final class SubscriptionErrors {
 
-    private SubscriptionErrors() {
-    }
+    private SubscriptionErrors() {}
 
     public static DomainException pauseRequires48HoursAnticipation() {
         return new DomainException("SUB-001", "Pause must be requested at least 48 hours in advance.");
@@ -54,13 +53,13 @@ public final class SubscriptionErrors {
     }
 
     public static DomainException deliveryDayBlocked() {
-        return new DomainException("SUB-011",
-                "Cannot modify delivery day: it has already been consolidated or processed.");
+        return new DomainException(
+                "SUB-011", "Cannot modify delivery day: it has already been consolidated or processed.");
     }
 
     public static DomainException calendarNoActiveDays() {
-        return new DomainException("SUB-012",
-                "Cannot mark as NO_DELIVERY: the calendar would have no active delivery days left.");
+        return new DomainException(
+                "SUB-012", "Cannot mark as NO_DELIVERY: the calendar would have no active delivery days left.");
     }
 
     public static DomainException pauseRangeOutsideValidity() {

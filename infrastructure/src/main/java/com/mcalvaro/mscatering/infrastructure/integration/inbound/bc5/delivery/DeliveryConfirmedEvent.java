@@ -2,7 +2,6 @@ package com.mcalvaro.mscatering.infrastructure.integration.inbound.bc5.delivery;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.time.Instant;
 import java.util.UUID;
 
@@ -17,6 +16,4 @@ public record DeliveryConfirmedEvent(
         @JsonProperty("occurredOn") Instant occurredOn,
         @JsonProperty("source") String source,
         @JsonProperty("correlationId") String correlationId,
-        @JsonProperty("data") DeliveryConfirmedData data
-) {
-}
+        @JsonProperty("data") DeliveryConfirmedData data) {}

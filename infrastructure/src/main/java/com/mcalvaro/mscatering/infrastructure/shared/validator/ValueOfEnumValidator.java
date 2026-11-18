@@ -27,7 +27,7 @@ public class ValueOfEnumValidator implements ConstraintValidator<ValueOfEnum, Ob
         if (!isValid) {
             context.disableDefaultConstraintViolation();
             context.buildConstraintViolationWithTemplate(
-                    "El valor '" + value + "' no es válido. Los valores permitidos son: " + acceptedValues)
+                            "El valor '" + value + "' no es válido. Los valores permitidos son: " + acceptedValues)
                     .addConstraintViolation();
         }
         return isValid;

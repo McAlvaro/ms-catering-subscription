@@ -2,7 +2,6 @@ package com.mcalvaro.mscatering.integration.contracts;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -37,7 +36,9 @@ public record SubscriptionCreatedIntegrationEvent(UUID eventId, Instant occurred
             @JsonProperty("fechaFin") LocalDate endDate,
             @JsonProperty("evaluacionesIncluidas") int includedEvaluations,
             @JsonProperty("montoFacturado") BigDecimal invoicedAmount,
-            @JsonProperty("nroFactura") @JsonInclude(JsonInclude.Include.ALWAYS) String invoiceNumber) {
+
+            @JsonProperty("nroFactura") @JsonInclude(JsonInclude.Include.ALWAYS)
+            String invoiceNumber) {
         public Data {
             ContractAssertions.text(subscriptionId, "subscriptionId");
             ContractAssertions.text(patientId, "patientId");

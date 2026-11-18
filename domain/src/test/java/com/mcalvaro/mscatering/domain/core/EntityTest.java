@@ -3,10 +3,9 @@ package com.mcalvaro.mscatering.domain.core;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
 import java.time.Instant;
 import java.util.UUID;
-
-import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

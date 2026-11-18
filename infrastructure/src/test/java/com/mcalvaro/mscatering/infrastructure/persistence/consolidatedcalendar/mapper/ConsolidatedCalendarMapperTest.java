@@ -1,5 +1,7 @@
 package com.mcalvaro.mscatering.infrastructure.persistence.consolidatedcalendar.mapper;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.ConsolidatedCalendar;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.entity.ConsolidatedLine;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.enums.ConsolidateStatus;
@@ -16,16 +18,13 @@ import com.mcalvaro.mscatering.domain.subscription.vo.TimeWindow;
 import com.mcalvaro.mscatering.infrastructure.persistence.consolidatedcalendar.entity.ConsolidatedCalendarJpaEntity;
 import com.mcalvaro.mscatering.infrastructure.persistence.consolidatedcalendar.entity.ConsolidatedLineJpaEntity;
 import com.mcalvaro.mscatering.infrastructure.persistence.consolidatedcalendar.entity.ConsolidatedLineRecipeJpaEntity;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 class ConsolidatedCalendarMapperTest {
 
@@ -49,11 +48,16 @@ class ConsolidatedCalendarMapperTest {
         assertThat(result.getClosedBy()).isEqualTo(calendar.getClosedBy());
         assertThat(result.getLines()).singleElement().satisfies(line -> {
             assertThat(line.getConsolidatedCalendar()).isSameAs(result);
-            assertThat(line.getId()).isEqualTo(calendar.getLines().get(0).getId().value());
-            assertThat(line.getSubscriptionId()).isEqualTo(calendar.getLines().get(0).getSubscriptionId().value());
-            assertThat(line.getPatientId()).isEqualTo(calendar.getLines().get(0).getPatientId().value());
-            assertThat(line.getDietPlanId()).isEqualTo(calendar.getLines().get(0).getDietPlanId().value());
-            assertThat(line.getServiceType()).isEqualTo(calendar.getLines().get(0).getServiceType().name());
+            assertThat(line.getId())
+                    .isEqualTo(calendar.getLines().get(0).getId().value());
+            assertThat(line.getSubscriptionId())
+                    .isEqualTo(calendar.getLines().get(0).getSubscriptionId().value());
+            assertThat(line.getPatientId())
+                    .isEqualTo(calendar.getLines().get(0).getPatientId().value());
+            assertThat(line.getDietPlanId())
+                    .isEqualTo(calendar.getLines().get(0).getDietPlanId().value());
+            assertThat(line.getServiceType())
+                    .isEqualTo(calendar.getLines().get(0).getServiceType().name());
             assertThat(line.getAddressStreet()).isEqualTo("Main Street");
             assertThat(line.getAddressNumber()).isEqualTo("42");
             assertThat(line.getAddressCity()).isEqualTo("Madrid");
@@ -84,11 +88,15 @@ class ConsolidatedCalendarMapperTest {
         assertThat(result.getClosedAt()).isEqualTo(calendar.getClosedAt());
         assertThat(result.getClosedBy()).isEqualTo(calendar.getClosedBy());
         assertThat(result.getLines()).singleElement().satisfies(line -> {
-            assertThat(line.getId().value()).isEqualTo(calendar.getLines().get(0).getId());
+            assertThat(line.getId().value())
+                    .isEqualTo(calendar.getLines().get(0).getId());
             assertThat(line.getConsolidatedCalendarId().value()).isEqualTo(calendar.getId());
-            assertThat(line.getSubscriptionId().value()).isEqualTo(calendar.getLines().get(0).getSubscriptionId());
-            assertThat(line.getPatientId().value()).isEqualTo(calendar.getLines().get(0).getPatientId());
-            assertThat(line.getDietPlanId().value()).isEqualTo(calendar.getLines().get(0).getDietPlanId());
+            assertThat(line.getSubscriptionId().value())
+                    .isEqualTo(calendar.getLines().get(0).getSubscriptionId());
+            assertThat(line.getPatientId().value())
+                    .isEqualTo(calendar.getLines().get(0).getPatientId());
+            assertThat(line.getDietPlanId().value())
+                    .isEqualTo(calendar.getLines().get(0).getDietPlanId());
             assertThat(line.getServiceType()).isEqualTo(ServiceType.values()[0]);
             assertThat(line.getAddress().latitude()).isZero();
             assertThat(line.getAddress().longitude()).isZero();
@@ -120,14 +128,32 @@ class ConsolidatedCalendarMapperTest {
     }
 
     private ConsolidatedCalendar buildClosedCalendar() {
-        ConsolidatedCalendarId calendarId = ConsolidatedCalendarId.of("CAL-" + UUID.fromString("62ec74a8-a14a-4dfc-bc49-9d4c4a882169"));
+        ConsolidatedCalendarId calendarId =
+                ConsolidatedCalendarId.of("CAL-" + UUID.fromString("62ec74a8-a14a-4dfc-bc49-9d4c4a882169"));
         ConsolidatedCalendar calendar = ConsolidatedCalendar.create(calendarId, LocalDate.of(2026, 5, 18));
-        calendar.addLine(new ConsolidatedLine(ConsolidatedLineId.of("LINE-" + UUID.fromString("a3d4481c-8293-48c4-bdfc-bfc2b5a9a73d")), calendarId,
+        calendar.addLine(new ConsolidatedLine(
+                ConsolidatedLineId.of("LINE-" + UUID.fromString("a3d4481c-8293-48c4-bdfc-bfc2b5a9a73d")),
+                calendarId,
                 SubscriptionId.of("SUS-" + UUID.fromString("9a412c7d-19af-4a57-a9a8-0ea4517747bf")),
-                PatientId.of("PAC-" + UUID.fromString("980c15b9-6d3c-428f-893a-627208107d83")), "Ada Lovelace",
-                DietPlanId.of("PLAN-" + UUID.fromString("671b9beb-e4e9-421e-a0e4-224ba1f0dd05")), 1, ServiceType.values()[0],
-                new DeliveryAddress(AddressId.of("DIR-" + UUID.randomUUID()), "Home", "Main Street", "42", "Madrid", "Blue door", 40.4168, -3.7038, "+34123456789"),
-                new TimeWindow(LocalTime.of(9, 0), LocalTime.of(11, 0)), "Leave with reception", List.of(new com.mcalvaro.mscatering.domain.consolidatedcalendar.entity.ConsolidatedRecipeSnapshot(RecipeId.of("REC-" + UUID.randomUUID()), "Lunch", LocalTime.of(9, 0), 100))));
+                PatientId.of("PAC-" + UUID.fromString("980c15b9-6d3c-428f-893a-627208107d83")),
+                "Ada Lovelace",
+                DietPlanId.of("PLAN-" + UUID.fromString("671b9beb-e4e9-421e-a0e4-224ba1f0dd05")),
+                1,
+                ServiceType.values()[0],
+                new DeliveryAddress(
+                        AddressId.of("DIR-" + UUID.randomUUID()),
+                        "Home",
+                        "Main Street",
+                        "42",
+                        "Madrid",
+                        "Blue door",
+                        40.4168,
+                        -3.7038,
+                        "+34123456789"),
+                new TimeWindow(LocalTime.of(9, 0), LocalTime.of(11, 0)),
+                "Leave with reception",
+                List.of(new com.mcalvaro.mscatering.domain.consolidatedcalendar.entity.ConsolidatedRecipeSnapshot(
+                        RecipeId.of("REC-" + UUID.randomUUID()), "Lunch", LocalTime.of(9, 0), 100))));
         calendar.close("dispatcher@example.com");
         return calendar;
     }
@@ -172,7 +198,15 @@ class ConsolidatedCalendarMapperTest {
     }
 
     private DeliveryAddress buildAddress() {
-        return new DeliveryAddress(AddressId.of("DIR-" + UUID.randomUUID()), "Home", "Main Street", "42", "Madrid", "Blue door", 40.4168, -3.7038,
+        return new DeliveryAddress(
+                AddressId.of("DIR-" + UUID.randomUUID()),
+                "Home",
+                "Main Street",
+                "42",
+                "Madrid",
+                "Blue door",
+                40.4168,
+                -3.7038,
                 "+34123456789");
     }
 }

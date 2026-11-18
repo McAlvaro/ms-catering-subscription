@@ -1,16 +1,15 @@
 package com.mcalvaro.mscatering.domain.subscription.vo;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import com.mcalvaro.mscatering.domain.core.DomainException;
+import java.time.LocalTime;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-
-import java.time.LocalTime;
-import java.util.stream.Stream;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class TimeWindowTest {
 
@@ -60,16 +59,11 @@ class TimeWindowTest {
 
     private static Stream<LocalTime[]> windowsWithNullTime() {
         LocalTime noon = LocalTime.NOON;
-        return Stream.of(
-                new LocalTime[] { null, noon },
-                new LocalTime[] { noon, null },
-                new LocalTime[] { null, null });
+        return Stream.of(new LocalTime[] {null, noon}, new LocalTime[] {noon, null}, new LocalTime[] {null, null});
     }
 
     private static Stream<LocalTime[]> windowsNotInAscendingOrder() {
         LocalTime noon = LocalTime.NOON;
-        return Stream.of(
-                new LocalTime[] { noon, noon },
-                new LocalTime[] { noon.plusHours(1), noon });
+        return Stream.of(new LocalTime[] {noon, noon}, new LocalTime[] {noon.plusHours(1), noon});
     }
 }

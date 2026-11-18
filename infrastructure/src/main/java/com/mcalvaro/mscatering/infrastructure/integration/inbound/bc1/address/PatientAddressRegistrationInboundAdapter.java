@@ -2,11 +2,10 @@ package com.mcalvaro.mscatering.infrastructure.integration.inbound.bc1.address;
 
 import an.awesome.pipelinr.Pipeline;
 import com.mcalvaro.mscatering.application.patient.address.synchronization.SynchronizePatientAddressCommand;
-import org.springframework.stereotype.Component;
-
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import org.springframework.stereotype.Component;
 
 /**
  * Anti-corruption adapter for BC1 address events; intentionally
@@ -27,22 +26,44 @@ public class PatientAddressRegistrationInboundAdapter {
     public void receive(PatientAddressRegisteredEvent event) {
         validate(event);
         PatientAddressRegisteredData data = event.data();
-        pipeline.send(new SynchronizePatientAddressCommand(event.eventId(), event.eventName(), event.eventVersion(),
-                event.occurredOn(), event.source(), event.correlationId(), data.patientId(), data.addressId(), data.alias(),
-                data.street(), data.reference(), data.city(), data.geolocation().latitude(),
-                data.geolocation().longitude(), payloadFingerprint(data)));
+        pipeline.send(new SynchronizePatientAddressCommand(
+                event.eventId(),
+                event.eventName(),
+                event.eventVersion(),
+                event.occurredOn(),
+                event.source(),
+                event.correlationId(),
+                data.patientId(),
+                data.addressId(),
+                data.alias(),
+                data.street(),
+                data.reference(),
+                data.city(),
+                data.geolocation().latitude(),
+                data.geolocation().longitude(),
+                payloadFingerprint(data)));
     }
 
     private void validate(PatientAddressRegisteredEvent event) {
-        if (event == null || event.eventId() == null || !EVENT_NAME.equals(event.eventName())
-                || !EVENT_VERSION.equals(event.eventVersion()) || event.occurredOn() == null
-                || !SOURCE.equals(event.source()) || blank(event.correlationId()) || event.data() == null) {
+        if (event == null
+                || event.eventId() == null
+                || !EVENT_NAME.equals(event.eventName())
+                || !EVENT_VERSION.equals(event.eventVersion())
+                || event.occurredOn() == null
+                || !SOURCE.equals(event.source())
+                || blank(event.correlationId())
+                || event.data() == null) {
             invalidContract();
         }
         PatientAddressRegisteredData data = event.data();
-        if (blank(data.patientId()) || blank(data.addressId()) || blank(data.alias()) || blank(data.street()) || blank(data.reference())
+        if (blank(data.patientId())
+                || blank(data.addressId())
+                || blank(data.alias())
+                || blank(data.street())
+                || blank(data.reference())
                 || blank(data.city())
-                || data.geolocation() == null || !coordinate(data.geolocation().latitude(), -90, 90)
+                || data.geolocation() == null
+                || !coordinate(data.geolocation().latitude(), -90, 90)
                 || !coordinate(data.geolocation().longitude(), -180, 180)) {
             invalidContract();
         }
@@ -57,8 +78,14 @@ public class PatientAddressRegistrationInboundAdapter {
     }
 
     private String payloadFingerprint(PatientAddressRegisteredData data) {
-        return sha256(data.patientId(), data.addressId(), data.alias(), data.street(),
-                data.reference(), data.city(), data.geolocation().latitude().toString(),
+        return sha256(
+                data.patientId(),
+                data.addressId(),
+                data.alias(),
+                data.street(),
+                data.reference(),
+                data.city(),
+                data.geolocation().latitude().toString(),
                 data.geolocation().longitude().toString());
     }
 
@@ -80,7 +107,7 @@ public class PatientAddressRegistrationInboundAdapter {
     }
 
     private void invalidContract() {
-        throw new PatientAddressRegistrationContractException("PROJ-001",
-                "Invalid bc1.DireccionClienteRegistrada canonical contract");
+        throw new PatientAddressRegistrationContractException(
+                "PROJ-001", "Invalid bc1.DireccionClienteRegistrada canonical contract");
     }
 }

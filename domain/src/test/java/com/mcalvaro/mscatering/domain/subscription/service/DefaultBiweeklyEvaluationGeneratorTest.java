@@ -1,15 +1,14 @@
 package com.mcalvaro.mscatering.domain.subscription.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.mcalvaro.mscatering.domain.core.id.PatientId;
 import com.mcalvaro.mscatering.domain.subscription.entity.BiweeklyEvaluation;
 import com.mcalvaro.mscatering.domain.subscription.enums.PlanDuration;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-
 import java.time.LocalDate;
 import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 class DefaultBiweeklyEvaluationGeneratorTest {
 
@@ -21,8 +20,8 @@ class DefaultBiweeklyEvaluationGeneratorTest {
         PatientId patientId = PatientId.generate();
 
         // Act
-        List<BiweeklyEvaluation> evaluations = generator.generate(patientId, LocalDate.of(2026, 1, 5),
-                PlanDuration.BIWEEKLY);
+        List<BiweeklyEvaluation> evaluations =
+                generator.generate(patientId, LocalDate.of(2026, 1, 5), PlanDuration.BIWEEKLY);
 
         // Assert
         assertThat(evaluations).singleElement().satisfies(evaluation -> {
@@ -39,12 +38,15 @@ class DefaultBiweeklyEvaluationGeneratorTest {
         DefaultBiweeklyEvaluationGenerator generator = new DefaultBiweeklyEvaluationGenerator();
 
         // Act
-        List<BiweeklyEvaluation> evaluations = generator.generate(PatientId.generate(), LocalDate.of(2026, 1, 5),
-                PlanDuration.MONTHLY);
+        List<BiweeklyEvaluation> evaluations =
+                generator.generate(PatientId.generate(), LocalDate.of(2026, 1, 5), PlanDuration.MONTHLY);
 
         // Assert
-        assertThat(evaluations).extracting(BiweeklyEvaluation::getEvaluationNumber).containsExactly(1, 2);
-        assertThat(evaluations).extracting(BiweeklyEvaluation::getScheduledDate)
+        assertThat(evaluations)
+                .extracting(BiweeklyEvaluation::getEvaluationNumber)
+                .containsExactly(1, 2);
+        assertThat(evaluations)
+                .extracting(BiweeklyEvaluation::getScheduledDate)
                 .containsExactly(LocalDate.of(2026, 1, 19), LocalDate.of(2026, 2, 3));
     }
 
@@ -55,11 +57,12 @@ class DefaultBiweeklyEvaluationGeneratorTest {
         DefaultBiweeklyEvaluationGenerator generator = new DefaultBiweeklyEvaluationGenerator();
 
         // Act
-        List<BiweeklyEvaluation> evaluations = generator.generate(PatientId.generate(), LocalDate.of(2026, 2, 21),
-                PlanDuration.BIWEEKLY);
+        List<BiweeklyEvaluation> evaluations =
+                generator.generate(PatientId.generate(), LocalDate.of(2026, 2, 21), PlanDuration.BIWEEKLY);
 
         // Assert
-        assertThat(evaluations).singleElement()
+        assertThat(evaluations)
+                .singleElement()
                 .extracting(BiweeklyEvaluation::getScheduledDate)
                 .isEqualTo(LocalDate.of(2026, 3, 9));
     }
@@ -71,11 +74,12 @@ class DefaultBiweeklyEvaluationGeneratorTest {
         DefaultBiweeklyEvaluationGenerator generator = new DefaultBiweeklyEvaluationGenerator();
 
         // Act
-        List<BiweeklyEvaluation> evaluations = generator.generate(PatientId.generate(), LocalDate.of(2026, 2, 22),
-                PlanDuration.BIWEEKLY);
+        List<BiweeklyEvaluation> evaluations =
+                generator.generate(PatientId.generate(), LocalDate.of(2026, 2, 22), PlanDuration.BIWEEKLY);
 
         // Assert
-        assertThat(evaluations).singleElement()
+        assertThat(evaluations)
+                .singleElement()
                 .extracting(BiweeklyEvaluation::getScheduledDate)
                 .isEqualTo(LocalDate.of(2026, 3, 9));
     }

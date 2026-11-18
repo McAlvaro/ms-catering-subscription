@@ -1,7 +1,6 @@
 package com.mcalvaro.mscatering.domain.patient;
 
 import com.mcalvaro.mscatering.domain.core.id.PatientId;
-
 import java.time.Instant;
 
 /**
@@ -15,11 +14,7 @@ import java.time.Instant;
  * The domain may reference it to validate that a patient is active before
  * creating a subscription.
  */
-public record PatientReference(
-        PatientId patientId,
-        String patientName,
-        boolean active,
-        Instant updatedAt) {
+public record PatientReference(PatientId patientId, String patientName, boolean active, Instant updatedAt) {
 
     public boolean isActive() {
         return active;

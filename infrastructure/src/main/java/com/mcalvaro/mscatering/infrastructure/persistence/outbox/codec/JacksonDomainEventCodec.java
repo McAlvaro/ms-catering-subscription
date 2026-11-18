@@ -1,9 +1,9 @@
 package com.mcalvaro.mscatering.infrastructure.persistence.outbox.codec;
 
 import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.StreamReadFeature;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.StreamReadFeature;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -17,11 +17,10 @@ import com.mcalvaro.mscatering.domain.subscription.event.SubscriptionCompleted;
 import com.mcalvaro.mscatering.domain.subscription.event.SubscriptionCreated;
 import com.mcalvaro.mscatering.domain.subscription.event.SubscriptionPaused;
 import com.mcalvaro.mscatering.domain.subscription.event.SubscriptionReactivated;
-import org.springframework.stereotype.Component;
-
 import java.io.IOException;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.springframework.stereotype.Component;
 
 /**
  * Closed-registry JSON codec for the domain events that are approved for
@@ -67,7 +66,8 @@ public final class JacksonDomainEventCodec {
 
         String type = TYPE_BY_CLASS.get(event.getClass());
         if (type == null) {
-            throw new IllegalArgumentException("Unsupported domain event class: " + event.getClass().getName());
+            throw new IllegalArgumentException(
+                    "Unsupported domain event class: " + event.getClass().getName());
         }
 
         try {

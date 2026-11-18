@@ -1,7 +1,6 @@
 package com.mcalvaro.mscatering.domain.subscription.vo;
 
 import com.mcalvaro.mscatering.domain.core.DomainException;
-
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;

@@ -1,14 +1,18 @@
 package com.mcalvaro.mscatering.infrastructure.persistence.patient.synchronization;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mcalvaro.mscatering.application.patient.synchronization.PatientReferenceSynchronizationException;
 import com.mcalvaro.mscatering.infrastructure.BaseIntegrationTest;
 import com.mcalvaro.mscatering.infrastructure.integration.inbound.bc1.patient.PatientRegisteredData;
 import com.mcalvaro.mscatering.infrastructure.integration.inbound.bc1.patient.PatientRegisteredEvent;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mcalvaro.mscatering.infrastructure.persistence.inboundevent.repository.SpringDataProcessedInboundEventReceiptRepository;
 import com.mcalvaro.mscatering.infrastructure.persistence.patient.entity.PatientReferenceJpaEntity;
 import com.mcalvaro.mscatering.infrastructure.persistence.patient.repository.SpringDataPatientReferenceRepository;
 import com.mcalvaro.mscatering.infrastructure.support.PatientRegistrationFixture;
+import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,12 +20,6 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.Instant;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
 class JpaPatientReferenceSynchronizationStoreIT extends BaseIntegrationTest {
@@ -47,7 +45,8 @@ class JpaPatientReferenceSynchronizationStoreIT extends BaseIntegrationTest {
 
         fixture.ingest(event);
 
-        PatientReferenceJpaEntity reference = patientReferenceRepository.findById(event.data().patientId()).orElseThrow();
+        PatientReferenceJpaEntity reference =
+                patientReferenceRepository.findById(event.data().patientId()).orElseThrow();
         assertThat(reference.isActive()).isTrue();
         assertThat(reference.getUpdatedAt()).isEqualTo(event.occurredOn());
         var receipt = receiptRepository.findById(event.eventId()).orElseThrow();
@@ -77,7 +76,8 @@ class JpaPatientReferenceSynchronizationStoreIT extends BaseIntegrationTest {
     void recordsSemanticDuplicateWithoutProjectionOverwriteWhenIgnoredPiiChanges() throws Exception {
         String patientId = "PAC-" + UUID.randomUUID();
         PatientRegisteredEvent first = eventFromJson(UUID.randomUUID(), patientId, "Ana Uno", "ana@example.com");
-        PatientRegisteredEvent duplicate = eventFromJson(UUID.randomUUID(), patientId, "Ana Uno", "ana.dos@example.com");
+        PatientRegisteredEvent duplicate =
+                eventFromJson(UUID.randomUUID(), patientId, "Ana Uno", "ana.dos@example.com");
         long receiptsBefore = receiptRepository.count();
 
         fixture.ingest(first);
@@ -94,12 +94,20 @@ class JpaPatientReferenceSynchronizationStoreIT extends BaseIntegrationTest {
         PatientRegisteredEvent first = fixture.eventFor("PAC-" + UUID.randomUUID());
         fixture.ingest(first);
         PatientRegisteredEvent conflict = new PatientRegisteredEvent(
-                first.eventId(), first.eventName(), first.eventVersion(), first.occurredOn(), first.source(),
-                "changed-correlation", first.data());
+                first.eventId(),
+                first.eventName(),
+                first.eventVersion(),
+                first.occurredOn(),
+                first.source(),
+                "changed-correlation",
+                first.data());
 
         assertSynchronizationConflict(conflict);
 
-        assertThat(patientReferenceRepository.findById(first.data().patientId()).orElseThrow().getUpdatedAt())
+        assertThat(patientReferenceRepository
+                        .findById(first.data().patientId())
+                        .orElseThrow()
+                        .getUpdatedAt())
                 .isEqualTo(first.occurredOn());
         assertThat(receiptRepository.existsById(first.eventId())).isTrue();
     }
@@ -110,13 +118,20 @@ class JpaPatientReferenceSynchronizationStoreIT extends BaseIntegrationTest {
         PatientRegisteredEvent first = fixture.eventFor("PAC-" + UUID.randomUUID());
         fixture.ingest(first);
         PatientRegisteredEvent conflict = new PatientRegisteredEvent(
-                first.eventId(), first.eventName(), first.eventVersion(), first.occurredOn(), first.source(),
-                first.correlationId(), new PatientRegisteredData("PAC-" + UUID.randomUUID(), "Conflicting patient"));
+                first.eventId(),
+                first.eventName(),
+                first.eventVersion(),
+                first.occurredOn(),
+                first.source(),
+                first.correlationId(),
+                new PatientRegisteredData("PAC-" + UUID.randomUUID(), "Conflicting patient"));
 
         assertSynchronizationConflict(conflict);
 
-        assertThat(patientReferenceRepository.existsById(first.data().patientId())).isTrue();
-        assertThat(patientReferenceRepository.existsById(conflict.data().patientId())).isFalse();
+        assertThat(patientReferenceRepository.existsById(first.data().patientId()))
+                .isTrue();
+        assertThat(patientReferenceRepository.existsById(conflict.data().patientId()))
+                .isFalse();
         assertThat(receiptRepository.existsById(first.eventId())).isTrue();
     }
 
@@ -125,13 +140,19 @@ class JpaPatientReferenceSynchronizationStoreIT extends BaseIntegrationTest {
     void rollsBackWhenDatabasePersistenceFails() {
         PatientRegisteredEvent event = fixture.eventFor("PAC-" + UUID.randomUUID());
         PatientRegisteredEvent tooLongCorrelationId = new PatientRegisteredEvent(
-                event.eventId(), event.eventName(), event.eventVersion(), event.occurredOn(), event.source(),
-                "x".repeat(256), event.data());
+                event.eventId(),
+                event.eventName(),
+                event.eventVersion(),
+                event.occurredOn(),
+                event.source(),
+                "x".repeat(256),
+                event.data());
 
         assertThatThrownBy(() -> fixture.ingest(tooLongCorrelationId))
                 .isInstanceOf(DataIntegrityViolationException.class);
 
-        assertThat(patientReferenceRepository.existsById(event.data().patientId())).isFalse();
+        assertThat(patientReferenceRepository.existsById(event.data().patientId()))
+                .isFalse();
         assertThat(receiptRepository.existsById(event.eventId())).isFalse();
     }
 
@@ -150,8 +171,9 @@ class JpaPatientReferenceSynchronizationStoreIT extends BaseIntegrationTest {
                 """, String.class);
 
         assertThat(tables).isZero();
-        assertThat(receiptColumns).doesNotContain(
-                "FULL_NAME", "BIRTH_DATE", "SEX", "PHONE", "EMAIL", "NUTRITIONIST_ID", "REGISTRATION_DATE");
+        assertThat(receiptColumns)
+                .doesNotContain(
+                        "FULL_NAME", "BIRTH_DATE", "SEX", "PHONE", "EMAIL", "NUTRITIONIST_ID", "REGISTRATION_DATE");
     }
 
     private void assertSynchronizationConflict(PatientRegisteredEvent event) {
@@ -163,7 +185,8 @@ class JpaPatientReferenceSynchronizationStoreIT extends BaseIntegrationTest {
 
     private PatientRegisteredEvent eventFromJson(UUID eventId, String patientId, String nombreCompleto, String email)
             throws Exception {
-        return objectMapper.readValue("""
+        return objectMapper.readValue(
+                """
                 {
                   "eventId": "%s",
                   "eventName": "bc1.PacienteRegistrado",

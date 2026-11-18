@@ -11,11 +11,6 @@ import com.mcalvaro.mscatering.domain.subscription.entity.DeliveryDay;
 import com.mcalvaro.mscatering.infrastructure.persistence.inboundevent.entity.ProcessedInboundEventReceiptJpaEntity;
 import com.mcalvaro.mscatering.infrastructure.persistence.inboundevent.entity.ReceiptSubjectKind;
 import com.mcalvaro.mscatering.infrastructure.persistence.inboundevent.repository.SpringDataProcessedInboundEventReceiptRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -30,6 +25,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Transport-neutral inbound anti-corruption adapter for BC5 Logistics delivery integration events.
@@ -48,11 +47,13 @@ public class DeliveryInboundAdapter {
     private final ISubscriptionRepository subscriptionRepository;
     private final SpringDataProcessedInboundEventReceiptRepository receiptRepository;
 
-    public DeliveryInboundAdapter(Pipeline pipeline,
-                                  ISubscriptionRepository subscriptionRepository,
-                                  SpringDataProcessedInboundEventReceiptRepository receiptRepository) {
+    public DeliveryInboundAdapter(
+            Pipeline pipeline,
+            ISubscriptionRepository subscriptionRepository,
+            SpringDataProcessedInboundEventReceiptRepository receiptRepository) {
         this.pipeline = Objects.requireNonNull(pipeline, "pipeline must not be null");
-        this.subscriptionRepository = Objects.requireNonNull(subscriptionRepository, "subscriptionRepository must not be null");
+        this.subscriptionRepository =
+                Objects.requireNonNull(subscriptionRepository, "subscriptionRepository must not be null");
         this.receiptRepository = Objects.requireNonNull(receiptRepository, "receiptRepository must not be null");
     }
 
@@ -62,7 +63,8 @@ public class DeliveryInboundAdapter {
 
         DeliveryConfirmedData data = event.data();
         SubscriptionId subscriptionId = SubscriptionId.of(data.subscriptionId());
-        Subscription subscription = subscriptionRepository.findById(subscriptionId)
+        Subscription subscription = subscriptionRepository
+                .findById(subscriptionId)
                 .orElseThrow(() -> DeliveryContractException.deliveryDayNotFound(
                         "Subscription not found: " + data.subscriptionId()));
 
@@ -70,8 +72,13 @@ public class DeliveryInboundAdapter {
         DeliveryDayId resolvedDeliveryDayId = resolveDeliveryDayId(subscription, data.calendarDayId(), deliveryDate);
 
         String payloadFingerprint = confirmedPayloadFingerprint(data, resolvedDeliveryDayId);
-        String eventFingerprint = eventFingerprint(event.eventName(), event.eventVersion(),
-                event.occurredOn(), event.source(), event.correlationId(), payloadFingerprint);
+        String eventFingerprint = eventFingerprint(
+                event.eventName(),
+                event.eventVersion(),
+                event.occurredOn(),
+                event.source(),
+                event.correlationId(),
+                payloadFingerprint);
 
         if (isAlreadyProcessed(event.eventId(), eventFingerprint, resolvedDeliveryDayId.value(), payloadFingerprint)) {
             return;
@@ -79,9 +86,17 @@ public class DeliveryInboundAdapter {
 
         pipeline.send(new ConfirmDeliveryCommand(subscriptionId, resolvedDeliveryDayId));
 
-        saveReceipt(event.eventId(), event.eventName(), event.eventVersion(), event.occurredOn(),
-                event.source(), event.correlationId(), data.patientId(), resolvedDeliveryDayId.value(),
-                eventFingerprint, payloadFingerprint);
+        saveReceipt(
+                event.eventId(),
+                event.eventName(),
+                event.eventVersion(),
+                event.occurredOn(),
+                event.source(),
+                event.correlationId(),
+                data.patientId(),
+                resolvedDeliveryDayId.value(),
+                eventFingerprint,
+                payloadFingerprint);
     }
 
     @Transactional
@@ -90,15 +105,22 @@ public class DeliveryInboundAdapter {
 
         DeliveryFailedData data = event.data();
         SubscriptionId subscriptionId = SubscriptionId.of(data.subscriptionId());
-        Subscription subscription = subscriptionRepository.findById(subscriptionId)
+        Subscription subscription = subscriptionRepository
+                .findById(subscriptionId)
                 .orElseThrow(() -> DeliveryContractException.deliveryDayNotFound(
                         "Subscription not found: " + data.subscriptionId()));
 
-        DeliveryDayId resolvedDeliveryDayId = resolveDeliveryDayId(subscription, data.calendarDayId(), data.fechaEntrega());
+        DeliveryDayId resolvedDeliveryDayId =
+                resolveDeliveryDayId(subscription, data.calendarDayId(), data.fechaEntrega());
 
         String payloadFingerprint = failedPayloadFingerprint(data, resolvedDeliveryDayId);
-        String eventFingerprint = eventFingerprint(event.eventName(), event.eventVersion(),
-                event.occurredOn(), event.source(), event.correlationId(), payloadFingerprint);
+        String eventFingerprint = eventFingerprint(
+                event.eventName(),
+                event.eventVersion(),
+                event.occurredOn(),
+                event.source(),
+                event.correlationId(),
+                payloadFingerprint);
 
         if (isAlreadyProcessed(event.eventId(), eventFingerprint, resolvedDeliveryDayId.value(), payloadFingerprint)) {
             return;
@@ -106,9 +128,17 @@ public class DeliveryInboundAdapter {
 
         pipeline.send(new RegisterFailedDeliveryCommand(subscriptionId, resolvedDeliveryDayId, data.motivoFinal()));
 
-        saveReceipt(event.eventId(), event.eventName(), event.eventVersion(), event.occurredOn(),
-                event.source(), event.correlationId(), data.patientId(), resolvedDeliveryDayId.value(),
-                eventFingerprint, payloadFingerprint);
+        saveReceipt(
+                event.eventId(),
+                event.eventName(),
+                event.eventVersion(),
+                event.occurredOn(),
+                event.source(),
+                event.correlationId(),
+                data.patientId(),
+                resolvedDeliveryDayId.value(),
+                eventFingerprint,
+                payloadFingerprint);
     }
 
     public void receive(DeliveryConfirmedEvent event) {
@@ -120,9 +150,14 @@ public class DeliveryInboundAdapter {
     }
 
     private void validateConfirmedEnvelope(DeliveryConfirmedEvent event) {
-        if (event == null || event.eventId() == null || !CONFIRMED_EVENT.equals(event.eventName())
-                || !EVENT_VERSION.equals(event.eventVersion()) || event.occurredOn() == null
-                || !SOURCE.equals(event.source()) || isBlank(event.correlationId()) || event.data() == null) {
+        if (event == null
+                || event.eventId() == null
+                || !CONFIRMED_EVENT.equals(event.eventName())
+                || !EVENT_VERSION.equals(event.eventVersion())
+                || event.occurredOn() == null
+                || !SOURCE.equals(event.source())
+                || isBlank(event.correlationId())
+                || event.data() == null) {
             throw DeliveryContractException.invalid("Invalid BC5 EntregaConfirmada event envelope");
         }
 
@@ -139,20 +174,28 @@ public class DeliveryInboundAdapter {
     }
 
     private void validateFailedEnvelope(DeliveryFailedEvent event) {
-        if (event == null || event.eventId() == null || !FAILED_EVENT.equals(event.eventName())
-                || !EVENT_VERSION.equals(event.eventVersion()) || event.occurredOn() == null
-                || !SOURCE.equals(event.source()) || isBlank(event.correlationId()) || event.data() == null) {
+        if (event == null
+                || event.eventId() == null
+                || !FAILED_EVENT.equals(event.eventName())
+                || !EVENT_VERSION.equals(event.eventVersion())
+                || event.occurredOn() == null
+                || !SOURCE.equals(event.source())
+                || isBlank(event.correlationId())
+                || event.data() == null) {
             throw DeliveryContractException.invalid("Invalid BC5 EntregaNoConcretada event envelope");
         }
 
         DeliveryFailedData data = event.data();
-        if (isBlank(data.idEntrega()) || isBlank(data.idSuscripcion()) || data.fechaEntrega() == null
+        if (isBlank(data.idEntrega())
+                || isBlank(data.idSuscripcion())
+                || data.fechaEntrega() == null
                 || isBlank(data.motivoFinal())) {
             throw DeliveryContractException.invalid("Missing mandatory fields in DeliveryFailedData");
         }
     }
 
-    private DeliveryDayId resolveDeliveryDayId(Subscription subscription, String explicitDayId, LocalDate fallbackDate) {
+    private DeliveryDayId resolveDeliveryDayId(
+            Subscription subscription, String explicitDayId, LocalDate fallbackDate) {
         if (explicitDayId != null && !explicitDayId.isBlank()) {
             DeliveryDayId dayId = DeliveryDayId.of(explicitDayId);
             Optional<DeliveryDay> day = subscription.getDeliveryCalendar().findDayById(dayId);
@@ -168,16 +211,18 @@ public class DeliveryInboundAdapter {
             }
         }
 
-        throw DeliveryContractException.deliveryDayNotFound(
-                "Delivery day could not be resolved in subscription " + subscription.getId()
-                        + " for dayId: " + explicitDayId + " or date: " + fallbackDate);
+        throw DeliveryContractException.deliveryDayNotFound("Delivery day could not be resolved in subscription "
+                + subscription.getId() + " for dayId: " + explicitDayId + " or date: " + fallbackDate);
     }
 
-    private boolean isAlreadyProcessed(UUID eventId, String eventFingerprint, String deliveryDayId, String payloadFingerprint) {
+    private boolean isAlreadyProcessed(
+            UUID eventId, String eventFingerprint, String deliveryDayId, String payloadFingerprint) {
         var existingReceipt = receiptRepository.findById(eventId);
         if (existingReceipt.isPresent()) {
             if (existingReceipt.get().getEventFingerprint().equals(eventFingerprint)) {
-                log.info("Delivery event {} already processed with matching fingerprint; skipping deduplicated dispatch", eventId);
+                log.info(
+                        "Delivery event {} already processed with matching fingerprint; skipping deduplicated dispatch",
+                        eventId);
                 return true;
             }
             throw DeliveryContractException.conflict("Inbound eventId was reused with different content: " + eventId);
@@ -192,9 +237,17 @@ public class DeliveryInboundAdapter {
         return false;
     }
 
-    private void saveReceipt(UUID eventId, String eventName, String eventVersion, Instant occurredOn,
-                             String source, String correlationId, String patientId, String deliveryDayId,
-                             String eventFingerprint, String payloadFingerprint) {
+    private void saveReceipt(
+            UUID eventId,
+            String eventName,
+            String eventVersion,
+            Instant occurredOn,
+            String source,
+            String correlationId,
+            String patientId,
+            String deliveryDayId,
+            String eventFingerprint,
+            String payloadFingerprint) {
         ProcessedInboundEventReceiptJpaEntity receipt = new ProcessedInboundEventReceiptJpaEntity(
                 eventId,
                 eventName,
@@ -205,8 +258,7 @@ public class DeliveryInboundAdapter {
                 ReceiptSubjectKind.DELIVERY,
                 deliveryDayId,
                 eventFingerprint,
-                payloadFingerprint
-        );
+                payloadFingerprint);
         receiptRepository.saveAndFlush(receipt);
     }
 
@@ -236,8 +288,7 @@ public class DeliveryInboundAdapter {
                 safeString(data.idCalendarioDia()),
                 safeString(data.subscriptionId()),
                 resolvedDeliveryDayId.value(),
-                data.fechaHoraEntrega()
-        );
+                data.fechaHoraEntrega());
     }
 
     private String failedPayloadFingerprint(DeliveryFailedData data, DeliveryDayId resolvedDeliveryDayId) {
@@ -248,12 +299,16 @@ public class DeliveryInboundAdapter {
                 safeString(data.subscriptionId()),
                 resolvedDeliveryDayId.value(),
                 data.fechaEntrega().toString(),
-                data.motivoFinal()
-        );
+                data.motivoFinal());
     }
 
-    private String eventFingerprint(String eventName, String eventVersion, Instant occurredOn,
-                                    String source, String correlationId, String payloadFingerprint) {
+    private String eventFingerprint(
+            String eventName,
+            String eventVersion,
+            Instant occurredOn,
+            String source,
+            String correlationId,
+            String payloadFingerprint) {
         return sha256(eventName, eventVersion, occurredOn.toString(), source, correlationId, payloadFingerprint);
     }
 

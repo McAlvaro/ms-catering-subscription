@@ -6,7 +6,6 @@ import com.mcalvaro.mscatering.domain.consolidatedcalendar.event.ConsolidatedCal
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.event.ConsolidatedCalendarCreated;
 import com.mcalvaro.mscatering.domain.core.AggregateRoot;
 import com.mcalvaro.mscatering.domain.core.id.ConsolidatedCalendarId;
-
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -75,8 +74,14 @@ public class ConsolidatedCalendar extends AggregateRoot<ConsolidatedCalendarId> 
         this.status = ConsolidateStatus.CLOSED;
         this.closedAt = closeTime;
         this.closedBy = closedBy;
-        addDomainEvent(new ConsolidatedCalendarClosed(UUID.randomUUID(), closeTime, getId(), date, totalDeliveries,
-                correlationId, lines.stream().map(ConsolidatedLine::snapshot).toList()));
+        addDomainEvent(new ConsolidatedCalendarClosed(
+                UUID.randomUUID(),
+                closeTime,
+                getId(),
+                date,
+                totalDeliveries,
+                correlationId,
+                lines.stream().map(ConsolidatedLine::snapshot).toList()));
     }
 
     public List<ConsolidatedLine> getLines() {

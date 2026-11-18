@@ -1,12 +1,11 @@
 package com.mcalvaro.mscatering.infrastructure.persistence.consolidatedcalendar.entity;
 
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.persistence.Column;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.CascadeType;
-
+import jakarta.persistence.Table;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -38,8 +37,7 @@ public class ConsolidatedCalendarJpaEntity {
     @OneToMany(mappedBy = "consolidatedCalendar", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ConsolidatedLineJpaEntity> lines = new ArrayList<>();
 
-    public ConsolidatedCalendarJpaEntity() {
-    }
+    public ConsolidatedCalendarJpaEntity() {}
 
     public String getId() {
         return id;

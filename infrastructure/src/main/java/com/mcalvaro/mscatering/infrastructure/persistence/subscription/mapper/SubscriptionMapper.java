@@ -8,6 +8,7 @@ import com.mcalvaro.mscatering.domain.core.id.EvaluationId;
 import com.mcalvaro.mscatering.domain.core.id.PatientId;
 import com.mcalvaro.mscatering.domain.core.id.PauseRequestId;
 import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
+import com.mcalvaro.mscatering.domain.dietplan.PlanType;
 import com.mcalvaro.mscatering.domain.subscription.Subscription;
 import com.mcalvaro.mscatering.domain.subscription.entity.BiweeklyEvaluation;
 import com.mcalvaro.mscatering.domain.subscription.entity.DeliveryCalendar;
@@ -22,7 +23,6 @@ import com.mcalvaro.mscatering.domain.subscription.vo.DeliveryAddress;
 import com.mcalvaro.mscatering.domain.subscription.vo.DeliveryPreferences;
 import com.mcalvaro.mscatering.domain.subscription.vo.PauseRange;
 import com.mcalvaro.mscatering.domain.subscription.vo.ServiceContract;
-import com.mcalvaro.mscatering.domain.dietplan.PlanType;
 import com.mcalvaro.mscatering.domain.subscription.vo.TimeWindow;
 import com.mcalvaro.mscatering.domain.subscription.vo.ValidityPeriod;
 import com.mcalvaro.mscatering.infrastructure.persistence.subscription.entity.BiweeklyEvaluationJpaEntity;
@@ -30,20 +30,17 @@ import com.mcalvaro.mscatering.infrastructure.persistence.subscription.entity.De
 import com.mcalvaro.mscatering.infrastructure.persistence.subscription.entity.DeliveryDayJpaEntity;
 import com.mcalvaro.mscatering.infrastructure.persistence.subscription.entity.PauseRequestJpaEntity;
 import com.mcalvaro.mscatering.infrastructure.persistence.subscription.entity.SubscriptionJpaEntity;
-
-import org.springframework.stereotype.Component;
-
 import java.lang.reflect.Field;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.stereotype.Component;
 
 @Component
 public class SubscriptionMapper {
 
     public SubscriptionJpaEntity toJpaEntity(Subscription domain) {
-        if (domain == null)
-            return null;
+        if (domain == null) return null;
 
         SubscriptionJpaEntity jpa = new SubscriptionJpaEntity();
         jpa.setId(domain.getId().value());
@@ -89,23 +86,20 @@ public class SubscriptionMapper {
         jpa.setDeliveryCalendar(calJpa);
 
         // Pause Requests
-        List<PauseRequestJpaEntity> pauseJpas = domain.getPauseRequests().stream()
-                .map(this::toPauseRequestJpa)
-                .collect(Collectors.toList());
+        List<PauseRequestJpaEntity> pauseJpas =
+                domain.getPauseRequests().stream().map(this::toPauseRequestJpa).collect(Collectors.toList());
         jpa.setPauseRequests(pauseJpas);
 
         // Evaluations
-        List<BiweeklyEvaluationJpaEntity> evalJpas = domain.getEvaluations().stream()
-                .map(this::toEvaluationJpa)
-                .collect(Collectors.toList());
+        List<BiweeklyEvaluationJpaEntity> evalJpas =
+                domain.getEvaluations().stream().map(this::toEvaluationJpa).collect(Collectors.toList());
         jpa.setEvaluations(evalJpas);
 
         return jpa;
     }
 
     public Subscription toDomain(SubscriptionJpaEntity jpa) {
-        if (jpa == null)
-            return null;
+        if (jpa == null) return null;
 
         try {
             ValidityPeriod period = new ValidityPeriod(jpa.getContractStartDate(), jpa.getContractEndDate());
@@ -119,18 +113,19 @@ public class SubscriptionMapper {
                     jpa.getSignedAt());
 
             DeliveryAddress address = new DeliveryAddress(
-                    jpa.getPrefStreet(), jpa.getPrefNumber(), jpa.getPrefCity(), jpa.getPrefReference(),
+                    jpa.getPrefStreet(),
+                    jpa.getPrefNumber(),
+                    jpa.getPrefCity(),
+                    jpa.getPrefReference(),
                     jpa.getPrefLatitude() != null ? jpa.getPrefLatitude() : 0.0,
                     jpa.getPrefLongitude() != null ? jpa.getPrefLongitude() : 0.0,
                     jpa.getPrefPhone());
-            TimeWindow window = new TimeWindow(LocalTime.parse(jpa.getPrefTimeStart()),
-                    LocalTime.parse(jpa.getPrefTimeEnd()));
+            TimeWindow window =
+                    new TimeWindow(LocalTime.parse(jpa.getPrefTimeStart()), LocalTime.parse(jpa.getPrefTimeEnd()));
             DeliveryPreferences prefs = new DeliveryPreferences(address, window, jpa.getPrefSpecialInstructions());
 
             DeliveryCalendar calendar = new DeliveryCalendar(
-                    DeliveryCalendarId.of(jpa.getDeliveryCalendar().getId()),
-                    SubscriptionId.of(jpa.getId()),
-                    period);
+                    DeliveryCalendarId.of(jpa.getDeliveryCalendar().getId()), SubscriptionId.of(jpa.getId()), period);
             for (DeliveryDayJpaEntity dayJpa : jpa.getDeliveryCalendar().getDeliveryDays()) {
                 DeliveryDay day = toDeliveryDayDomain(dayJpa);
                 calendar.addDay(day);
@@ -147,10 +142,13 @@ public class SubscriptionMapper {
             setField(Subscription.class, subscription, "deliveryCalendar", calendar);
             setField(Subscription.class, subscription, "status", SubscriptionStatus.valueOf(jpa.getStatus()));
 
-            List<PauseRequest> pauseRequests = jpa.getPauseRequests().stream().map(this::toPauseRequestDomain).toList();
+            List<PauseRequest> pauseRequests = jpa.getPauseRequests().stream()
+                    .map(this::toPauseRequestDomain)
+                    .toList();
             setField(Subscription.class, subscription, "pauseRequests", new java.util.ArrayList<>(pauseRequests));
 
-            List<BiweeklyEvaluation> evaluations = jpa.getEvaluations().stream().map(this::toEvaluationDomain).toList();
+            List<BiweeklyEvaluation> evaluations =
+                    jpa.getEvaluations().stream().map(this::toEvaluationDomain).toList();
             setField(Subscription.class, subscription, "evaluations", new java.util.ArrayList<>(evaluations));
 
             return subscription;
@@ -164,7 +162,10 @@ public class SubscriptionMapper {
         jpa.setId(domain.getId().value());
         jpa.setDate(domain.getDate());
         jpa.setStatus(domain.getStatus().name());
-        jpa.setAddressId(domain.getAddress().addressId() != null ? domain.getAddress().addressId().value() : null);
+        jpa.setAddressId(
+                domain.getAddress().addressId() != null
+                        ? domain.getAddress().addressId().value()
+                        : null);
         jpa.setAddressAlias(domain.getAddress().alias());
         jpa.setAddressStreet(domain.getAddress().street());
         jpa.setAddressNumber(domain.getAddress().number());
@@ -189,8 +190,13 @@ public class SubscriptionMapper {
         setField(DeliveryDay.class, day, "status", DeliveryDayStatus.valueOf(jpa.getStatus()));
 
         AddressId addressId = jpa.getAddressId() != null ? AddressId.of(jpa.getAddressId()) : null;
-        DeliveryAddress address = new DeliveryAddress(addressId, jpa.getAddressAlias(),
-                jpa.getAddressStreet(), jpa.getAddressNumber(), jpa.getAddressCity(), jpa.getAddressReference(),
+        DeliveryAddress address = new DeliveryAddress(
+                addressId,
+                jpa.getAddressAlias(),
+                jpa.getAddressStreet(),
+                jpa.getAddressNumber(),
+                jpa.getAddressCity(),
+                jpa.getAddressReference(),
                 jpa.getAddressLatitude() != null ? jpa.getAddressLatitude() : 0.0,
                 jpa.getAddressLongitude() != null ? jpa.getAddressLongitude() : 0.0,
                 jpa.getAddressPhone());
@@ -228,11 +234,20 @@ public class SubscriptionMapper {
             setField(PauseRequest.class, req, "actualEndDate", jpa.getActualEndDate());
             setField(PauseRequest.class, req, "createdAt", jpa.getCreatedAt());
             setField(PauseRequest.class, req, "active", jpa.isActive());
-            setField(PauseRequest.class, req, "correlationId", jpa.getCorrelationId() == null || jpa.getCorrelationId().isBlank()
-                    ? "legacy-" + jpa.getId() : jpa.getCorrelationId());
-            setField(PauseRequest.class, req, "extensionDays",
+            setField(
+                    PauseRequest.class,
+                    req,
+                    "correlationId",
+                    jpa.getCorrelationId() == null || jpa.getCorrelationId().isBlank()
+                            ? "legacy-" + jpa.getId()
+                            : jpa.getCorrelationId());
+            setField(
+                    PauseRequest.class,
+                    req,
+                    "extensionDays",
                     jpa.getExtensionDays() == null
-                            ? (int) java.time.temporal.ChronoUnit.DAYS.between(jpa.getRangeStart(), jpa.getRangeEnd()) + 1
+                            ? (int) java.time.temporal.ChronoUnit.DAYS.between(jpa.getRangeStart(), jpa.getRangeEnd())
+                                    + 1
                             : jpa.getExtensionDays());
             return req;
         } catch (Exception e) {

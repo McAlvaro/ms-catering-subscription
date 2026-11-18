@@ -2,6 +2,10 @@ package com.mcalvaro.mscatering.infrastructure.api;
 
 import com.mcalvaro.mscatering.domain.core.DomainException;
 import com.mcalvaro.mscatering.infrastructure.api.subscription.dto.ApiErrorResponse;
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -13,11 +17,6 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
-
-import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -38,7 +37,8 @@ public class GlobalExceptionHandler {
         String errorCode = "BAD_REQUEST";
 
         if (message != null
-                && (message.toLowerCase().contains("not found") || message.toLowerCase().contains("no existe"))) {
+                && (message.toLowerCase().contains("not found")
+                        || message.toLowerCase().contains("no existe"))) {
             status = HttpStatus.NOT_FOUND;
             errorCode = "NOT_FOUND";
         }
@@ -50,11 +50,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> manejarErroresDeValidacion(MethodArgumentNotValidException ex) {
         Map<String, String> errores = new HashMap<>();
-        
+
         ex.getBindingResult().getFieldErrors().forEach(error -> {
             errores.put(error.getField(), error.getDefaultMessage());
         });
-        
+
         return ResponseEntity.badRequest().body(errores);
     }
 
@@ -66,25 +66,29 @@ public class GlobalExceptionHandler {
         Throwable cause = ex.getCause();
         if (cause != null) {
             String causeClassName = cause.getClass().getName();
-            if (causeClassName.endsWith(".InvalidFormatException") || causeClassName.endsWith(".MismatchedInputException")) {
+            if (causeClassName.endsWith(".InvalidFormatException")
+                    || causeClassName.endsWith(".MismatchedInputException")) {
                 try {
                     // Utilizar reflexión para obtener el targetType
-                    java.lang.reflect.Method getTargetTypeMethod = cause.getClass().getMethod("getTargetType");
+                    java.lang.reflect.Method getTargetTypeMethod =
+                            cause.getClass().getMethod("getTargetType");
                     Class<?> targetType = (Class<?>) getTargetTypeMethod.invoke(cause);
-                    
+
                     // Utilizar reflexión para obtener el path
                     java.lang.reflect.Method getPathMethod = cause.getClass().getMethod("getPath");
                     java.util.List<?> path = (java.util.List<?>) getPathMethod.invoke(cause);
-                    
+
                     if (path != null && !path.isEmpty()) {
                         Object lastRef = path.get(path.size() - 1);
                         String fName = null;
                         try {
-                            java.lang.reflect.Method getFieldNameMethod = lastRef.getClass().getMethod("getFieldName");
+                            java.lang.reflect.Method getFieldNameMethod =
+                                    lastRef.getClass().getMethod("getFieldName");
                             fName = (String) getFieldNameMethod.invoke(lastRef);
                         } catch (NoSuchMethodException e) {
                             try {
-                                java.lang.reflect.Method getNameMethod = lastRef.getClass().getMethod("getName");
+                                java.lang.reflect.Method getNameMethod =
+                                        lastRef.getClass().getMethod("getName");
                                 fName = (String) getNameMethod.invoke(lastRef);
                             } catch (NoSuchMethodException e2) {
                             }
@@ -93,17 +97,20 @@ public class GlobalExceptionHandler {
                             fieldName = fName;
                         }
                     }
-                    
+
                     if (targetType != null && targetType.isEnum()) {
                         String enumValues = Arrays.toString(targetType.getEnumConstants());
                         Object rejectedValue = "inválido";
-                        
+
                         try {
-                            java.lang.reflect.Method getValueMethod = cause.getClass().getMethod("getValue");
+                            java.lang.reflect.Method getValueMethod =
+                                    cause.getClass().getMethod("getValue");
                             rejectedValue = getValueMethod.invoke(cause);
-                        } catch (Exception ignored) {}
-                        
-                        message = String.format("El valor '%s' no es válido para el campo '%s'. Los valores permitidos son: %s",
+                        } catch (Exception ignored) {
+                        }
+
+                        message = String.format(
+                                "El valor '%s' no es válido para el campo '%s'. Los valores permitidos son: %s",
                                 rejectedValue, fieldName != null ? fieldName : "desconocido", enumValues);
                     } else if (fieldName != null) {
                         message = String.format("El formato del campo '%s' es inválido.", fieldName);
@@ -120,8 +127,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public ResponseEntity<ApiErrorResponse> handleMissingRequestParameter(MissingServletRequestParameterException ex) {
         log.debug("Missing required request parameter '{}'", ex.getParameterName());
-        return badRequest(INVALID_PAYLOAD,
-                String.format("El parámetro requerido '%s' no fue enviado.", ex.getParameterName()));
+        return badRequest(
+                INVALID_PAYLOAD, String.format("El parámetro requerido '%s' no fue enviado.", ex.getParameterName()));
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
@@ -141,8 +148,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiErrorResponse> handleException(Exception ex) {
-        ApiErrorResponse response = new ApiErrorResponse("INTERNAL_SERVER_ERROR",
-                "Ocurrió un error inesperado en el servidor. Por favor, intente más tarde.");
+        ApiErrorResponse response = new ApiErrorResponse(
+                "INTERNAL_SERVER_ERROR", "Ocurrió un error inesperado en el servidor. Por favor, intente más tarde.");
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
 

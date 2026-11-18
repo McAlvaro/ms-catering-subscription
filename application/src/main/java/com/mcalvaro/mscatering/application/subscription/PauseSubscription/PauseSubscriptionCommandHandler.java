@@ -1,7 +1,6 @@
 package com.mcalvaro.mscatering.application.subscription.PauseSubscription;
 
 import an.awesome.pipelinr.Command;
-
 import com.mcalvaro.mscatering.domain.subscription.ISubscriptionRepository;
 import com.mcalvaro.mscatering.domain.subscription.Subscription;
 import com.mcalvaro.mscatering.domain.subscription.vo.PauseRange;
@@ -23,9 +22,9 @@ public class PauseSubscriptionCommandHandler implements Command.Handler<PauseSub
 
     @Override
     public Void handle(PauseSubscriptionCommand command) {
-        Subscription subscription = subscriptionRepository.findById(command.subscriptionId())
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Subscription not found: " + command.subscriptionId()));
+        Subscription subscription = subscriptionRepository
+                .findById(command.subscriptionId())
+                .orElseThrow(() -> new IllegalArgumentException("Subscription not found: " + command.subscriptionId()));
 
         PauseRange range = new PauseRange(command.startDate(), command.endDate());
         subscription.pause(range, command.reason(), command.correlationId());

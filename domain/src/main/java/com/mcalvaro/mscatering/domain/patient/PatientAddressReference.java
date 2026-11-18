@@ -14,6 +14,4 @@ public record PatientAddressReference(
         String reference,
         String city,
         double latitude,
-        double longitude) {
-
-}
+        double longitude) {}

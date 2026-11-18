@@ -1,5 +1,8 @@
 package com.mcalvaro.mscatering.infrastructure.integration.inbound.bc1.patient;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import an.awesome.pipelinr.Pipeline;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -7,11 +10,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @ExtendWith(MockitoExtension.class)
 class PatientRegisteredEventJsonTest {
@@ -68,13 +66,13 @@ class PatientRegisteredEventJsonTest {
                 .isInstanceOf(JsonProcessingException.class);
 
         PatientRegistrationInboundAdapter adapter = new PatientRegistrationInboundAdapter(pipeline);
-        assertThatThrownBy(() -> adapter.receive(objectMapper.readValue(validEnvelopeWithoutData(),
-                PatientRegisteredEvent.class)))
+        assertThatThrownBy(() -> adapter.receive(
+                        objectMapper.readValue(validEnvelopeWithoutData(), PatientRegisteredEvent.class)))
                 .isInstanceOf(PatientRegistrationContractException.class)
                 .extracting("code")
                 .isEqualTo("PROJ-001");
-        assertThatThrownBy(() -> adapter.receive(objectMapper.readValue(validEnvelopeWithData("{}"),
-                PatientRegisteredEvent.class)))
+        assertThatThrownBy(() -> adapter.receive(
+                        objectMapper.readValue(validEnvelopeWithData("{}"), PatientRegisteredEvent.class)))
                 .isInstanceOf(PatientRegistrationContractException.class)
                 .extracting("code")
                 .isEqualTo("PROJ-001");
@@ -98,7 +96,8 @@ class PatientRegisteredEventJsonTest {
                 """, PatientRegisteredEvent.class))
                 .isInstanceOf(JsonProcessingException.class);
 
-        PatientRegisteredEvent legacyPatientId = objectMapper.readValue(validEnvelopeWithData("""
+        PatientRegisteredEvent legacyPatientId =
+                objectMapper.readValue(validEnvelopeWithData("""
                 {"patientId":"PAC-1001"}
                 """), PatientRegisteredEvent.class);
         assertThat(legacyPatientId.data().patientId()).isNull();

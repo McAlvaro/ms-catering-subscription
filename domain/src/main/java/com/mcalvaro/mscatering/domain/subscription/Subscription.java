@@ -1,12 +1,5 @@
 package com.mcalvaro.mscatering.domain.subscription;
 
-import java.time.LocalDate;
-import java.time.Year;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
-
 import com.mcalvaro.mscatering.domain.core.AggregateRoot;
 import com.mcalvaro.mscatering.domain.core.id.DeliveryCalendarId;
 import com.mcalvaro.mscatering.domain.core.id.DeliveryDayId;
@@ -19,13 +12,12 @@ import com.mcalvaro.mscatering.domain.subscription.entity.BiweeklyEvaluation;
 import com.mcalvaro.mscatering.domain.subscription.entity.DeliveryCalendar;
 import com.mcalvaro.mscatering.domain.subscription.entity.DeliveryDay;
 import com.mcalvaro.mscatering.domain.subscription.entity.PauseRequest;
-import com.mcalvaro.mscatering.domain.subscription.enums.DeliveryDayStatus;
 import com.mcalvaro.mscatering.domain.subscription.enums.EvaluationStatus;
 import com.mcalvaro.mscatering.domain.subscription.enums.SubscriptionStatus;
 import com.mcalvaro.mscatering.domain.subscription.event.BiweeklyEvaluationCompleted;
+import com.mcalvaro.mscatering.domain.subscription.event.DeliveryConfirmed;
 import com.mcalvaro.mscatering.domain.subscription.event.DeliveryDayCancelled;
 import com.mcalvaro.mscatering.domain.subscription.event.DeliveryDayModified;
-import com.mcalvaro.mscatering.domain.subscription.event.DeliveryConfirmed;
 import com.mcalvaro.mscatering.domain.subscription.event.DeliveryFailed;
 import com.mcalvaro.mscatering.domain.subscription.event.SubscriptionCancelled;
 import com.mcalvaro.mscatering.domain.subscription.event.SubscriptionCompleted;
@@ -39,6 +31,12 @@ import com.mcalvaro.mscatering.domain.subscription.vo.PauseRange;
 import com.mcalvaro.mscatering.domain.subscription.vo.ServiceContract;
 import com.mcalvaro.mscatering.domain.subscription.vo.TimeWindow;
 import com.mcalvaro.mscatering.domain.subscription.vo.ValidityPeriod;
+import java.time.LocalDate;
+import java.time.Year;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * Aggregate Root — Subscription (Suscripcion).
@@ -59,9 +57,14 @@ public class Subscription extends AggregateRoot<SubscriptionId> {
     private final List<PauseRequest> pauseRequests = new ArrayList<>();
     private final List<BiweeklyEvaluation> evaluations = new ArrayList<>();
 
-    private Subscription(SubscriptionId id, PatientId patientId, DietPlanId dietPlanId,
-            ContractCode contractCode, ServiceContract contract,
-            DeliveryPreferences preferences, DeliveryCalendar deliveryCalendar) {
+    private Subscription(
+            SubscriptionId id,
+            PatientId patientId,
+            DietPlanId dietPlanId,
+            ContractCode contractCode,
+            ServiceContract contract,
+            DeliveryPreferences preferences,
+            DeliveryCalendar deliveryCalendar) {
         super(id);
         this.patientId = patientId;
         this.dietPlanId = dietPlanId;
@@ -88,23 +91,52 @@ public class Subscription extends AggregateRoot<SubscriptionId> {
      *                         provided by the application layer after querying the
      *                         repository.
      */
-    public static Subscription create(SubscriptionId id, PatientId patientId, DietPlanId dietPlanId,
+    public static Subscription create(
+            SubscriptionId id,
+            PatientId patientId,
+            DietPlanId dietPlanId,
             ServiceContract contract,
             DeliveryPreferences preferences,
             int contractSequence) {
-        return create(id, patientId, dietPlanId, contract, preferences, contractSequence, List.of(), UUID.randomUUID().toString());
-    }
-
-    public static Subscription create(SubscriptionId id, PatientId patientId, DietPlanId dietPlanId,
-            ServiceContract contract, DeliveryPreferences preferences, int contractSequence,
-            List<BiweeklyEvaluation> generatedEvaluations) {
-        return create(id, patientId, dietPlanId, contract, preferences, contractSequence, generatedEvaluations,
+        return create(
+                id,
+                patientId,
+                dietPlanId,
+                contract,
+                preferences,
+                contractSequence,
+                List.of(),
                 UUID.randomUUID().toString());
     }
 
-    public static Subscription create(SubscriptionId id, PatientId patientId, DietPlanId dietPlanId,
-            ServiceContract contract, DeliveryPreferences preferences, int contractSequence,
-            List<BiweeklyEvaluation> generatedEvaluations, String correlationId) {
+    public static Subscription create(
+            SubscriptionId id,
+            PatientId patientId,
+            DietPlanId dietPlanId,
+            ServiceContract contract,
+            DeliveryPreferences preferences,
+            int contractSequence,
+            List<BiweeklyEvaluation> generatedEvaluations) {
+        return create(
+                id,
+                patientId,
+                dietPlanId,
+                contract,
+                preferences,
+                contractSequence,
+                generatedEvaluations,
+                UUID.randomUUID().toString());
+    }
+
+    public static Subscription create(
+            SubscriptionId id,
+            PatientId patientId,
+            DietPlanId dietPlanId,
+            ServiceContract contract,
+            DeliveryPreferences preferences,
+            int contractSequence,
+            List<BiweeklyEvaluation> generatedEvaluations,
+            String correlationId) {
         ContractCode code = ContractCode.generate(Year.now().getValue(), contractSequence);
 
         ValidityPeriod period = contract.period();
@@ -119,12 +151,20 @@ public class Subscription extends AggregateRoot<SubscriptionId> {
                     preferences.specialInstructions()));
         }
 
-        Subscription subscription = new Subscription(
-                id, patientId, dietPlanId, code, contract, preferences, calendar);
+        Subscription subscription = new Subscription(id, patientId, dietPlanId, code, contract, preferences, calendar);
         subscription.evaluations.addAll(generatedEvaluations);
-        subscription.addDomainEvent(new SubscriptionCreated(id, patientId, code, dietPlanId, contract.planType(),
-                contract.period().startDate(), contract.period().endDate(), contract.period().durationDays(),
-                generatedEvaluations.stream().map(BiweeklyEvaluation::getId).toList(), contract.totalPrice(), correlationId));
+        subscription.addDomainEvent(new SubscriptionCreated(
+                id,
+                patientId,
+                code,
+                dietPlanId,
+                contract.planType(),
+                contract.period().startDate(),
+                contract.period().endDate(),
+                contract.period().durationDays(),
+                generatedEvaluations.stream().map(BiweeklyEvaluation::getId).toList(),
+                contract.totalPrice(),
+                correlationId));
         return subscription;
     }
 
@@ -162,7 +202,8 @@ public class Subscription extends AggregateRoot<SubscriptionId> {
         PauseRequest request = new PauseRequest(PauseRequestId.generate(), range, reason, correlationId, extensionDays);
         pauseRequests.add(request);
         status = SubscriptionStatus.PAUSED;
-        addDomainEvent(new SubscriptionPaused(getId(), patientId, range, reason, LocalDate.now(), newEndDate, correlationId));
+        addDomainEvent(
+                new SubscriptionPaused(getId(), patientId, range, reason, LocalDate.now(), newEndDate, correlationId));
     }
 
     /**
@@ -183,30 +224,32 @@ public class Subscription extends AggregateRoot<SubscriptionId> {
                 || reactivationDate.isAfter(active.getRange().endDate())) {
             throw SubscriptionErrors.reactivationOutsidePauseRange();
         }
-        int restoredDays = (int) java.time.temporal.ChronoUnit.DAYS
-                .between(reactivationDate, active.getRange().endDate()) + 1;
+        int restoredDays = (int) java.time.temporal.ChronoUnit.DAYS.between(
+                        reactivationDate, active.getRange().endDate())
+                + 1;
         LocalDate newEndDate = contract.period().endDate().minusDays(restoredDays);
         if (deliveryCalendar.hasProcessedDaysAfter(newEndDate)) {
             throw SubscriptionErrors.deliveryDayBlocked();
         }
         active.earlyReactivate(reactivationDate);
         active.reduceExtensionDays(restoredDays);
-        deliveryCalendar.reactivateRange(new PauseRange(reactivationDate, active.getRange().endDate()));
+        deliveryCalendar.reactivateRange(
+                new PauseRange(reactivationDate, active.getRange().endDate()));
         contract = withPeriod(new ValidityPeriod(contract.period().startDate(), newEndDate));
         deliveryCalendar.removeDaysAfter(newEndDate);
         status = SubscriptionStatus.ACTIVE;
-        addDomainEvent(new SubscriptionReactivated(getId(), patientId, reactivationDate, newEndDate,
-                active.getCorrelationId()));
+        addDomainEvent(new SubscriptionReactivated(
+                getId(), patientId, reactivationDate, newEndDate, active.getCorrelationId()));
     }
 
     /**
      * Modifies a single delivery day's details.
      * The 48-hour rule is enforced inside {@link DeliveryDay#modify}.
      */
-    public void modifyDeliveryDay(DeliveryDayId dayId, DeliveryAddress address,
-            TimeWindow timeWindow, String instructions) {
-        DeliveryDay day = deliveryCalendar.findDayById(dayId)
-                .orElseThrow(() -> SubscriptionErrors.deliveryDayNotFound(dayId));
+    public void modifyDeliveryDay(
+            DeliveryDayId dayId, DeliveryAddress address, TimeWindow timeWindow, String instructions) {
+        DeliveryDay day =
+                deliveryCalendar.findDayById(dayId).orElseThrow(() -> SubscriptionErrors.deliveryDayNotFound(dayId));
         day.modify(address, timeWindow, instructions);
         addDomainEvent(new DeliveryDayModified(getId(), dayId, day.getDate()));
     }
@@ -215,8 +258,8 @@ public class Subscription extends AggregateRoot<SubscriptionId> {
         if (!deliveryCalendar.hasActiveDaysAfterExcluding(dayId)) {
             throw SubscriptionErrors.calendarNoActiveDays();
         }
-        DeliveryDay day = deliveryCalendar.findDayById(dayId)
-                .orElseThrow(() -> SubscriptionErrors.deliveryDayNotFound(dayId));
+        DeliveryDay day =
+                deliveryCalendar.findDayById(dayId).orElseThrow(() -> SubscriptionErrors.deliveryDayNotFound(dayId));
         day.markAsNoDelivery();
         addDomainEvent(new DeliveryDayCancelled(getId(), dayId));
     }
@@ -226,15 +269,15 @@ public class Subscription extends AggregateRoot<SubscriptionId> {
     }
 
     public void confirmDelivery(DeliveryDayId dayId) {
-        DeliveryDay day = deliveryCalendar.findDayById(dayId)
-                .orElseThrow(() -> SubscriptionErrors.deliveryDayNotFound(dayId));
+        DeliveryDay day =
+                deliveryCalendar.findDayById(dayId).orElseThrow(() -> SubscriptionErrors.deliveryDayNotFound(dayId));
         day.markAsDelivered();
         addDomainEvent(new DeliveryConfirmed(getId(), dayId));
     }
 
     public void registerFailedDelivery(DeliveryDayId dayId, String reason) {
-        DeliveryDay day = deliveryCalendar.findDayById(dayId)
-                .orElseThrow(() -> SubscriptionErrors.deliveryDayNotFound(dayId));
+        DeliveryDay day =
+                deliveryCalendar.findDayById(dayId).orElseThrow(() -> SubscriptionErrors.deliveryDayNotFound(dayId));
         day.markAsFailed(reason);
         addDomainEvent(new DeliveryFailed(getId(), dayId, reason));
     }
@@ -267,8 +310,13 @@ public class Subscription extends AggregateRoot<SubscriptionId> {
         int cancelledPendingDeliveries = Math.toIntExact(deliveryCalendar.countFuturePendingDeliveries(today));
         deliveryCalendar.cancelFuturePendingDeliveries(today);
         status = SubscriptionStatus.COMPLETED;
-        addDomainEvent(new SubscriptionCompleted(getId(), patientId, dietPlanId, contract.period().endDate(),
-                cancelledPendingDeliveries, correlationId));
+        addDomainEvent(new SubscriptionCompleted(
+                getId(),
+                patientId,
+                dietPlanId,
+                contract.period().endDate(),
+                cancelledPendingDeliveries,
+                correlationId));
     }
 
     /**
@@ -296,20 +344,29 @@ public class Subscription extends AggregateRoot<SubscriptionId> {
                 .filter(e -> e.getStatus() == EvaluationStatus.PENDING)
                 .forEach(BiweeklyEvaluation::cancel);
 
-        addDomainEvent(new SubscriptionCancelled(getId(), patientId, dietPlanId, reason, today,
-                cancelledPendingDeliveries, correlationId));
+        addDomainEvent(new SubscriptionCancelled(
+                getId(), patientId, dietPlanId, reason, today, cancelledPendingDeliveries, correlationId));
     }
 
     private void extendEffectiveValidity(LocalDate newEndDate) {
         ValidityPeriod extendedPeriod = new ValidityPeriod(contract.period().startDate(), newEndDate);
         contract = withPeriod(extendedPeriod);
-        deliveryCalendar.extendTo(extendedPeriod, preferences.primaryAddress(), preferences.timeWindow(),
+        deliveryCalendar.extendTo(
+                extendedPeriod,
+                preferences.primaryAddress(),
+                preferences.timeWindow(),
                 preferences.specialInstructions());
     }
 
     private ServiceContract withPeriod(ValidityPeriod period) {
-        return new ServiceContract(contract.dietPlanId(), contract.planType(), period, contract.serviceType(), contract.totalPrice(),
-                contract.acceptedConditions(), contract.signedAt());
+        return new ServiceContract(
+                contract.dietPlanId(),
+                contract.planType(),
+                period,
+                contract.serviceType(),
+                contract.totalPrice(),
+                contract.acceptedConditions(),
+                contract.signedAt());
     }
 
     private void ensureAtLeast48Hours(LocalDate date) {

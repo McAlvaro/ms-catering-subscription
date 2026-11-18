@@ -33,9 +33,20 @@ public class OutboxMessageMapper {
         if (entity == null) {
             return null;
         }
-        return new OutboxMessage(entity.getId(), entity.getType(), entity.getContent(), entity.getCreated(),
-                entity.isProcessed(), entity.getProcessedOn(), entity.getAttemptCount(), entity.getLastError(),
-                entity.getAvailableAt(), entity.getLockedUntil(), entity.getLockedBy(), entity.getCorrelationId(),
-                entity.getTraceId(), entity.getSpanId());
+        return new OutboxMessage(
+                entity.getId(),
+                entity.getType(),
+                entity.getContent(),
+                entity.getCreated(),
+                entity.isProcessed(),
+                entity.getProcessedOn(),
+                entity.getAttemptCount(),
+                entity.getLastError(),
+                entity.getAvailableAt(),
+                entity.getLockedUntil(),
+                entity.getLockedBy(),
+                entity.getCorrelationId(),
+                entity.getTraceId(),
+                entity.getSpanId());
     }
 }

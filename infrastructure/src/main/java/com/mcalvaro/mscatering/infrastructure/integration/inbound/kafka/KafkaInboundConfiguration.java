@@ -26,8 +26,7 @@ public class KafkaInboundConfiguration {
     }
 
     @Bean
-    DietPlanKafkaListener dietPlanKafkaListener(
-            DietPlanInboundAdapter dietPlanInboundAdapter) {
+    DietPlanKafkaListener dietPlanKafkaListener(DietPlanInboundAdapter dietPlanInboundAdapter) {
         return new DietPlanKafkaListener(dietPlanInboundAdapter, inboundEventObjectMapper());
     }
 
@@ -39,8 +38,7 @@ public class KafkaInboundConfiguration {
     }
 
     @Bean
-    DeliveryKafkaListener deliveryKafkaListener(
-            DeliveryInboundAdapter deliveryInboundAdapter) {
+    DeliveryKafkaListener deliveryKafkaListener(DeliveryInboundAdapter deliveryInboundAdapter) {
         return new DeliveryKafkaListener(deliveryInboundAdapter, inboundEventObjectMapper());
     }
 

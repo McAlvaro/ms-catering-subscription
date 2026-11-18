@@ -1,22 +1,20 @@
 package com.mcalvaro.mscatering.domain.subscription.entity;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import com.mcalvaro.mscatering.domain.core.DomainException;
 import com.mcalvaro.mscatering.domain.core.id.DeliveryDayId;
 import com.mcalvaro.mscatering.domain.subscription.enums.DeliveryDayStatus;
 import com.mcalvaro.mscatering.domain.subscription.vo.DeliveryAddress;
 import com.mcalvaro.mscatering.domain.subscription.vo.TimeWindow;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
-
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class DeliveryDayTest {
 
@@ -68,8 +66,12 @@ class DeliveryDayTest {
         // Arrange
         DeliveryAddress originalAddress = address("Main Street", "Madrid");
         TimeWindow originalTimeWindow = timeWindow(9, 11);
-        DeliveryDay deliveryDay = new DeliveryDay(DeliveryDayId.generate(), LocalDate.now().plusDays(1), originalAddress,
-                originalTimeWindow, "Original instructions");
+        DeliveryDay deliveryDay = new DeliveryDay(
+                DeliveryDayId.generate(),
+                LocalDate.now().plusDays(1),
+                originalAddress,
+                originalTimeWindow,
+                "Original instructions");
 
         // Act & Assert
         assertThatThrownBy(() -> deliveryDay.modify(address("Oak Avenue", "Barcelona"), timeWindow(14, 16), "Changed"))
@@ -82,7 +84,9 @@ class DeliveryDayTest {
     }
 
     @ParameterizedTest
-    @EnumSource(value = DeliveryDayStatus.class, names = {"CONSOLIDATED", "DELIVERED", "FAILED"})
+    @EnumSource(
+            value = DeliveryDayStatus.class,
+            names = {"CONSOLIDATED", "DELIVERED", "FAILED"})
     @DisplayName("Should reject modifications from statuses that block delivery changes")
     void shouldThrowDomainExceptionWhenModificationIsBlockedByStatus(DeliveryDayStatus status) {
         // Arrange
@@ -106,8 +110,12 @@ class DeliveryDayTest {
         // Arrange
         DeliveryAddress originalAddress = address("Main Street", "Madrid");
         TimeWindow originalTimeWindow = timeWindow(9, 11);
-        DeliveryDay deliveryDay = new DeliveryDay(DeliveryDayId.generate(), LocalDate.now().plusDays(4), originalAddress,
-                originalTimeWindow, "Leave at reception");
+        DeliveryDay deliveryDay = new DeliveryDay(
+                DeliveryDayId.generate(),
+                LocalDate.now().plusDays(4),
+                originalAddress,
+                originalTimeWindow,
+                "Leave at reception");
         deliveryDay.pause();
 
         // Act & Assert
@@ -199,20 +207,25 @@ class DeliveryDayTest {
         LocalDate date = LocalDate.now().plusDays(4);
 
         // Act & Assert
-        assertThatThrownBy(() -> new DeliveryDay(null, date, address("Main Street", "Madrid"), timeWindow(9, 11),
-                "Leave at reception"))
+        assertThatThrownBy(() -> new DeliveryDay(
+                        null, date, address("Main Street", "Madrid"), timeWindow(9, 11), "Leave at reception"))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("Entity id must not be null");
     }
 
     private DeliveryDay newDeliveryDay(LocalDate date) {
-        return new DeliveryDay(DeliveryDayId.generate(), date, address("Main Street", "Madrid"), timeWindow(9, 11),
+        return new DeliveryDay(
+                DeliveryDayId.generate(),
+                date,
+                address("Main Street", "Madrid"),
+                timeWindow(9, 11),
                 "Leave at reception");
     }
 
-    private DeliveryDay deliveryDayWithStatus(DeliveryDayStatus status, DeliveryAddress address, TimeWindow timeWindow) {
-        DeliveryDay deliveryDay = new DeliveryDay(DeliveryDayId.generate(), LocalDate.now().plusDays(4), address, timeWindow,
-                "Leave at reception");
+    private DeliveryDay deliveryDayWithStatus(
+            DeliveryDayStatus status, DeliveryAddress address, TimeWindow timeWindow) {
+        DeliveryDay deliveryDay = new DeliveryDay(
+                DeliveryDayId.generate(), LocalDate.now().plusDays(4), address, timeWindow, "Leave at reception");
         switch (status) {
             case CONSOLIDATED -> deliveryDay.markAsConsolidated();
             case DELIVERED -> deliveryDay.markAsDelivered();

@@ -4,5 +4,4 @@ import com.mcalvaro.mscatering.infrastructure.persistence.patientaddress.entity.
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface SpringDataPatientAddressReferenceRepository
-        extends JpaRepository<PatientAddressReferenceJpaEntity, String> {
-}
+        extends JpaRepository<PatientAddressReferenceJpaEntity, String> {}

@@ -1,15 +1,14 @@
 package com.mcalvaro.mscatering.domain.subscription.entity;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import com.mcalvaro.mscatering.domain.core.id.EvaluationId;
 import com.mcalvaro.mscatering.domain.core.id.PatientId;
 import com.mcalvaro.mscatering.domain.subscription.enums.EvaluationStatus;
+import java.time.LocalDate;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import java.time.LocalDate;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class BiweeklyEvaluationTest {
 
@@ -37,8 +36,8 @@ class BiweeklyEvaluationTest {
     @DisplayName("Should mark the evaluation as completed with the provided completion date")
     void shouldMarkEvaluationCompletedWhenCompletionDateIsProvided() {
         // Arrange
-        BiweeklyEvaluation evaluation = new BiweeklyEvaluation(
-                EvaluationId.generate(), PatientId.generate(), 1, LocalDate.of(2026, 2, 15));
+        BiweeklyEvaluation evaluation =
+                new BiweeklyEvaluation(EvaluationId.generate(), PatientId.generate(), 1, LocalDate.of(2026, 2, 15));
         LocalDate completedDate = LocalDate.of(2026, 2, 16);
 
         // Act
@@ -53,8 +52,8 @@ class BiweeklyEvaluationTest {
     @DisplayName("Should cancel a pending evaluation")
     void shouldCancelEvaluationWhenItIsPending() {
         // Arrange
-        BiweeklyEvaluation evaluation = new BiweeklyEvaluation(
-                EvaluationId.generate(), PatientId.generate(), 1, LocalDate.of(2026, 2, 15));
+        BiweeklyEvaluation evaluation =
+                new BiweeklyEvaluation(EvaluationId.generate(), PatientId.generate(), 1, LocalDate.of(2026, 2, 15));
 
         // Act
         evaluation.cancel();

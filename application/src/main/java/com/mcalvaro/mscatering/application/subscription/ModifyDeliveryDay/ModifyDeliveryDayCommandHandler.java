@@ -1,7 +1,6 @@
 package com.mcalvaro.mscatering.application.subscription.ModifyDeliveryDay;
 
 import an.awesome.pipelinr.Command;
-
 import com.mcalvaro.mscatering.domain.subscription.ISubscriptionRepository;
 import com.mcalvaro.mscatering.domain.subscription.Subscription;
 import com.mcalvaro.mscatering.domain.subscription.vo.DeliveryAddress;
@@ -23,9 +22,9 @@ public class ModifyDeliveryDayCommandHandler implements Command.Handler<ModifyDe
 
     @Override
     public Void handle(ModifyDeliveryDayCommand command) {
-        Subscription subscription = subscriptionRepository.findById(command.subscriptionId())
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Subscription not found: " + command.subscriptionId()));
+        Subscription subscription = subscriptionRepository
+                .findById(command.subscriptionId())
+                .orElseThrow(() -> new IllegalArgumentException("Subscription not found: " + command.subscriptionId()));
 
         DeliveryAddress address = new DeliveryAddress(
                 command.street(),
@@ -37,11 +36,7 @@ public class ModifyDeliveryDayCommandHandler implements Command.Handler<ModifyDe
                 command.phone());
         TimeWindow window = new TimeWindow(command.startTime(), command.endTime());
 
-        subscription.modifyDeliveryDay(
-                command.deliveryDayId(),
-                address,
-                window,
-                command.instructions());
+        subscription.modifyDeliveryDay(command.deliveryDayId(), address, window, command.instructions());
 
         subscriptionRepository.save(subscription);
         return null;

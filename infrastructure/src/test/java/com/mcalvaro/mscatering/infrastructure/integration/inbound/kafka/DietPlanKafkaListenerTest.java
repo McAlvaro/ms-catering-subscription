@@ -1,8 +1,19 @@
 package com.mcalvaro.mscatering.infrastructure.integration.inbound.kafka;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+
 import com.mcalvaro.mscatering.domain.core.DomainException;
 import com.mcalvaro.mscatering.domain.dietplan.MealType;
 import com.mcalvaro.mscatering.infrastructure.integration.inbound.bc2.dietplan.DietPlanInboundAdapter;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,18 +24,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.time.Instant;
-import java.time.LocalDate;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 
 @ExtendWith(MockitoExtension.class)
 class DietPlanKafkaListenerTest {
@@ -241,7 +240,8 @@ class DietPlanKafkaListenerTest {
     @DisplayName("Catches DomainException thrown by adapter receiveBase defensively without propagating")
     void catchesDomainExceptionFromReceiveBaseDefensively() {
         doThrow(new DomainException("PROJ-001", "Contract violation"))
-                .when(inboundAdapter).receiveBase(any());
+                .when(inboundAdapter)
+                .receiveBase(any());
 
         assertThatCode(() -> listener.onMessage(BASE_PLAN_JSON)).doesNotThrowAnyException();
 
@@ -253,7 +253,8 @@ class DietPlanKafkaListenerTest {
     @DisplayName("Catches DomainException thrown by adapter receivePersonalized defensively without propagating")
     void catchesDomainExceptionFromReceivePersonalizedDefensively() {
         doThrow(new DomainException("PROJ-001", "Contract violation"))
-                .when(inboundAdapter).receivePersonalized(any());
+                .when(inboundAdapter)
+                .receivePersonalized(any());
 
         assertThatCode(() -> listener.onMessage(PERSONALIZED_PLAN_JSON)).doesNotThrowAnyException();
 
@@ -265,7 +266,8 @@ class DietPlanKafkaListenerTest {
     @DisplayName("Catches unexpected Exception thrown by adapter defensively without propagating")
     void catchesUnexpectedExceptionDefensively() {
         doThrow(new RuntimeException("Simulated unexpected failure"))
-                .when(inboundAdapter).receiveBase(any());
+                .when(inboundAdapter)
+                .receiveBase(any());
 
         assertThatCode(() -> listener.onMessage(BASE_PLAN_JSON)).doesNotThrowAnyException();
 
@@ -277,27 +279,20 @@ class DietPlanKafkaListenerTest {
     void constructorRejectsNullDependencies() {
         org.junit.jupiter.api.Assertions.assertThrows(
                 NullPointerException.class,
-                () -> new DietPlanKafkaListener(null, DietPlanKafkaListener.defaultObjectMapper())
-        );
+                () -> new DietPlanKafkaListener(null, DietPlanKafkaListener.defaultObjectMapper()));
 
         org.junit.jupiter.api.Assertions.assertThrows(
-                NullPointerException.class,
-                () -> new DietPlanKafkaListener(inboundAdapter, null)
-        );
+                NullPointerException.class, () -> new DietPlanKafkaListener(inboundAdapter, null));
 
         org.junit.jupiter.api.Assertions.assertThrows(
-                NullPointerException.class,
-                () -> new DietPlanKafkaListener(null)
-        );
+                NullPointerException.class, () -> new DietPlanKafkaListener(null));
     }
 
     @Test
     @DisplayName("Works with custom ObjectMapper and ignores unknown properties safely")
     void worksWithCustomObjectMapperAndIgnoresUnknownProperties() {
-        DietPlanKafkaListener customListener = new DietPlanKafkaListener(
-                inboundAdapter,
-                DietPlanKafkaListener.defaultObjectMapper()
-        );
+        DietPlanKafkaListener customListener =
+                new DietPlanKafkaListener(inboundAdapter, DietPlanKafkaListener.defaultObjectMapper());
 
         String jsonWithUnknownFields = """
                 {

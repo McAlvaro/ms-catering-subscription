@@ -1,8 +1,8 @@
 package com.mcalvaro.mscatering.infrastructure.persistence.subscription.mapper;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.mcalvaro.mscatering.domain.core.id.AddressId;
-import com.mcalvaro.mscatering.domain.core.id.DeliveryCalendarId;
-import com.mcalvaro.mscatering.domain.core.id.DeliveryDayId;
 import com.mcalvaro.mscatering.domain.core.id.DietPlanId;
 import com.mcalvaro.mscatering.domain.core.id.EvaluationId;
 import com.mcalvaro.mscatering.domain.core.id.PatientId;
@@ -26,17 +26,14 @@ import com.mcalvaro.mscatering.infrastructure.persistence.subscription.entity.De
 import com.mcalvaro.mscatering.infrastructure.persistence.subscription.entity.DeliveryDayJpaEntity;
 import com.mcalvaro.mscatering.infrastructure.persistence.subscription.entity.PauseRequestJpaEntity;
 import com.mcalvaro.mscatering.infrastructure.persistence.subscription.entity.SubscriptionJpaEntity;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 class SubscriptionMapperTest {
 
@@ -54,15 +51,23 @@ class SubscriptionMapperTest {
         // Assert
         assertThat(result.getId()).isEqualTo(subscription.getId().value());
         assertThat(result.getPatientId()).isEqualTo(subscription.getPatientId().value());
-        assertThat(result.getDietPlanId()).isEqualTo(subscription.getDietPlanId().value());
-        assertThat(result.getContractCode()).isEqualTo(subscription.getContractCode().value());
+        assertThat(result.getDietPlanId())
+                .isEqualTo(subscription.getDietPlanId().value());
+        assertThat(result.getContractCode())
+                .isEqualTo(subscription.getContractCode().value());
         assertThat(result.getStatus()).isEqualTo(SubscriptionStatus.ACTIVE.name());
-        assertThat(result.getContractStartDate()).isEqualTo(subscription.getContract().period().startDate());
-        assertThat(result.getContractEndDate()).isEqualTo(subscription.getContract().period().endDate());
-        assertThat(result.getContractDurationDays()).isEqualTo(subscription.getContract().period().durationDays());
-        assertThat(result.getServiceType()).isEqualTo(subscription.getContract().serviceType().name());
-        assertThat(result.getTotalPrice()).isEqualByComparingTo(subscription.getContract().totalPrice());
-        assertThat(result.getAcceptedConditions()).isEqualTo(subscription.getContract().acceptedConditions());
+        assertThat(result.getContractStartDate())
+                .isEqualTo(subscription.getContract().period().startDate());
+        assertThat(result.getContractEndDate())
+                .isEqualTo(subscription.getContract().period().endDate());
+        assertThat(result.getContractDurationDays())
+                .isEqualTo(subscription.getContract().period().durationDays());
+        assertThat(result.getServiceType())
+                .isEqualTo(subscription.getContract().serviceType().name());
+        assertThat(result.getTotalPrice())
+                .isEqualByComparingTo(subscription.getContract().totalPrice());
+        assertThat(result.getAcceptedConditions())
+                .isEqualTo(subscription.getContract().acceptedConditions());
         assertThat(result.getSignedAt()).isEqualTo(subscription.getContract().signedAt());
         assertThat(result.getPrefStreet()).isEqualTo("Main Street");
         assertThat(result.getPrefNumber()).isEqualTo("42");
@@ -74,7 +79,8 @@ class SubscriptionMapperTest {
         assertThat(result.getPrefTimeStart()).isEqualTo("09:00");
         assertThat(result.getPrefTimeEnd()).isEqualTo("11:00");
         assertThat(result.getPrefSpecialInstructions()).isEqualTo("Ring the bell");
-        assertThat(result.getDeliveryCalendar().getId()).isEqualTo(subscription.getDeliveryCalendar().getId().value());
+        assertThat(result.getDeliveryCalendar().getId())
+                .isEqualTo(subscription.getDeliveryCalendar().getId().value());
         assertThat(result.getDeliveryCalendar().getPeriodStart())
                 .isEqualTo(subscription.getContract().period().startDate());
         assertThat(result.getDeliveryCalendar().getPeriodEnd())
@@ -82,7 +88,13 @@ class SubscriptionMapperTest {
         assertThat(result.getDeliveryCalendar().getSubscription()).isSameAs(result);
         assertThat(result.getDeliveryCalendar().getDeliveryDays()).hasSize(15);
         assertThat(result.getDeliveryCalendar().getDeliveryDays().get(0)).satisfies(day -> {
-            assertThat(day.getId()).isEqualTo(subscription.getDeliveryCalendar().getDeliveryDays().get(0).getId().value());
+            assertThat(day.getId())
+                    .isEqualTo(subscription
+                            .getDeliveryCalendar()
+                            .getDeliveryDays()
+                            .get(0)
+                            .getId()
+                            .value());
             assertThat(day.getDate()).isEqualTo(LocalDate.of(2027, 7, 1));
             assertThat(day.getStatus()).isEqualTo(DeliveryDayStatus.DELIVERED.name());
             assertThat(day.getAddressStreet()).isEqualTo("Main Street");
@@ -105,9 +117,11 @@ class SubscriptionMapperTest {
                 .isEqualTo("Patient unavailable");
         assertThat(result.getDeliveryCalendar().getDeliveryDays().get(2).getStatus())
                 .isEqualTo(DeliveryDayStatus.CONSOLIDATED.name());
-        assertThat(result.getDeliveryCalendar().getDeliveryDays().get(2).getConsolidatedAt()).isNotNull();
+        assertThat(result.getDeliveryCalendar().getDeliveryDays().get(2).getConsolidatedAt())
+                .isNotNull();
         assertThat(result.getPauseRequests()).singleElement().satisfies(pause -> {
-            assertThat(pause.getId()).isEqualTo(subscription.getPauseRequests().get(0).getId().value());
+            assertThat(pause.getId())
+                    .isEqualTo(subscription.getPauseRequests().get(0).getId().value());
             assertThat(pause.getRangeStart()).isEqualTo(LocalDate.of(2027, 7, 4));
             assertThat(pause.getRangeEnd()).isEqualTo(LocalDate.of(2027, 7, 5));
             assertThat(pause.getReason()).isEqualTo("Medical appointment");
@@ -118,10 +132,13 @@ class SubscriptionMapperTest {
             assertThat(pause.getExtensionDays()).isZero();
             assertThat(pause.getSubscription()).isSameAs(result);
         });
-        assertThat(result.getEvaluations()).extracting(BiweeklyEvaluationJpaEntity::getId)
-                .containsExactlyElementsOf(
-                        subscription.getEvaluations().stream().map(e -> e.getId().value()).toList());
-        assertThat(result.getEvaluations()).extracting(BiweeklyEvaluationJpaEntity::getStatus)
+        assertThat(result.getEvaluations())
+                .extracting(BiweeklyEvaluationJpaEntity::getId)
+                .containsExactlyElementsOf(subscription.getEvaluations().stream()
+                        .map(e -> e.getId().value())
+                        .toList());
+        assertThat(result.getEvaluations())
+                .extracting(BiweeklyEvaluationJpaEntity::getStatus)
                 .containsExactly(EvaluationStatus.COMPLETED.name(), EvaluationStatus.CANCELLED.name());
         assertThat(result.getEvaluations().get(0).getCompletedDate()).isEqualTo(LocalDate.of(2027, 7, 15));
         assertThat(result.getEvaluations().get(1).getCompletedDate()).isNull();
@@ -158,20 +175,29 @@ class SubscriptionMapperTest {
         assertThat(result.getPreferences().timeWindow().startTime()).isEqualTo(LocalTime.of(12, 0));
         assertThat(result.getPreferences().timeWindow().endTime()).isEqualTo(LocalTime.of(14, 0));
         assertThat(result.getPreferences().specialInstructions()).isNull();
-        assertThat(result.getDeliveryCalendar().getId().value()).isEqualTo(subscription.getDeliveryCalendar().getId());
+        assertThat(result.getDeliveryCalendar().getId().value())
+                .isEqualTo(subscription.getDeliveryCalendar().getId());
         assertThat(result.getDeliveryCalendar().getSubscriptionId().value()).isEqualTo(subscription.getId());
-        assertThat(result.getDeliveryCalendar().getDeliveryDays()).singleElement().satisfies(day -> {
-            assertThat(day.getId().value()).isEqualTo(subscription.getDeliveryCalendar().getDeliveryDays().get(0).getId());
-            assertThat(day.getDate()).isEqualTo(LocalDate.of(2027, 8, 2));
-            assertThat(day.getStatus()).isEqualTo(DeliveryDayStatus.FAILED);
-            assertThat(day.getAddress().latitude()).isZero();
-            assertThat(day.getAddress().longitude()).isZero();
-            assertThat(day.getFailureReason()).isEqualTo("Address inaccessible");
-            assertThat(day.getDeliveredAt()).isNull();
-            assertThat(day.getConsolidatedAt()).isNull();
-        });
+        assertThat(result.getDeliveryCalendar().getDeliveryDays())
+                .singleElement()
+                .satisfies(day -> {
+                    assertThat(day.getId().value())
+                            .isEqualTo(subscription
+                                    .getDeliveryCalendar()
+                                    .getDeliveryDays()
+                                    .get(0)
+                                    .getId());
+                    assertThat(day.getDate()).isEqualTo(LocalDate.of(2027, 8, 2));
+                    assertThat(day.getStatus()).isEqualTo(DeliveryDayStatus.FAILED);
+                    assertThat(day.getAddress().latitude()).isZero();
+                    assertThat(day.getAddress().longitude()).isZero();
+                    assertThat(day.getFailureReason()).isEqualTo("Address inaccessible");
+                    assertThat(day.getDeliveredAt()).isNull();
+                    assertThat(day.getConsolidatedAt()).isNull();
+                });
         assertThat(result.getPauseRequests()).singleElement().satisfies(pause -> {
-            assertThat(pause.getId().value()).isEqualTo(subscription.getPauseRequests().get(0).getId());
+            assertThat(pause.getId().value())
+                    .isEqualTo(subscription.getPauseRequests().get(0).getId());
             assertThat(pause.getRange().startDate()).isEqualTo(LocalDate.of(2027, 8, 4));
             assertThat(pause.getRange().endDate()).isEqualTo(LocalDate.of(2027, 8, 6));
             assertThat(pause.getReason()).isEqualTo("Hospitalization");
@@ -182,7 +208,8 @@ class SubscriptionMapperTest {
             assertThat(pause.getExtensionDays()).isEqualTo(3);
         });
         assertThat(result.getEvaluations()).singleElement().satisfies(evaluation -> {
-            assertThat(evaluation.getId().value()).isEqualTo(subscription.getEvaluations().get(0).getId());
+            assertThat(evaluation.getId().value())
+                    .isEqualTo(subscription.getEvaluations().get(0).getId());
             assertThat(evaluation.getPatientId().value()).isEqualTo(subscription.getPatientId());
             assertThat(evaluation.getEvaluationNumber()).isEqualTo(3);
             assertThat(evaluation.getScheduledDate()).isEqualTo(LocalDate.of(2027, 8, 15));
@@ -211,11 +238,17 @@ class SubscriptionMapperTest {
     @DisplayName("Should retain the persisted pause correlation when a reloaded subscription is reactivated")
     void shouldReusePersistedPauseCorrelationWhenReloadedSubscriptionIsReactivated() {
         // Arrange
-        Subscription original = Subscription.create(SubscriptionId.of("SUS-" + UUID.randomUUID()),
-                PatientId.of("PAC-" + UUID.randomUUID()), DietPlanId.of("PLAN-" + UUID.randomUUID()),
-                buildContract(), buildPreferences(), 1);
+        Subscription original = Subscription.create(
+                SubscriptionId.of("SUS-" + UUID.randomUUID()),
+                PatientId.of("PAC-" + UUID.randomUUID()),
+                DietPlanId.of("PLAN-" + UUID.randomUUID()),
+                buildContract(),
+                buildPreferences(),
+                1);
         LocalDate reactivationDate = LocalDate.of(2027, 7, 4);
-        original.pause(new PauseRange(reactivationDate, reactivationDate.plusDays(1)), "Medical appointment",
+        original.pause(
+                new PauseRange(reactivationDate, reactivationDate.plusDays(1)),
+                "Medical appointment",
                 "persisted-pause-flow");
         Subscription reloaded = mapper.toDomain(mapper.toJpaEntity(original));
         reloaded.clearDomainEvents();
@@ -224,27 +257,42 @@ class SubscriptionMapperTest {
         reloaded.reactivate(reactivationDate);
 
         // Assert
-        assertThat(reloaded.getDomainEvents()).singleElement().isInstanceOfSatisfying(SubscriptionReactivated.class,
-                event -> assertThat(event.correlationId()).isEqualTo("persisted-pause-flow"));
+        assertThat(reloaded.getDomainEvents())
+                .singleElement()
+                .isInstanceOfSatisfying(
+                        SubscriptionReactivated.class,
+                        event -> assertThat(event.correlationId()).isEqualTo("persisted-pause-flow"));
     }
 
     private Subscription buildSubscriptionWithNestedState() {
         SubscriptionId subscriptionId = SubscriptionId.of("SUS-ef19967c-98ad-4629-a8c9-69f3b81e3312");
-        Subscription subscription = Subscription.create(subscriptionId,
+        Subscription subscription = Subscription.create(
+                subscriptionId,
                 PatientId.of("PAC-fc3a747c-4b2f-4701-83fb-2f6f941f0cf5"),
-                DietPlanId.of("PLAN-cea36c1d-e158-4827-84e2-1dd095550fcb"), buildContract(), buildPreferences(), 7);
+                DietPlanId.of("PLAN-cea36c1d-e158-4827-84e2-1dd095550fcb"),
+                buildContract(),
+                buildPreferences(),
+                7);
         List<DeliveryDay> days = subscription.getDeliveryCalendar().getDeliveryDays();
         days.get(0).markAsDelivered();
         days.get(1).markAsFailed("Patient unavailable");
         days.get(2).markAsConsolidated();
-        subscription.pause(new PauseRange(LocalDate.of(2027, 7, 4), LocalDate.of(2027, 7, 5)), "Medical appointment",
+        subscription.pause(
+                new PauseRange(LocalDate.of(2027, 7, 4), LocalDate.of(2027, 7, 5)),
+                "Medical appointment",
                 "persisted-pause-correlation");
         subscription.reactivate(LocalDate.of(2027, 7, 4));
-        BiweeklyEvaluation completed = new BiweeklyEvaluation(EvaluationId.of("EVAL-f2b985c0-67b8-4d1d-a54b-47904d8c3b0a"),
-                subscription.getPatientId(), 1, LocalDate.of(2027, 7, 14));
+        BiweeklyEvaluation completed = new BiweeklyEvaluation(
+                EvaluationId.of("EVAL-f2b985c0-67b8-4d1d-a54b-47904d8c3b0a"),
+                subscription.getPatientId(),
+                1,
+                LocalDate.of(2027, 7, 14));
         completed.markCompleted(LocalDate.of(2027, 7, 15));
-        BiweeklyEvaluation cancelled = new BiweeklyEvaluation(EvaluationId.of("EVAL-a2f2fe58-b6c2-47a2-9c24-ecbc0961c989"),
-                subscription.getPatientId(), 2, LocalDate.of(2027, 7, 28));
+        BiweeklyEvaluation cancelled = new BiweeklyEvaluation(
+                EvaluationId.of("EVAL-a2f2fe58-b6c2-47a2-9c24-ecbc0961c989"),
+                subscription.getPatientId(),
+                2,
+                LocalDate.of(2027, 7, 28));
         cancelled.cancel();
         subscription.scheduleEvaluations(List.of(completed, cancelled));
         return subscription;
@@ -322,14 +370,28 @@ class SubscriptionMapperTest {
     }
 
     private ServiceContract buildContract() {
-        return new ServiceContract(DietPlanId.of("PLAN-cea36c1d-e158-4827-84e2-1dd095550fcb"),
+        return new ServiceContract(
+                DietPlanId.of("PLAN-cea36c1d-e158-4827-84e2-1dd095550fcb"),
                 com.mcalvaro.mscatering.domain.dietplan.PlanType.BASE,
-                new ValidityPeriod(LocalDate.of(2027, 7, 1), LocalDate.of(2027, 7, 15)), ServiceType.values()[0],
-                new BigDecimal("199.99"), "Conditions were accepted", Instant.parse("2027-06-20T10:30:00Z"));
+                new ValidityPeriod(LocalDate.of(2027, 7, 1), LocalDate.of(2027, 7, 15)),
+                ServiceType.values()[0],
+                new BigDecimal("199.99"),
+                "Conditions were accepted",
+                Instant.parse("2027-06-20T10:30:00Z"));
     }
 
     private DeliveryPreferences buildPreferences() {
-        return new DeliveryPreferences(new DeliveryAddress(AddressId.of("DIR-" + UUID.randomUUID()), "Main Street", "42", "Madrid", "Blue door", 40.4168,
-                -3.7038, "+34123456789"), new TimeWindow(LocalTime.of(9, 0), LocalTime.of(11, 0)), "Ring the bell");
+        return new DeliveryPreferences(
+                new DeliveryAddress(
+                        AddressId.of("DIR-" + UUID.randomUUID()),
+                        "Main Street",
+                        "42",
+                        "Madrid",
+                        "Blue door",
+                        40.4168,
+                        -3.7038,
+                        "+34123456789"),
+                new TimeWindow(LocalTime.of(9, 0), LocalTime.of(11, 0)),
+                "Ring the bell");
     }
 }

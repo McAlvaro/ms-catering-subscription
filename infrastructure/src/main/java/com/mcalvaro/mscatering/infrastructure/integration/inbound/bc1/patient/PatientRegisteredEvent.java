@@ -1,7 +1,6 @@
 package com.mcalvaro.mscatering.infrastructure.integration.inbound.bc1.patient;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.time.Instant;
 import java.util.UUID;
 
@@ -16,5 +15,4 @@ public record PatientRegisteredEvent(
         Instant occurredOn,
         String source,
         String correlationId,
-        @JsonProperty("data") PatientRegisteredData data) {
-}
+        @JsonProperty("data") PatientRegisteredData data) {}

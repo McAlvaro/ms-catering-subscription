@@ -1,29 +1,28 @@
 package com.mcalvaro.mscatering.infrastructure.api.subscription;
 
+import static org.hamcrest.Matchers.isEmptyOrNullString;
+import static org.hamcrest.Matchers.not;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.mcalvaro.mscatering.application.subscription.CreateSubscription.CreateSubscriptionCommand;
 import com.mcalvaro.mscatering.infrastructure.BaseIntegrationTest;
-import com.mcalvaro.mscatering.infrastructure.support.PatientRegistrationFixture;
-import com.mcalvaro.mscatering.infrastructure.support.PatientAddressRegistrationFixture;
 import com.mcalvaro.mscatering.infrastructure.support.DietPlanProjectionFixture;
+import com.mcalvaro.mscatering.infrastructure.support.PatientAddressRegistrationFixture;
+import com.mcalvaro.mscatering.infrastructure.support.PatientRegistrationFixture;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.UUID;
-import java.util.List;
-
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.hamcrest.Matchers.isEmptyOrNullString;
-import static org.hamcrest.Matchers.not;
 
 /**
  * Integration tests for POST /api/subscriptions.
@@ -47,6 +46,7 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
 
     @Autowired
     private PatientAddressRegistrationFixture addressFixture;
+
     @Autowired
     private DietPlanProjectionFixture dietPlanFixture;
 
@@ -84,9 +84,7 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
             String body = objectMapper.writeValueAsString(buildValidCommand(activePatientId, 15));
 
             // Act & Assert
-            mockMvc.perform(post(URL)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(body))
+            mockMvc.perform(post(URL).contentType(MediaType.APPLICATION_JSON).content(body))
                     .andExpect(status().isCreated())
                     .andExpect(content().string(not(isEmptyOrNullString())));
         }
@@ -98,9 +96,7 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
             String body = objectMapper.writeValueAsString(buildValidCommand(activePatientId, 30));
 
             // Act & Assert
-            mockMvc.perform(post(URL)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(body))
+            mockMvc.perform(post(URL).contentType(MediaType.APPLICATION_JSON).content(body))
                     .andExpect(status().isCreated())
                     .andExpect(content().string(not(isEmptyOrNullString())));
         }
@@ -118,9 +114,7 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
             String body = objectMapper.writeValueAsString(buildValidCommand(unknownPatientId, 15));
 
             // Act & Assert
-            mockMvc.perform(post(URL)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(body))
+            mockMvc.perform(post(URL).contentType(MediaType.APPLICATION_JSON).content(body))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("SUB-014"));
         }
@@ -132,9 +126,7 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
             String body = objectMapper.writeValueAsString(buildValidCommand(inactivePatientId, 15));
 
             // Act & Assert
-            mockMvc.perform(post(URL)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(body))
+            mockMvc.perform(post(URL).contentType(MediaType.APPLICATION_JSON).content(body))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("SUB-015"));
         }
@@ -148,9 +140,7 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
             String addressId = addressFixture.ingestAddress(patientId);
 
             String firstBody = objectMapper.writeValueAsString(buildValidCommand(patientId, addressId, 15));
-            mockMvc.perform(post(URL)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(firstBody))
+            mockMvc.perform(post(URL).contentType(MediaType.APPLICATION_JSON).content(firstBody))
                     .andExpect(status().isCreated());
 
             // Act — attempt to create a second subscription for the same patient
@@ -160,9 +150,7 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
             String secondBody = objectMapper.writeValueAsString(buildValidCommand(patientId, 15));
 
             // Assert
-            mockMvc.perform(post(URL)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(secondBody))
+            mockMvc.perform(post(URL).contentType(MediaType.APPLICATION_JSON).content(secondBody))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("SUB-013"));
         }
@@ -174,9 +162,7 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
             String body = objectMapper.writeValueAsString(buildValidCommand(activePatientId, 20));
 
             // Act & Assert
-            mockMvc.perform(post(URL)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(body))
+            mockMvc.perform(post(URL).contentType(MediaType.APPLICATION_JSON).content(body))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("SUB-005"));
         }
@@ -186,15 +172,21 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
         void shouldReturn400WhenTotalPriceIsZero() throws Exception {
             // Arrange
             CreateSubscriptionCommand command = new CreateSubscriptionCommand(
-                    activePatientId, planIds.get(15), LocalDate.now().plusDays(1), LocalDate.now().plusDays(15),
-                    "LUNCH", BigDecimal.ZERO, "Acepto términos y condiciones del servicio de catering.",
-                    activeAddressId, LocalTime.of(12, 0), LocalTime.of(14, 0), null);
+                    activePatientId,
+                    planIds.get(15),
+                    LocalDate.now().plusDays(1),
+                    LocalDate.now().plusDays(15),
+                    "LUNCH",
+                    BigDecimal.ZERO,
+                    "Acepto términos y condiciones del servicio de catering.",
+                    activeAddressId,
+                    LocalTime.of(12, 0),
+                    LocalTime.of(14, 0),
+                    null);
             String body = objectMapper.writeValueAsString(command);
 
             // Act & Assert
-            mockMvc.perform(post(URL)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(body))
+            mockMvc.perform(post(URL).contentType(MediaType.APPLICATION_JSON).content(body))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("SUB-006"));
         }
@@ -204,15 +196,21 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
         void shouldReturn400WhenTotalPriceIsNegative() throws Exception {
             // Arrange
             CreateSubscriptionCommand command = new CreateSubscriptionCommand(
-                    activePatientId, planIds.get(15), LocalDate.now().plusDays(1), LocalDate.now().plusDays(15),
-                    "LUNCH", new BigDecimal("-1.00"), "Acepto términos y condiciones del servicio de catering.",
-                    activeAddressId, LocalTime.of(12, 0), LocalTime.of(14, 0), null);
+                    activePatientId,
+                    planIds.get(15),
+                    LocalDate.now().plusDays(1),
+                    LocalDate.now().plusDays(15),
+                    "LUNCH",
+                    new BigDecimal("-1.00"),
+                    "Acepto términos y condiciones del servicio de catering.",
+                    activeAddressId,
+                    LocalTime.of(12, 0),
+                    LocalTime.of(14, 0),
+                    null);
             String body = objectMapper.writeValueAsString(command);
 
             // Act & Assert
-            mockMvc.perform(post(URL)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(body))
+            mockMvc.perform(post(URL).contentType(MediaType.APPLICATION_JSON).content(body))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("SUB-006"));
         }
@@ -223,15 +221,21 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
             // Arrange — same day: startDate == endDate
             LocalDate sameDay = LocalDate.now().plusDays(1);
             CreateSubscriptionCommand command = new CreateSubscriptionCommand(
-                    activePatientId, "PLAN-" + UUID.randomUUID(), sameDay, sameDay, "LUNCH", new BigDecimal("250.00"),
-                    "Acepto términos y condiciones del servicio de catering.", activeAddressId,
-                    LocalTime.of(12, 0), LocalTime.of(14, 0), null);
+                    activePatientId,
+                    "PLAN-" + UUID.randomUUID(),
+                    sameDay,
+                    sameDay,
+                    "LUNCH",
+                    new BigDecimal("250.00"),
+                    "Acepto términos y condiciones del servicio de catering.",
+                    activeAddressId,
+                    LocalTime.of(12, 0),
+                    LocalTime.of(14, 0),
+                    null);
             String body = objectMapper.writeValueAsString(command);
 
             // Act & Assert
-            mockMvc.perform(post(URL)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(body))
+            mockMvc.perform(post(URL).contentType(MediaType.APPLICATION_JSON).content(body))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("VO-008"));
         }
@@ -241,14 +245,15 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
         void shouldReturn400WhenValidityPeriodDateIsMissing() throws Exception {
             // Arrange
             String body = objectMapper.writeValueAsString(buildCommand(
-                    activePatientId, null, LocalDate.now().plusDays(15),
+                    activePatientId,
+                    null,
+                    LocalDate.now().plusDays(15),
                     "Acepto términos y condiciones del servicio de catering.",
-                    LocalTime.of(12, 0), LocalTime.of(14, 0)));
+                    LocalTime.of(12, 0),
+                    LocalTime.of(14, 0)));
 
             // Act & Assert
-            mockMvc.perform(post(URL)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(body))
+            mockMvc.perform(post(URL).contentType(MediaType.APPLICATION_JSON).content(body))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("VO-007"));
         }
@@ -258,15 +263,21 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
         void shouldReturn400WhenTimeWindowIsInvalid() throws Exception {
             // Arrange — endTime == startTime
             CreateSubscriptionCommand command = new CreateSubscriptionCommand(
-                    activePatientId, planIds.get(15), LocalDate.now().plusDays(1), LocalDate.now().plusDays(15),
-                    "LUNCH", new BigDecimal("250.00"), "Acepto términos y conditions del servicio de catering.",
-                    activeAddressId, LocalTime.of(14, 0), LocalTime.of(12, 0), null);
+                    activePatientId,
+                    planIds.get(15),
+                    LocalDate.now().plusDays(1),
+                    LocalDate.now().plusDays(15),
+                    "LUNCH",
+                    new BigDecimal("250.00"),
+                    "Acepto términos y conditions del servicio de catering.",
+                    activeAddressId,
+                    LocalTime.of(14, 0),
+                    LocalTime.of(12, 0),
+                    null);
             String body = objectMapper.writeValueAsString(command);
 
             // Act & Assert
-            mockMvc.perform(post(URL)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(body))
+            mockMvc.perform(post(URL).contentType(MediaType.APPLICATION_JSON).content(body))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("VO-002"));
         }
@@ -276,14 +287,15 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
         void shouldReturn400WhenPreferredDeliveryTimeIsMissing() throws Exception {
             // Arrange
             String body = objectMapper.writeValueAsString(buildCommand(
-                    activePatientId, LocalDate.now().plusDays(1), LocalDate.now().plusDays(15),
+                    activePatientId,
+                    LocalDate.now().plusDays(1),
+                    LocalDate.now().plusDays(15),
                     "Acepto términos y condiciones del servicio de catering.",
-                    null, LocalTime.of(14, 0)));
+                    null,
+                    LocalTime.of(14, 0)));
 
             // Act & Assert
-            mockMvc.perform(post(URL)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(body))
+            mockMvc.perform(post(URL).contentType(MediaType.APPLICATION_JSON).content(body))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("VO-001"));
         }
@@ -291,13 +303,10 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
         @Test
         @DisplayName("Should return 400 ADR-001 when the selected address belongs to another patient")
         void shouldReturn400WhenAddressIsForeign() throws Exception {
-            String body = buildValidCommandJson(activePatientId, 15)
-                    .replace(activeAddressId, foreignAddressId);
+            String body = buildValidCommandJson(activePatientId, 15).replace(activeAddressId, foreignAddressId);
 
             // Act & Assert
-            mockMvc.perform(post(URL)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(body))
+            mockMvc.perform(post(URL).contentType(MediaType.APPLICATION_JSON).content(body))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("ADR-001"));
         }
@@ -309,9 +318,7 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
                     .replace(activeAddressId, "DIR-00000000-0000-0000-0000-000000000001");
 
             // Act & Assert
-            mockMvc.perform(post(URL)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(body))
+            mockMvc.perform(post(URL).contentType(MediaType.APPLICATION_JSON).content(body))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("ADR-001"));
         }
@@ -321,13 +328,15 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
         void shouldReturn400WhenAcceptedConditionsAreBlank() throws Exception {
             // Arrange
             String body = objectMapper.writeValueAsString(buildCommand(
-                    activePatientId, LocalDate.now().plusDays(1), LocalDate.now().plusDays(15),
-                    "   ", LocalTime.of(12, 0), LocalTime.of(14, 0)));
+                    activePatientId,
+                    LocalDate.now().plusDays(1),
+                    LocalDate.now().plusDays(15),
+                    "   ",
+                    LocalTime.of(12, 0),
+                    LocalTime.of(14, 0)));
 
             // Act & Assert
-            mockMvc.perform(post(URL)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(body))
+            mockMvc.perform(post(URL).contentType(MediaType.APPLICATION_JSON).content(body))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("VO-010"));
         }
@@ -344,13 +353,10 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
             // accepts "DESAYUNO" without error. ServiceType.valueOf("DESAYUNO") then throws
             // IllegalArgumentException in the handler, caught as BAD_REQUEST (not
             // INVALID_PAYLOAD).
-            String body = buildValidCommandJson(activePatientId, 15)
-                    .replace("\"LUNCH\"", "\"DESAYUNO\"");
+            String body = buildValidCommandJson(activePatientId, 15).replace("\"LUNCH\"", "\"DESAYUNO\"");
 
             // Act & Assert
-            mockMvc.perform(post(URL)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(body))
+            mockMvc.perform(post(URL).contentType(MediaType.APPLICATION_JSON).content(body))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("BAD_REQUEST"));
         }
@@ -360,13 +366,10 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
         void shouldReturn400WhenStartDateHasInvalidFormat() throws Exception {
             // Arrange
             String body = buildValidCommandJson(activePatientId, 15)
-                    .replaceFirst("\"startDate\"\\s*:\\s*\"[^\"]+\"",
-                            "\"startDate\":\"not-a-date\"");
+                    .replaceFirst("\"startDate\"\\s*:\\s*\"[^\"]+\"", "\"startDate\":\"not-a-date\"");
 
             // Act & Assert
-            mockMvc.perform(post(URL)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(body))
+            mockMvc.perform(post(URL).contentType(MediaType.APPLICATION_JSON).content(body))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("INVALID_PAYLOAD"));
         }
@@ -375,9 +378,7 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
         @DisplayName("Should return 400 INVALID_PAYLOAD when request body is completely empty JSON")
         void shouldReturn400WhenBodyIsEmptyJson() throws Exception {
             // Act & Assert
-            mockMvc.perform(post(URL)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content("{}"))
+            mockMvc.perform(post(URL).contentType(MediaType.APPLICATION_JSON).content("{}"))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("INVALID_PAYLOAD"));
         }
@@ -390,22 +391,38 @@ class CreateSubscriptionApiIT extends BaseIntegrationTest {
     private CreateSubscriptionCommand buildValidCommand(String patientId, String addressId, int planDays) {
         LocalDate start = LocalDate.now().plusDays(1);
         LocalDate end = start.plusDays(planDays - 1);
-        return buildCommand(patientId, addressId, start, end,
+        return buildCommand(
+                patientId,
+                addressId,
+                start,
+                end,
                 "Acepto términos y condiciones del servicio de catering.",
-                LocalTime.of(12, 0), LocalTime.of(14, 0));
+                LocalTime.of(12, 0),
+                LocalTime.of(14, 0));
     }
 
     private CreateSubscriptionCommand buildCommand(
-            String patientId, LocalDate start, LocalDate end, String acceptedConditions,
-            LocalTime prefTimeStart, LocalTime prefTimeEnd) {
+            String patientId,
+            LocalDate start,
+            LocalDate end,
+            String acceptedConditions,
+            LocalTime prefTimeStart,
+            LocalTime prefTimeEnd) {
         return buildCommand(patientId, activeAddressId, start, end, acceptedConditions, prefTimeStart, prefTimeEnd);
     }
 
-    private CreateSubscriptionCommand buildCommand(String patientId, String addressId, LocalDate start, LocalDate end,
-            String acceptedConditions, LocalTime prefTimeStart, LocalTime prefTimeEnd) {
+    private CreateSubscriptionCommand buildCommand(
+            String patientId,
+            String addressId,
+            LocalDate start,
+            LocalDate end,
+            String acceptedConditions,
+            LocalTime prefTimeStart,
+            LocalTime prefTimeEnd) {
         return new CreateSubscriptionCommand(
                 patientId,
-                start == null || end == null ? planIds.get(15)
+                start == null || end == null
+                        ? planIds.get(15)
                         : planIds.get((int) java.time.temporal.ChronoUnit.DAYS.between(start, end) + 1),
                 start,
                 end,
