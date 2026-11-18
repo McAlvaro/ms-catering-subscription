@@ -3,6 +3,7 @@ package com.mcalvaro.mscatering.infrastructure;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.mcalvaro.mscatering.infrastructure.support.DatabaseCleaner;
 import com.mcalvaro.mscatering.infrastructure.support.DietPlanProjectionFixture;
 import com.mcalvaro.mscatering.infrastructure.support.PatientAddressRegistrationFixture;
 import com.mcalvaro.mscatering.infrastructure.support.PatientRegistrationFixture;
@@ -27,7 +28,12 @@ import org.springframework.transaction.annotation.Transactional;
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
-@Import({PatientRegistrationFixture.class, PatientAddressRegistrationFixture.class, DietPlanProjectionFixture.class})
+@Import({
+    PatientRegistrationFixture.class,
+    PatientAddressRegistrationFixture.class,
+    DietPlanProjectionFixture.class,
+    DatabaseCleaner.class
+})
 public abstract class BaseIntegrationTest {
 
     @Autowired

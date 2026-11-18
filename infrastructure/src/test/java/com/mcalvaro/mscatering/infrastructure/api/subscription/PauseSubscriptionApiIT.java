@@ -14,6 +14,7 @@ import com.mcalvaro.mscatering.domain.subscription.Subscription;
 import com.mcalvaro.mscatering.domain.subscription.enums.ServiceType;
 import com.mcalvaro.mscatering.domain.subscription.vo.*;
 import com.mcalvaro.mscatering.infrastructure.BaseIntegrationTest;
+import com.mcalvaro.mscatering.infrastructure.support.TestContractSequence;
 import java.math.BigDecimal;
 import java.time.*;
 import java.util.UUID;
@@ -220,7 +221,7 @@ class PauseSubscriptionApiIT extends BaseIntegrationTest {
                                 AddressId.of("DIR-" + UUID.randomUUID()), "Home", "Main", "1", "Lima", null, 0, 0, "1"),
                         new TimeWindow(LocalTime.NOON, LocalTime.of(14, 0)),
                         null),
-                1);
+                TestContractSequence.next());
     }
 
     private String buildValidCommandJson(LocalDate start, LocalDate end) throws Exception {

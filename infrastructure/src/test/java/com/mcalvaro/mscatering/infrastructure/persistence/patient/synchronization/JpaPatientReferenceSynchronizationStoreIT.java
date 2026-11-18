@@ -11,8 +11,10 @@ import com.mcalvaro.mscatering.infrastructure.integration.inbound.bc1.patient.Pa
 import com.mcalvaro.mscatering.infrastructure.persistence.inboundevent.repository.SpringDataProcessedInboundEventReceiptRepository;
 import com.mcalvaro.mscatering.infrastructure.persistence.patient.entity.PatientReferenceJpaEntity;
 import com.mcalvaro.mscatering.infrastructure.persistence.patient.repository.SpringDataPatientReferenceRepository;
+import com.mcalvaro.mscatering.infrastructure.support.DatabaseCleaner;
 import com.mcalvaro.mscatering.infrastructure.support.PatientRegistrationFixture;
 import java.util.UUID;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +37,14 @@ class JpaPatientReferenceSynchronizationStoreIT extends BaseIntegrationTest {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private DatabaseCleaner databaseCleaner;
+
+    @AfterEach
+    void cleanCommittedData() {
+        databaseCleaner.clean();
+    }
 
     private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 

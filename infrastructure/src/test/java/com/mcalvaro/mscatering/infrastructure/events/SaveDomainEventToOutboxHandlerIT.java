@@ -31,6 +31,7 @@ import com.mcalvaro.mscatering.infrastructure.persistence.outbox.codec.JacksonDo
 import com.mcalvaro.mscatering.infrastructure.persistence.outbox.entity.OutboxMessageJpaEntity;
 import com.mcalvaro.mscatering.infrastructure.persistence.outbox.repository.SpringDataOutboxMessageRepository;
 import com.mcalvaro.mscatering.infrastructure.persistence.subscription.repository.SpringDataSubscriptionRepository;
+import com.mcalvaro.mscatering.infrastructure.support.DatabaseCleaner;
 import com.mcalvaro.mscatering.infrastructure.support.DietPlanProjectionFixture;
 import com.mcalvaro.mscatering.infrastructure.support.PatientAddressRegistrationFixture;
 import com.mcalvaro.mscatering.infrastructure.support.PatientRegistrationFixture;
@@ -87,6 +88,9 @@ class SaveDomainEventToOutboxHandlerIT extends BaseIntegrationTest {
     @Autowired
     private TransactionTemplate transactionTemplate;
 
+    @Autowired
+    private DatabaseCleaner databaseCleaner;
+
     @BeforeEach
     void activateRequestScope() {
         RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(new MockHttpServletRequest()));
@@ -95,6 +99,11 @@ class SaveDomainEventToOutboxHandlerIT extends BaseIntegrationTest {
     @AfterEach
     void clearRequestScope() {
         RequestContextHolder.resetRequestAttributes();
+    }
+
+    @AfterEach
+    void cleanCommittedData() {
+        databaseCleaner.clean();
     }
 
     @Test

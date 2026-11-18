@@ -24,6 +24,7 @@ import com.mcalvaro.mscatering.infrastructure.BaseIntegrationTest;
 import com.mcalvaro.mscatering.infrastructure.api.consolidatedcalendar.dto.CloseConsolidatedCalendarRequest;
 import com.mcalvaro.mscatering.infrastructure.support.DietPlanProjectionFixture;
 import com.mcalvaro.mscatering.infrastructure.support.PatientRegistrationFixture;
+import com.mcalvaro.mscatering.infrastructure.support.TestContractSequence;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -151,7 +152,8 @@ class CloseConsolidatedCalendarApiIT extends BaseIntegrationTest {
                         "+34123456789"),
                 new TimeWindow(LocalTime.of(12, 0), LocalTime.of(14, 0)),
                 "Ring the doorbell");
-        return Subscription.create(subscriptionId, patientId, dietPlanId, contract, preferences, 1);
+        return Subscription.create(
+                subscriptionId, patientId, dietPlanId, contract, preferences, TestContractSequence.next());
     }
 
     private CloseConsolidatedCalendarRequest buildValidCommand(LocalDate date) {

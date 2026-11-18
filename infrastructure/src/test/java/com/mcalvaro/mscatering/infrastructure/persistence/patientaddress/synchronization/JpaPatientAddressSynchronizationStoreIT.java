@@ -9,9 +9,11 @@ import com.mcalvaro.mscatering.infrastructure.integration.inbound.bc1.address.Pa
 import com.mcalvaro.mscatering.infrastructure.integration.inbound.bc1.address.PatientAddressRegisteredEvent;
 import com.mcalvaro.mscatering.infrastructure.persistence.inboundevent.repository.SpringDataProcessedInboundEventReceiptRepository;
 import com.mcalvaro.mscatering.infrastructure.persistence.patientaddress.repository.SpringDataPatientAddressReferenceRepository;
+import com.mcalvaro.mscatering.infrastructure.support.DatabaseCleaner;
 import com.mcalvaro.mscatering.infrastructure.support.PatientAddressRegistrationFixture;
 import java.time.Instant;
 import java.util.UUID;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -29,6 +31,14 @@ class JpaPatientAddressSynchronizationStoreIT extends BaseIntegrationTest {
 
     @Autowired
     private SpringDataProcessedInboundEventReceiptRepository receiptRepository;
+
+    @Autowired
+    private DatabaseCleaner databaseCleaner;
+
+    @AfterEach
+    void cleanCommittedData() {
+        databaseCleaner.clean();
+    }
 
     @Test
     void permitsMultipleAddressesForOnePatientAndRecordsTheirReceipts() {

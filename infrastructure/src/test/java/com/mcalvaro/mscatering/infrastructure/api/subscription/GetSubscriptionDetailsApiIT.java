@@ -17,6 +17,7 @@ import com.mcalvaro.mscatering.domain.subscription.vo.ServiceContract;
 import com.mcalvaro.mscatering.domain.subscription.vo.TimeWindow;
 import com.mcalvaro.mscatering.domain.subscription.vo.ValidityPeriod;
 import com.mcalvaro.mscatering.infrastructure.BaseIntegrationTest;
+import com.mcalvaro.mscatering.infrastructure.support.TestContractSequence;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -132,6 +133,7 @@ class GetSubscriptionDetailsApiIT extends BaseIntegrationTest {
                         "600000000"),
                 new TimeWindow(LocalTime.of(9, 0), LocalTime.of(11, 0)),
                 "Leave at reception");
-        return Subscription.create(subscriptionId, patientId, dietPlanId, contract, preferences, 1);
+        return Subscription.create(
+                subscriptionId, patientId, dietPlanId, contract, preferences, TestContractSequence.next());
     }
 }
