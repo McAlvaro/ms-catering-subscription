@@ -1,0 +1,99 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+env:
+  HUSKY: "0"
+
+jobs:
+  format:
+    name: Format (spotless:check)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+      - name: Check formatting
+        run: mvn -B -ntp spotless:check
+
+  build-test:
+    name: Build and test (unit + IT + JaCoCo)
+    needs: format
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+      - name: Build and verify
+        run: mvn -B -ntp verify
+      - name: Upload JaCoCo reports
+        if: success()
+        uses: actions/upload-artifact@v7
+        with:
+          name: jacoco-reports
+          path: "*/target/site/jacoco/"
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Upload test reports
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-reports-build
+          path: |
+            */target/surefire-reports/
+            */target/failsafe-reports/
+          if-no-files-found: ignore
+          retention-days: 7
+
+  contract-tests:
+    name: Contract tests (Pact consumer -> provider)
+    needs: format
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+      - name: Pact consumer (generates pacts/)
+        run: >-
+          mvn -B -ntp -pl infrastructure -am test
+          -Dtest=SubscriptionConsumerPactTest
+          -Dsurefire.failIfNoSpecifiedTests=false
+      - name: Fail if generated pact differs from committed pact
+        run: git diff --exit-code -- pacts/
+      - name: Pact provider (verifies against pacts/)
+        run: >-
+          mvn -B -ntp -pl infrastructure -am test
+          -Dtest=SubscriptionProviderPactTest
+          -Dsurefire.failIfNoSpecifiedTests=false
+      - name: Upload test reports
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-reports-contract
+          path: infrastructure/target/surefire-reports/
+          if-no-files-found: ignore
+          retention-days: 7
