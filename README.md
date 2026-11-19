@@ -2,6 +2,10 @@
 
 # Diseño Táctico DDD — BC3: Suscripción y Calendario de Catering
 
+[![CI](https://github.com/McAlvaro/ms-catering-subscription/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/McAlvaro/ms-catering-subscription/actions/workflows/ci.yml)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=McAlvaro_ms-catering-subscription&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=McAlvaro_ms-catering-subscription)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=McAlvaro_ms-catering-subscription&metric=coverage)](https://sonarcloud.io/summary/new_code?id=McAlvaro_ms-catering-subscription)
+
 **Estudiante:** Alvaro Molina
 
 ## Descripción del Microservicio
@@ -278,18 +282,15 @@ mvn -pl infrastructure test -Dtest="*MapperTest"
 
 ### 3.3 Cobertura de Código (Code Coverage con JaCoCo)
 
-El proyecto tiene integrado el plugin `jacoco-maven-plugin` (0.8.12) configurado para recolectar datos de ejecución y generar reportes HTML automáticamente durante la fase de prueba.
+El proyecto tiene integrado el plugin `jacoco-maven-plugin` (0.8.12). El reporte se genera en la fase `verify` e incluye los datos de las pruebas unitarias (Surefire) y de integración (Failsafe). Además produce el `jacoco.xml` por módulo, que consume SonarCloud.
 
 #### Umbral de cumplimiento
-> **Requisito mínimo exigido:** 80% de cobertura.
+> **Meta de referencia:** 80% de cobertura. No se exige automáticamente: el build no ejecuta `jacoco:check` y el quality gate de SonarCloud es solo informativo.
 >
-> **Métricas actuales obtenidas en el proyecto:**
-> - **Módulo `domain`:** **95%** de cobertura
-> - **Módulo `application`:** **90%** de cobertura
-> - **Módulo `infrastructure`:** **87%** de cobertura
+> Las métricas vigentes se consultan en el badge de cobertura de SonarCloud o en el [dashboard del proyecto](https://sonarcloud.io/project/overview?id=McAlvaro_ms-catering-subscription).
 
 #### Dónde encontrar los reportes generados
-Al ejecutar `mvn test` o `mvn verify`, se generan los reportes navegables en:
+Al ejecutar `mvn verify`, se generan los reportes navegables en:
 
 | Módulo | Ruta del Reporte HTML |
 | :--- | :--- |
@@ -393,7 +394,7 @@ mvn -pl infrastructure test -Dtest="SubscriptionConsumerPactTest,SubscriptionPro
 
 ### 3.6 Ejecución Completa de Toda la Suite
 
-Para compilar, ejecutar todos los unit tests, contract tests, integration tests y verificar cobertura en todo el proyecto:
+Para compilar, ejecutar todos los unit tests, contract tests, integration tests y generar los reportes de cobertura en todo el proyecto:
 
 ```bash
 mvn clean verify
@@ -410,6 +411,14 @@ En cumplimiento de las buenas prácticas de ingeniería y la transparencia en el
 - [`project/integration-test-rules.md`](project/integration-test-rules.md): Estándares del arnés de integración con Spring Boot, MockMvc y Pipelinr.
 - [`project/contract-testing-rules.md`](project/contract-testing-rules.md): Especificaciones de Pact JVM, definición de estados (`@State`) y reglas de CDCT.
 
+#### Agentes y Reglas de Enrutamiento (`.agents/`)
+- [`.agents/agents/unit-test-generator.md`](.agents/agents/unit-test-generator.md): Agente generador de pruebas unitarias.
+- [`.agents/agents/integration-test-generator.md`](.agents/agents/integration-test-generator.md): Agente generador de pruebas de integración.
+- [`.agents/agents/pact-generator.md`](.agents/agents/pact-generator.md): Agente generador de contratos Pact.
+- [`.agents/rules/agent-routing.md`](.agents/rules/agent-routing.md): Reglas de enrutamiento entre agentes y skills.
+
+El detalle del uso de IA en el proyecto se describe en la sección [4.7](#47-uso-de-ia-y-artefactos).
+
 #### Skills de Agentes (`.agents/skills/`)
 - [`.agents/skills/unit-test-writer/`](.agents/skills/unit-test-writer/): Skill para generación de pruebas unitarias por capa.
 - [`.agents/skills/unit-test-verifier/`](.agents/skills/unit-test-verifier/): Skill auditor de conformidad de pruebas unitarias.
@@ -417,3 +426,88 @@ En cumplimiento de las buenas prácticas de ingeniería y la transparencia en el
 - [`.agents/skills/integration-test-verifier/`](.agents/skills/integration-test-verifier/): Skill auditor de reglas de pruebas de integración.
 - [`.agents/skills/pact-writer/`](.agents/skills/pact-writer/): Skill para creación de pruebas de consumidor y proveedor Pact.
 - [`.agents/skills/pact-verifier/`](.agents/skills/pact-verifier/): Skill auditor de contratos Pact.
+
+---
+
+## 4. Integración Continua y Calidad de Código
+
+### 4.1 Requisitos y puesta en marcha
+
+- JDK 21.
+- Maven disponible en el `PATH` (los hooks de Git invocan `mvn`).
+- Node >= 22.22.1 (solo para el tooling de hooks; no hay código de aplicación en Node).
+
+Ejecutar `npm install` después de cada clon o worktree. El script `prepare: husky` instala los hooks de Git; cada worktree necesita su propio `node_modules`.
+
+### 4.2 Git hooks
+
+| Hook | Herramienta | Acción |
+| :--- | :--- | :--- |
+| `pre-commit` | lint-staged | Ejecuta `spotless:apply` solo sobre los `*.java` en staging y los vuelve a añadir al staging. |
+| `commit-msg` | commitlint (`config-conventional`) | Valida que el mensaje siga Conventional Commits. |
+| `pre-push` | Maven | Ejecuta `mvn -B -q spotless:check test` (formato de todo el repositorio y pruebas unitarias). Las pruebas de integración y Pact quedan para CI. |
+
+Las opciones `--no-verify` y `HUSKY=0` omiten los hooks; deben usarse solo de forma excepcional, ya que CI repite las mismas verificaciones.
+
+### 4.3 Formateo manual
+
+```bash
+mvn spotless:apply   # formatea el código (palantir-java-format, reglas de .editorconfig)
+mvn spotless:check   # verifica el formato sin modificar archivos
+```
+
+Para que `git blame` ignore el commit de formateo base (`584c805`):
+
+```bash
+git config blame.ignoreRevsFile .git-blame-ignore-revs
+```
+
+### 4.4 Pipeline de CI
+
+Definido en [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
+
+- **Disparadores:** `push` y `pull_request` hacia `main`, y `workflow_dispatch`.
+- **Concurrencia:** un grupo por workflow y rama; solo se cancelan las ejecuciones en curso de pull requests.
+- **Entorno y permisos:** `HUSKY=0` (los hooks no se instalan en CI) y `permissions: contents: read`.
+
+| Job | Depende de | Qué hace |
+| :--- | :--- | :--- |
+| `format` | — | `mvn -B -ntp spotless:check` |
+| `build-test` | `format` | `mvn -B -ntp verify` (unit + IT + JaCoCo) y análisis de SonarCloud (`sonar-maven-plugin:sonar`) |
+| `contract-tests` | `format` | Pact consumer, luego `git diff --exit-code -- pacts/` (el contrato generado debe coincidir con el versionado) y finalmente Pact provider |
+
+`build-test` y `contract-tests` se ejecutan en paralelo.
+
+| Artefacto | Cuándo | Retención |
+| :--- | :--- | :--- |
+| `jacoco-reports` (`*/target/site/jacoco/`) | build-test exitoso | 14 días |
+| `test-reports-build` (`surefire-reports` y `failsafe-reports`) | falla build-test | 7 días |
+| `test-reports-contract` (`infrastructure/target/surefire-reports/`) | falla contract-tests | 7 días |
+
+### 4.5 SonarCloud
+
+- Dashboard: <https://sonarcloud.io/project/overview?id=McAlvaro_ms-catering-subscription>
+- Organización `mcalvaro`; la clave del proyecto (`McAlvaro_ms-catering-subscription`) está en el `pom.xml` raíz.
+- El secret `SONAR_TOKEN` es necesario para el análisis; en PRs desde forks o de Dependabot no está disponible y el análisis se omite con un aviso.
+- *Automatic Analysis* debe permanecer desactivado; de lo contrario, la cobertura aparece en 0% o hay conflicto con el análisis de CI.
+- La cobertura proviene de los XML de JaCoCo de cada módulo.
+- El quality gate es solo informativo (no bloquea el pipeline).
+
+### 4.6 Ejecutar lo mismo que CI localmente
+
+```bash
+mvn -B -ntp spotless:check verify
+```
+
+### 4.7 Uso de IA y artefactos
+
+Se utilizó IA (Claude Code) con un flujo de trabajo de especificación, aprobación humana, implementación guiada por TDD y verificación con la suite de pruebas.
+
+Artefactos versionados en el repositorio:
+
+- [`AGENTS.md`](AGENTS.md) y [`CLAUDE.md`](CLAUDE.md): guía para agentes de código.
+- [`.agents/`](.agents/): skills, agentes y reglas de enrutamiento.
+- [`.github/copilot-instructions.md`](.github/copilot-instructions.md): instrucciones de capas y convenciones.
+- [`project/*-rules.md`](project/): reglas de pruebas unitarias, de integración y de contrato.
+
+El plan de la actividad de CI está en [`docs/actividad-ci-plan.md`](docs/actividad-ci-plan.md).
