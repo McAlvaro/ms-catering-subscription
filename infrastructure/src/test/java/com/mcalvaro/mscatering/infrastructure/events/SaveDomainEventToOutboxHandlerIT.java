@@ -97,13 +97,12 @@ class SaveDomainEventToOutboxHandlerIT extends BaseIntegrationTest {
     }
 
     @AfterEach
-    void clearRequestScope() {
-        RequestContextHolder.resetRequestAttributes();
-    }
-
-    @AfterEach
-    void cleanCommittedData() {
-        databaseCleaner.clean();
+    void tearDown() {
+        try {
+            databaseCleaner.clean();
+        } finally {
+            RequestContextHolder.resetRequestAttributes();
+        }
     }
 
     @Test
