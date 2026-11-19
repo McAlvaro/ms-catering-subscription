@@ -1,12 +1,10 @@
 package com.mcalvaro.mscatering.application.consolidatedcalendar.CloseConsolidatedCalendar;
 
 import an.awesome.pipelinr.Command;
-
-import com.mcalvaro.mscatering.domain.core.id.ConsolidatedCalendarId;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.ConsolidatedCalendar;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.IConsolidatedCalendarRepository;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.service.DailyConsolidator;
-
+import com.mcalvaro.mscatering.domain.core.id.ConsolidatedCalendarId;
 import java.time.Instant;
 
 /**
@@ -29,8 +27,8 @@ public class CloseConsolidatedCalendarCommandHandler
     private final DailyConsolidator dailyConsolidator;
     private final IConsolidatedCalendarRepository calendarRepository;
 
-    public CloseConsolidatedCalendarCommandHandler(DailyConsolidator dailyConsolidator,
-            IConsolidatedCalendarRepository calendarRepository) {
+    public CloseConsolidatedCalendarCommandHandler(
+            DailyConsolidator dailyConsolidator, IConsolidatedCalendarRepository calendarRepository) {
         this.dailyConsolidator = dailyConsolidator;
         this.calendarRepository = calendarRepository;
     }

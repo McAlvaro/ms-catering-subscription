@@ -1,5 +1,14 @@
 package com.mcalvaro.mscatering.infrastructure.events;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.mcalvaro.mscatering.application.abstractions.DomainEventNotification;
 import com.mcalvaro.mscatering.application.outbox.OutboxMessage;
 import com.mcalvaro.mscatering.application.outbox.OutboxMessageRepository;
@@ -14,27 +23,17 @@ import com.mcalvaro.mscatering.domain.subscription.event.SubscriptionCreated;
 import com.mcalvaro.mscatering.domain.subscription.vo.ContractCode;
 import com.mcalvaro.mscatering.infrastructure.persistence.outbox.codec.EncodedDomainEvent;
 import com.mcalvaro.mscatering.infrastructure.persistence.outbox.codec.JacksonDomainEventCodec;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class SaveDomainEventToOutboxHandlerTest {
@@ -99,7 +98,8 @@ class SaveDomainEventToOutboxHandlerTest {
         when(codec.encode(event)).thenReturn(new EncodedDomainEvent("subscription.created", "{\"event\":\"created\"}"));
         doThrow(failure).when(repository).save(any());
 
-        assertThatThrownBy(() -> handler.handle(new DomainEventNotification(event))).isSameAs(failure);
+        assertThatThrownBy(() -> handler.handle(new DomainEventNotification(event)))
+                .isSameAs(failure);
     }
 
     @Test
@@ -115,15 +115,21 @@ class SaveDomainEventToOutboxHandlerTest {
     }
 
     private static SubscriptionCreated subscriptionCreated() {
-        return new SubscriptionCreated(UUID.fromString("00000000-0000-0000-0000-000000000001"),
+        return new SubscriptionCreated(
+                UUID.fromString("00000000-0000-0000-0000-000000000001"),
                 Instant.parse("2026-10-29T10:15:30.123456Z"),
                 SubscriptionId.of("SUS-00000000-0000-0000-0000-000000000002"),
-                PatientId.of("PAC-00000000-0000-0000-0000-000000000003"), new ContractCode("NTC-2026-0001"),
-                DietPlanId.of("PLAN-00000000-0000-0000-0000-000000000004"), PlanType.BASE,
-                LocalDate.of(2026, 1, 10), LocalDate.of(2026, 1, 24), 15, List.of(), new BigDecimal("249.90"),
+                PatientId.of("PAC-00000000-0000-0000-0000-000000000003"),
+                new ContractCode("NTC-2026-0001"),
+                DietPlanId.of("PLAN-00000000-0000-0000-0000-000000000004"),
+                PlanType.BASE,
+                LocalDate.of(2026, 1, 10),
+                LocalDate.of(2026, 1, 24),
+                15,
+                List.of(),
+                new BigDecimal("249.90"),
                 "correlation-created");
     }
 
-    private record UncorrelatedEvent(UUID eventId, Instant occurredAt) implements DomainEvent {
-    }
+    private record UncorrelatedEvent(UUID eventId, Instant occurredAt) implements DomainEvent {}
 }

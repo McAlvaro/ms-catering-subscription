@@ -1,8 +1,10 @@
 package com.mcalvaro.mscatering.application.subscription.CreateSubscription;
 
 import an.awesome.pipelinr.Command;
-
+import com.mcalvaro.mscatering.application.dietplan.DietPlanResolver;
+import com.mcalvaro.mscatering.application.patient.address.DeliveryAddressResolver;
 import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
+import com.mcalvaro.mscatering.domain.dietplan.DietPlanProjection;
 import com.mcalvaro.mscatering.domain.subscription.ISubscriptionRepository;
 import com.mcalvaro.mscatering.domain.subscription.Subscription;
 import com.mcalvaro.mscatering.domain.subscription.entity.BiweeklyEvaluation;
@@ -15,10 +17,6 @@ import com.mcalvaro.mscatering.domain.subscription.vo.DeliveryPreferences;
 import com.mcalvaro.mscatering.domain.subscription.vo.ServiceContract;
 import com.mcalvaro.mscatering.domain.subscription.vo.TimeWindow;
 import com.mcalvaro.mscatering.domain.subscription.vo.ValidityPeriod;
-import com.mcalvaro.mscatering.application.patient.address.DeliveryAddressResolver;
-import com.mcalvaro.mscatering.application.dietplan.DietPlanResolver;
-import com.mcalvaro.mscatering.domain.dietplan.DietPlanProjection;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -37,9 +35,11 @@ public class CreateSubscriptionCommandHandler implements Command.Handler<CreateS
     private final DeliveryAddressResolver deliveryAddressResolver;
     private final DietPlanResolver dietPlanResolver;
 
-    public CreateSubscriptionCommandHandler(ISubscriptionRepository subscriptionRepository,
+    public CreateSubscriptionCommandHandler(
+            ISubscriptionRepository subscriptionRepository,
             SubscriptionDuplicationValidator duplicationValidator,
-            BiweeklyEvaluationGenerator evaluationGenerator, DeliveryAddressResolver deliveryAddressResolver,
+            BiweeklyEvaluationGenerator evaluationGenerator,
+            DeliveryAddressResolver deliveryAddressResolver,
             DietPlanResolver dietPlanResolver) {
         this.subscriptionRepository = subscriptionRepository;
         this.duplicationValidator = duplicationValidator;
@@ -53,8 +53,8 @@ public class CreateSubscriptionCommandHandler implements Command.Handler<CreateS
         duplicationValidator.validate(command.patientId());
         // Build domain Value Objects from command fields
         ValidityPeriod period = new ValidityPeriod(command.startDate(), command.endDate());
-        DietPlanProjection dietPlan = dietPlanResolver.resolve(command.dietPlanId(), command.patientId(),
-                command.startDate(), command.endDate());
+        DietPlanProjection dietPlan = dietPlanResolver.resolve(
+                command.dietPlanId(), command.patientId(), command.startDate(), command.endDate());
         ServiceContract contract = new ServiceContract(
                 command.dietPlanId(),
                 dietPlan.type(),
@@ -72,10 +72,8 @@ public class CreateSubscriptionCommandHandler implements Command.Handler<CreateS
         int nextSequence = subscriptionRepository.getNextContractSequenceOfYear();
 
         PlanDuration duration = PlanDuration.fromDays(period.durationDays());
-        List<BiweeklyEvaluation> evaluations = evaluationGenerator.generate(
-                command.patientId(),
-                period.startDate(),
-                duration);
+        List<BiweeklyEvaluation> evaluations =
+                evaluationGenerator.generate(command.patientId(), period.startDate(), duration);
         Subscription subscription = Subscription.create(
                 subscriptionId,
                 command.patientId(),

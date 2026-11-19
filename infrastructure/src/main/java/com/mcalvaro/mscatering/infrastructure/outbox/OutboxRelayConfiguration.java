@@ -10,13 +10,12 @@ import com.mcalvaro.mscatering.application.outbox.translation.SubscriptionCreate
 import com.mcalvaro.mscatering.application.outbox.translation.SubscriptionPausedOutboxEventTranslator;
 import com.mcalvaro.mscatering.application.outbox.translation.SubscriptionReactivatedOutboxEventTranslator;
 import com.mcalvaro.mscatering.infrastructure.persistence.outbox.codec.JacksonDomainEventCodec;
+import java.time.Clock;
+import java.util.List;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
-
-import java.time.Clock;
-import java.util.List;
 
 @Configuration(proxyBeanMethods = false)
 @EnableScheduling
@@ -31,15 +30,21 @@ public class OutboxRelayConfiguration {
     @Bean
     OutboxEventTranslatorRegistry outboxEventTranslatorRegistry() {
         return new OutboxEventTranslatorRegistry(List.of(
-                new SubscriptionCreatedOutboxEventTranslator(), new SubscriptionPausedOutboxEventTranslator(),
-                new SubscriptionReactivatedOutboxEventTranslator(), new SubscriptionCancelledOutboxEventTranslator(),
+                new SubscriptionCreatedOutboxEventTranslator(),
+                new SubscriptionPausedOutboxEventTranslator(),
+                new SubscriptionReactivatedOutboxEventTranslator(),
+                new SubscriptionCancelledOutboxEventTranslator(),
                 new SubscriptionCompletedOutboxEventTranslator(),
                 new ConsolidatedCalendarClosedOutboxEventTranslator()));
     }
 
     @Bean
-    OutboxProcessor outboxProcessor(OutboxMessageRepository repository, JacksonDomainEventCodec codec,
-            OutboxEventTranslatorRegistry translators, List<IntegrationEventPublisher> publishers, Clock outboxClock,
+    OutboxProcessor outboxProcessor(
+            OutboxMessageRepository repository,
+            JacksonDomainEventCodec codec,
+            OutboxEventTranslatorRegistry translators,
+            List<IntegrationEventPublisher> publishers,
+            Clock outboxClock,
             OutboxRelayProperties properties) {
         if ("none".equalsIgnoreCase(properties.provider())) {
             throw new IllegalStateException("Outbox relay cannot be enabled when provider is none");
@@ -47,8 +52,14 @@ public class OutboxRelayConfiguration {
         if (publishers.size() != 1) {
             throw new IllegalStateException("Outbox relay requires exactly one IntegrationEventPublisher");
         }
-        return new OutboxProcessor(repository, codec, translators, publishers.get(0), outboxClock,
-                properties.initialBackoff(), properties.maxBackoff());
+        return new OutboxProcessor(
+                repository,
+                codec,
+                translators,
+                publishers.get(0),
+                outboxClock,
+                properties.initialBackoff(),
+                properties.maxBackoff());
     }
 
     @Bean

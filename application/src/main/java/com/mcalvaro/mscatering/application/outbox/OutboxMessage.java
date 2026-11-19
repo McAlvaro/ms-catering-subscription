@@ -9,10 +9,21 @@ import java.util.UUID;
  * Durable outbox message. Content is opaque; encoding and event rehydration are
  * intentionally outside this application model.
  */
-public record OutboxMessage(UUID id, String type, String content, Instant created, boolean processed,
+public record OutboxMessage(
+        UUID id,
+        String type,
+        String content,
+        Instant created,
+        boolean processed,
         Instant processedOn,
-        int attemptCount, String lastError, Instant availableAt, Instant lockedUntil, String lockedBy,
-        String correlationId, String traceId, String spanId) {
+        int attemptCount,
+        String lastError,
+        Instant availableAt,
+        Instant lockedUntil,
+        String lockedBy,
+        String correlationId,
+        String traceId,
+        String spanId) {
 
     public OutboxMessage {
         Objects.requireNonNull(id, "Outbox message id must not be null");
@@ -49,8 +60,8 @@ public record OutboxMessage(UUID id, String type, String content, Instant create
     }
 
     public static OutboxMessage pending(UUID id, String type, String content, Instant created) {
-        return new OutboxMessage(id, type, content, created, false, null, 0, null, created, null, null, null, null,
-                null);
+        return new OutboxMessage(
+                id, type, content, created, false, null, 0, null, created, null, null, null, null, null);
     }
 
     private static Instant normalize(Instant value) {

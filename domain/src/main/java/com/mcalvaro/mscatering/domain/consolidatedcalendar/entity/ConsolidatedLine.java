@@ -10,7 +10,6 @@ import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
 import com.mcalvaro.mscatering.domain.subscription.enums.ServiceType;
 import com.mcalvaro.mscatering.domain.subscription.vo.DeliveryAddress;
 import com.mcalvaro.mscatering.domain.subscription.vo.TimeWindow;
-
 import java.util.List;
 
 /**
@@ -35,9 +34,18 @@ public class ConsolidatedLine extends Entity<ConsolidatedLineId> {
     private final String instructions;
     private final List<ConsolidatedRecipeSnapshot> recipes;
 
-    public ConsolidatedLine(ConsolidatedLineId id, ConsolidatedCalendarId consolidatedCalendarId, SubscriptionId subscriptionId, PatientId patientId,
-            String patientName, DietPlanId dietPlanId, int planDayNumber, ServiceType serviceType,
-            DeliveryAddress address, TimeWindow timeWindow, String instructions,
+    public ConsolidatedLine(
+            ConsolidatedLineId id,
+            ConsolidatedCalendarId consolidatedCalendarId,
+            SubscriptionId subscriptionId,
+            PatientId patientId,
+            String patientName,
+            DietPlanId dietPlanId,
+            int planDayNumber,
+            ServiceType serviceType,
+            DeliveryAddress address,
+            TimeWindow timeWindow,
+            String instructions,
             List<ConsolidatedRecipeSnapshot> recipes) {
         super(id);
         this.consolidatedCalendarId = consolidatedCalendarId;
@@ -83,15 +91,26 @@ public class ConsolidatedLine extends Entity<ConsolidatedLineId> {
     }
 
     public ConsolidatedDeliverySnapshot snapshot() {
-        return new ConsolidatedDeliverySnapshot(getId(), subscriptionId, patientId, patientName, dietPlanId,
-                planDayNumber, address, recipes);
+        return new ConsolidatedDeliverySnapshot(
+                getId(), subscriptionId, patientId, patientName, dietPlanId, planDayNumber, address, recipes);
     }
 
     private void validateSnapshot() {
-        if (consolidatedCalendarId == null || subscriptionId == null || patientId == null || patientName == null
-                || patientName.isBlank() || dietPlanId == null || planDayNumber < 1 || serviceType == null
-                || address == null || address.addressId() == null || address.alias() == null || address.alias().isBlank()
-                || address.reference() == null || address.reference().isBlank() || recipes.isEmpty()) {
+        if (consolidatedCalendarId == null
+                || subscriptionId == null
+                || patientId == null
+                || patientName == null
+                || patientName.isBlank()
+                || dietPlanId == null
+                || planDayNumber < 1
+                || serviceType == null
+                || address == null
+                || address.addressId() == null
+                || address.alias() == null
+                || address.alias().isBlank()
+                || address.reference() == null
+                || address.reference().isBlank()
+                || recipes.isEmpty()) {
             throw new DomainException("CAL-004", "Delivery snapshot is incomplete");
         }
     }

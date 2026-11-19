@@ -1,16 +1,14 @@
 package com.mcalvaro.mscatering.integration.contracts;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
-public record ConsolidatedCalendarClosedIntegrationEvent(UUID eventId, Instant occurredOn, String correlationId,
-        Data data)
-        implements IntegrationEvent {
+public record ConsolidatedCalendarClosedIntegrationEvent(
+        UUID eventId, Instant occurredOn, String correlationId, Data data) implements IntegrationEvent {
     public static final String EVENT_NAME = "bc3.CalendarioConsolidadoCerrado";
     public static final String LOGICAL_DESTINATION = "bc3.calendario.consolidado.cerrado.v1";
 

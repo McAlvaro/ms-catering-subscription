@@ -8,12 +8,11 @@ import com.mcalvaro.mscatering.infrastructure.persistence.inboundevent.entity.Re
 import com.mcalvaro.mscatering.infrastructure.persistence.inboundevent.repository.SpringDataProcessedInboundEventReceiptRepository;
 import com.mcalvaro.mscatering.infrastructure.persistence.patientaddress.entity.PatientAddressReferenceJpaEntity;
 import com.mcalvaro.mscatering.infrastructure.persistence.patientaddress.repository.SpringDataPatientAddressReferenceRepository;
-import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 /** Durable, atomic and idempotent address projection. */
 @Repository
@@ -22,7 +21,8 @@ public class JpaPatientAddressSynchronizationStore implements PatientAddressSync
     private final SpringDataPatientAddressReferenceRepository addressRepository;
     private final SpringDataProcessedInboundEventReceiptRepository receiptRepository;
 
-    public JpaPatientAddressSynchronizationStore(SpringDataPatientAddressReferenceRepository addressRepository,
+    public JpaPatientAddressSynchronizationStore(
+            SpringDataPatientAddressReferenceRepository addressRepository,
             SpringDataProcessedInboundEventReceiptRepository receiptRepository) {
         this.addressRepository = addressRepository;
         this.receiptRepository = receiptRepository;
@@ -34,29 +34,42 @@ public class JpaPatientAddressSynchronizationStore implements PatientAddressSync
         String eventFingerprint = fingerprint(command, command.payloadFingerprint());
         var previousReceipt = receiptRepository.findById(command.eventId());
         if (previousReceipt.isPresent()) {
-            if (previousReceipt.get().getEventFingerprint().equals(eventFingerprint))
-                return;
+            if (previousReceipt.get().getEventFingerprint().equals(eventFingerprint)) return;
             throw conflict("Inbound eventId was reused with different canonical content");
         }
-        if (receiptRepository.existsBySubjectKindAndSubjectIdAndPayloadFingerprint(ReceiptSubjectKind.PATIENT_ADDRESS.name(), command.addressId().value(),
-                command.payloadFingerprint())) {
+        if (receiptRepository.existsBySubjectKindAndSubjectIdAndPayloadFingerprint(
+                ReceiptSubjectKind.PATIENT_ADDRESS.name(), command.addressId().value(), command.payloadFingerprint())) {
             receiptRepository.saveAndFlush(receipt(command, eventFingerprint));
             return;
         }
         if (addressRepository.existsById(command.addressId().value())) {
             throw conflict("Address identity already has different canonical content");
         }
-        addressRepository.save(new PatientAddressReferenceJpaEntity(command.addressId().value(), command.patientId().value(), command.alias(),
-                command.street(), command.reference(), command.city(), command.latitude(), command.longitude()));
+        addressRepository.save(new PatientAddressReferenceJpaEntity(
+                command.addressId().value(),
+                command.patientId().value(),
+                command.alias(),
+                command.street(),
+                command.reference(),
+                command.city(),
+                command.latitude(),
+                command.longitude()));
         receiptRepository.saveAndFlush(receipt(command, eventFingerprint));
     }
 
-    private ProcessedInboundEventReceiptJpaEntity receipt(SynchronizePatientAddressCommand command,
-            String eventFingerprint) {
-        return new ProcessedInboundEventReceiptJpaEntity(command.eventId(), command.eventName(), command.eventVersion(),
-                command.occurredOn(), command.source(), command.correlationId(), command.patientId().value(),
+    private ProcessedInboundEventReceiptJpaEntity receipt(
+            SynchronizePatientAddressCommand command, String eventFingerprint) {
+        return new ProcessedInboundEventReceiptJpaEntity(
+                command.eventId(),
+                command.eventName(),
+                command.eventVersion(),
+                command.occurredOn(),
+                command.source(),
+                command.correlationId(),
+                command.patientId().value(),
                 command.addressId().value(),
-                eventFingerprint, command.payloadFingerprint());
+                eventFingerprint,
+                command.payloadFingerprint());
     }
 
     private PatientReferenceSynchronizationException conflict(String message) {
@@ -64,8 +77,13 @@ public class JpaPatientAddressSynchronizationStore implements PatientAddressSync
     }
 
     private String fingerprint(SynchronizePatientAddressCommand command, String payloadFingerprint) {
-        return sha256(command.eventName(), command.eventVersion(), command.occurredOn().toString(), command.source(),
-                command.correlationId(), payloadFingerprint);
+        return sha256(
+                command.eventName(),
+                command.eventVersion(),
+                command.occurredOn().toString(),
+                command.source(),
+                command.correlationId(),
+                payloadFingerprint);
     }
 
     private String sha256(String... values) {

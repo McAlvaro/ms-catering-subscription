@@ -7,8 +7,7 @@ import com.mcalvaro.mscatering.domain.core.DomainException;
  */
 public final class ConsolidatedCalendarErrors {
 
-    private ConsolidatedCalendarErrors() {
-    }
+    private ConsolidatedCalendarErrors() {}
 
     public static DomainException calendarAlreadyClosed() {
         return new DomainException("CAL-001", "Consolidated calendar is already closed.");

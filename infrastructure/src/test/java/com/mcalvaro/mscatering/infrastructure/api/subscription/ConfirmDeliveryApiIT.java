@@ -1,5 +1,8 @@
 package com.mcalvaro.mscatering.infrastructure.api.subscription;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 import com.mcalvaro.mscatering.domain.core.id.AddressId;
 import com.mcalvaro.mscatering.domain.core.id.DeliveryDayId;
 import com.mcalvaro.mscatering.domain.core.id.DietPlanId;
@@ -9,18 +12,19 @@ import com.mcalvaro.mscatering.domain.subscription.*;
 import com.mcalvaro.mscatering.domain.subscription.enums.ServiceType;
 import com.mcalvaro.mscatering.domain.subscription.vo.*;
 import com.mcalvaro.mscatering.infrastructure.BaseIntegrationTest;
-import org.junit.jupiter.api.*;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.mcalvaro.mscatering.infrastructure.support.TestContractSequence;
 import java.math.BigDecimal;
 import java.time.*;
 import java.util.UUID;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import org.junit.jupiter.api.*;
+import org.springframework.beans.factory.annotation.Autowired;
 
 class ConfirmDeliveryApiIT extends BaseIntegrationTest {
     private static final String URL = "/api/subscriptions/{id}/delivery-days/{dayId}/confirm";
+
     @Autowired
     private ISubscriptionRepository subscriptionRepository;
+
     private SubscriptionId subscriptionId;
     private DeliveryDayId deliveryDayId;
 
@@ -37,9 +41,10 @@ class ConfirmDeliveryApiIT extends BaseIntegrationTest {
     class HappyPath {
         @Test
         @DisplayName("Should return 200 OK when delivery is confirmed")
-        void shouldReturn200WhenDayExists() throws Exception {// Arrange
+        void shouldReturn200WhenDayExists() throws Exception { // Arrange
             // Act & Assert
-            mockMvc.perform(post(URL, subscriptionId.value(), deliveryDayId.value())).andExpect(status().isOk());
+            mockMvc.perform(post(URL, subscriptionId.value(), deliveryDayId.value()))
+                    .andExpect(status().isOk());
         }
     }
 
@@ -48,9 +53,10 @@ class ConfirmDeliveryApiIT extends BaseIntegrationTest {
     class DomainRuleViolations {
         @Test
         @DisplayName("Should return 400 SUB-009 when delivery day does not exist")
-        void shouldReturn400WhenDayDoesNotExist() throws Exception {// Arrange
+        void shouldReturn400WhenDayDoesNotExist() throws Exception { // Arrange
             // Act & Assert
-            mockMvc.perform(post(URL, subscriptionId.value(), "CD-" + UUID.randomUUID())).andExpect(status().isBadRequest())
+            mockMvc.perform(post(URL, subscriptionId.value(), "CD-" + UUID.randomUUID()))
+                    .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("SUB-009"));
         }
     }
@@ -60,9 +66,10 @@ class ConfirmDeliveryApiIT extends BaseIntegrationTest {
     class MalformedPayload {
         @Test
         @DisplayName("Should return 400 BAD_REQUEST with ID-002 when delivery day ID is malformed")
-        void shouldReturn400WhenDayIdIsMalformed() throws Exception {// Arrange
+        void shouldReturn400WhenDayIdIsMalformed() throws Exception { // Arrange
             // Act & Assert
-            mockMvc.perform(post(URL, subscriptionId.value(), "invalid")).andExpect(status().isBadRequest())
+            mockMvc.perform(post(URL, subscriptionId.value(), "invalid"))
+                    .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("ID-002"));
         }
     }
@@ -71,11 +78,23 @@ class ConfirmDeliveryApiIT extends BaseIntegrationTest {
         LocalDate start = LocalDate.now().plusDays(10);
         PatientId patientId = PatientId.of("PAC-" + UUID.randomUUID());
         DietPlanId dietPlanId = DietPlanId.of("PLAN-" + UUID.randomUUID());
-        return Subscription.create(subscriptionId, patientId, dietPlanId,
-                new ServiceContract(dietPlanId, com.mcalvaro.mscatering.domain.dietplan.PlanType.BASE, new ValidityPeriod(start, start.plusDays(14)), ServiceType.FULL,
-                        new BigDecimal("250"), "Terms", Instant.now()),
-                new DeliveryPreferences(new DeliveryAddress(AddressId.of("DIR-" + UUID.randomUUID()), "Home", "Main", "1", "Lima", null, 0, 0, "1"),
-                        new TimeWindow(LocalTime.NOON, LocalTime.of(14, 0)), null),
-                1);
+        return Subscription.create(
+                subscriptionId,
+                patientId,
+                dietPlanId,
+                new ServiceContract(
+                        dietPlanId,
+                        com.mcalvaro.mscatering.domain.dietplan.PlanType.BASE,
+                        new ValidityPeriod(start, start.plusDays(14)),
+                        ServiceType.FULL,
+                        new BigDecimal("250"),
+                        "Terms",
+                        Instant.now()),
+                new DeliveryPreferences(
+                        new DeliveryAddress(
+                                AddressId.of("DIR-" + UUID.randomUUID()), "Home", "Main", "1", "Lima", null, 0, 0, "1"),
+                        new TimeWindow(LocalTime.NOON, LocalTime.of(14, 0)),
+                        null),
+                TestContractSequence.next());
     }
 }

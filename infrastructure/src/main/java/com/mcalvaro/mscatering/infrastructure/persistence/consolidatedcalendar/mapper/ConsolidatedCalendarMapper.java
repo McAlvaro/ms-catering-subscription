@@ -18,20 +18,17 @@ import com.mcalvaro.mscatering.domain.subscription.vo.TimeWindow;
 import com.mcalvaro.mscatering.infrastructure.persistence.consolidatedcalendar.entity.ConsolidatedCalendarJpaEntity;
 import com.mcalvaro.mscatering.infrastructure.persistence.consolidatedcalendar.entity.ConsolidatedLineJpaEntity;
 import com.mcalvaro.mscatering.infrastructure.persistence.consolidatedcalendar.entity.ConsolidatedLineRecipeJpaEntity;
-
-import org.springframework.stereotype.Component;
-
 import java.lang.reflect.Field;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.stereotype.Component;
 
 @Component
 public class ConsolidatedCalendarMapper {
 
     public ConsolidatedCalendarJpaEntity toJpaEntity(ConsolidatedCalendar domain) {
-        if (domain == null)
-            return null;
+        if (domain == null) return null;
 
         ConsolidatedCalendarJpaEntity jpa = new ConsolidatedCalendarJpaEntity();
         jpa.setId(domain.getId().value());
@@ -41,17 +38,15 @@ public class ConsolidatedCalendarMapper {
         jpa.setClosedAt(domain.getClosedAt());
         jpa.setClosedBy(domain.getClosedBy());
 
-        List<ConsolidatedLineJpaEntity> lineJpas = domain.getLines().stream()
-                .map(this::toLineJpa)
-                .collect(Collectors.toList());
+        List<ConsolidatedLineJpaEntity> lineJpas =
+                domain.getLines().stream().map(this::toLineJpa).collect(Collectors.toList());
         jpa.setLines(lineJpas);
 
         return jpa;
     }
 
     public ConsolidatedCalendar toDomain(ConsolidatedCalendarJpaEntity jpa) {
-        if (jpa == null)
-            return null;
+        if (jpa == null) return null;
 
         try {
             ConsolidatedCalendar calendar = (ConsolidatedCalendar) allocateInstance(ConsolidatedCalendar.class);
@@ -63,7 +58,8 @@ public class ConsolidatedCalendarMapper {
             setField(ConsolidatedCalendar.class, calendar, "closedAt", jpa.getClosedAt());
             setField(ConsolidatedCalendar.class, calendar, "closedBy", jpa.getClosedBy());
 
-            List<ConsolidatedLine> lines = jpa.getLines().stream().map(this::toLineDomain).toList();
+            List<ConsolidatedLine> lines =
+                    jpa.getLines().stream().map(this::toLineDomain).toList();
             setField(ConsolidatedCalendar.class, calendar, "lines", new java.util.ArrayList<>(lines));
 
             return calendar;
@@ -81,7 +77,10 @@ public class ConsolidatedCalendarMapper {
         jpa.setDietPlanId(domain.getDietPlanId().value());
         jpa.setPlanDayNumber(domain.getPlanDayNumber());
         jpa.setServiceType(domain.getServiceType().name());
-        jpa.setAddressId(domain.getAddress().addressId() != null ? domain.getAddress().addressId().value() : null);
+        jpa.setAddressId(
+                domain.getAddress().addressId() != null
+                        ? domain.getAddress().addressId().value()
+                        : null);
         jpa.setAddressAlias(domain.getAddress().alias());
 
         jpa.setAddressStreet(domain.getAddress().street());
@@ -95,15 +94,17 @@ public class ConsolidatedCalendarMapper {
         jpa.setTimeStart(domain.getTimeWindow().startTime().toString());
         jpa.setTimeEnd(domain.getTimeWindow().endTime().toString());
         jpa.setInstructions(domain.getInstructions());
-        jpa.setRecipes(domain.getRecipes().stream().map(recipe -> {
-            ConsolidatedLineRecipeJpaEntity snapshot = new ConsolidatedLineRecipeJpaEntity();
-            snapshot.setId(ConsolidatedLineRecipeId.generate().value());
-            snapshot.setRecipeId(recipe.recipeId().value());
-            snapshot.setRecipeName(recipe.name());
-            snapshot.setMealTime(recipe.time().toString());
-            snapshot.setPortionGrams(recipe.portionGrams());
-            return snapshot;
-        }).toList());
+        jpa.setRecipes(domain.getRecipes().stream()
+                .map(recipe -> {
+                    ConsolidatedLineRecipeJpaEntity snapshot = new ConsolidatedLineRecipeJpaEntity();
+                    snapshot.setId(ConsolidatedLineRecipeId.generate().value());
+                    snapshot.setRecipeId(recipe.recipeId().value());
+                    snapshot.setRecipeName(recipe.name());
+                    snapshot.setMealTime(recipe.time().toString());
+                    snapshot.setPortionGrams(recipe.portionGrams());
+                    return snapshot;
+                })
+                .toList());
 
         return jpa;
     }
@@ -112,7 +113,12 @@ public class ConsolidatedCalendarMapper {
         try {
             AddressId addressId = jpa.getAddressId() != null ? AddressId.of(jpa.getAddressId()) : null;
             DeliveryAddress address = new DeliveryAddress(
-                    addressId, jpa.getAddressAlias(), jpa.getAddressStreet(), jpa.getAddressNumber(), jpa.getAddressCity(), jpa.getAddressReference(),
+                    addressId,
+                    jpa.getAddressAlias(),
+                    jpa.getAddressStreet(),
+                    jpa.getAddressNumber(),
+                    jpa.getAddressCity(),
+                    jpa.getAddressReference(),
                     jpa.getAddressLatitude() != null ? jpa.getAddressLatitude() : 0.0,
                     jpa.getAddressLongitude() != null ? jpa.getAddressLongitude() : 0.0,
                     jpa.getAddressPhone());
@@ -129,11 +135,13 @@ public class ConsolidatedCalendarMapper {
                     address,
                     window,
                     jpa.getInstructions(),
-                    jpa.getRecipes().stream().map(recipe -> new ConsolidatedRecipeSnapshot(
-                            RecipeId.of(recipe.getRecipeId()),
-                            recipe.getRecipeName(),
-                            LocalTime.parse(recipe.getMealTime()),
-                            recipe.getPortionGrams())).toList());
+                    jpa.getRecipes().stream()
+                            .map(recipe -> new ConsolidatedRecipeSnapshot(
+                                    RecipeId.of(recipe.getRecipeId()),
+                                    recipe.getRecipeName(),
+                                    LocalTime.parse(recipe.getMealTime()),
+                                    recipe.getPortionGrams()))
+                            .toList());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

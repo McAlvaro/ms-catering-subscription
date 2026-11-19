@@ -2,7 +2,6 @@ package com.mcalvaro.mscatering.application.patient.synchronization;
 
 import an.awesome.pipelinr.Command;
 import com.mcalvaro.mscatering.domain.core.id.PatientId;
-
 import java.time.Instant;
 import java.util.UUID;
 
@@ -19,7 +18,8 @@ public record SynchronizePatientReferenceCommand(
         String correlationId,
         PatientId patientId,
         String patientName,
-        String payloadFingerprint) implements Command<Void> {
+        String payloadFingerprint)
+        implements Command<Void> {
 
     public SynchronizePatientReferenceCommand(
             UUID eventId,
@@ -31,7 +31,15 @@ public record SynchronizePatientReferenceCommand(
             String patientId,
             String patientName,
             String payloadFingerprint) {
-        this(eventId, eventName, eventVersion, occurredOn, source, correlationId,
-                PatientId.of(patientId), patientName, payloadFingerprint);
+        this(
+                eventId,
+                eventName,
+                eventVersion,
+                occurredOn,
+                source,
+                correlationId,
+                PatientId.of(patientId),
+                patientName,
+                payloadFingerprint);
     }
 }

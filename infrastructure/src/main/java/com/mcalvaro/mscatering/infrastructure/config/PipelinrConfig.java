@@ -1,11 +1,9 @@
 package com.mcalvaro.mscatering.infrastructure.config;
 
 import an.awesome.pipelinr.Command;
-import an.awesome.pipelinr.CommandHandlers;
+import an.awesome.pipelinr.Notification;
 import an.awesome.pipelinr.Pipeline;
 import an.awesome.pipelinr.Pipelinr;
-import an.awesome.pipelinr.Notification;
-
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,7 +29,7 @@ public class PipelinrConfig {
     @Bean
     @SuppressWarnings("rawtypes")
     Pipeline pipeline(
-            ObjectProvider<Command.Handler> handlers, 
+            ObjectProvider<Command.Handler> handlers,
             ObjectProvider<Command.Middleware> middlewares,
             ObjectProvider<Notification.Handler> notificationHandlers) {
         return new Pipelinr()

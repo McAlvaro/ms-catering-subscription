@@ -5,7 +5,6 @@ import com.mcalvaro.mscatering.application.outbox.OutboxMessage;
 import com.mcalvaro.mscatering.application.outbox.OutboxMessageRepository;
 import com.mcalvaro.mscatering.application.outbox.translation.OutboxEventTranslatorRegistry;
 import com.mcalvaro.mscatering.infrastructure.persistence.outbox.codec.JacksonDomainEventCodec;
-
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -29,14 +28,23 @@ public final class OutboxProcessor {
     private final Duration initialBackoff;
     private final Duration maxBackoff;
 
-    public OutboxProcessor(OutboxMessageRepository repository, JacksonDomainEventCodec codec,
-            OutboxEventTranslatorRegistry translators, IntegrationEventPublisher publisher, Clock clock) {
+    public OutboxProcessor(
+            OutboxMessageRepository repository,
+            JacksonDomainEventCodec codec,
+            OutboxEventTranslatorRegistry translators,
+            IntegrationEventPublisher publisher,
+            Clock clock) {
         this(repository, codec, translators, publisher, clock, INITIAL_BACKOFF, MAX_BACKOFF);
     }
 
-    public OutboxProcessor(OutboxMessageRepository repository, JacksonDomainEventCodec codec,
-            OutboxEventTranslatorRegistry translators, IntegrationEventPublisher publisher, Clock clock,
-            Duration initialBackoff, Duration maxBackoff) {
+    public OutboxProcessor(
+            OutboxMessageRepository repository,
+            JacksonDomainEventCodec codec,
+            OutboxEventTranslatorRegistry translators,
+            IntegrationEventPublisher publisher,
+            Clock clock,
+            Duration initialBackoff,
+            Duration maxBackoff) {
         this.repository = Objects.requireNonNull(repository, "Outbox repository must not be null");
         this.codec = Objects.requireNonNull(codec, "Domain event codec must not be null");
         this.translators = Objects.requireNonNull(translators, "Outbox translators must not be null");
@@ -66,7 +74,8 @@ public final class OutboxProcessor {
     private void processCandidate(UUID id, Duration leaseDuration) {
         Instant claimNow = clock.instant();
         String lockToken = UUID.randomUUID().toString();
-        repository.tryClaim(id, claimNow, claimNow.plus(leaseDuration), lockToken)
+        repository
+                .tryClaim(id, claimNow, claimNow.plus(leaseDuration), lockToken)
                 .ifPresent(message -> publishThenFinalize(message, lockToken));
     }
 
@@ -74,7 +83,9 @@ public final class OutboxProcessor {
         try {
             publisher.publish(translators.translate(codec.decode(message.type(), message.content())));
         } catch (Exception failure) {
-            repository.rescheduleAfterFailureIfOwned(message.id(), lockToken,
+            repository.rescheduleAfterFailureIfOwned(
+                    message.id(),
+                    lockToken,
                     clock.instant().plus(backoffFor(message.attemptCount(), initialBackoff, maxBackoff)),
                     formatError(failure));
             return;

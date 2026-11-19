@@ -3,7 +3,15 @@ package com.mcalvaro.mscatering.infrastructure.config;
 import com.mcalvaro.mscatering.application.consolidatedcalendar.CloseConsolidatedCalendar.CloseConsolidatedCalendarCommandHandler;
 import com.mcalvaro.mscatering.application.consolidatedcalendar.GetConsolidatedCalendarByDate.GetConsolidatedCalendarByDateQueryHandler;
 import com.mcalvaro.mscatering.application.consolidatedcalendar.GetConsolidatedCalendarByDate.IConsolidatedCalendarQueryService;
-
+import com.mcalvaro.mscatering.application.consolidatedcalendar.service.DefaultDailyConsolidator;
+import com.mcalvaro.mscatering.application.dietplan.DietPlanResolver;
+import com.mcalvaro.mscatering.application.dietplan.synchronization.DietPlanSynchronizationStore;
+import com.mcalvaro.mscatering.application.dietplan.synchronization.SynchronizeDietPlanCommandHandler;
+import com.mcalvaro.mscatering.application.patient.address.DeliveryAddressResolver;
+import com.mcalvaro.mscatering.application.patient.address.synchronization.PatientAddressSynchronizationStore;
+import com.mcalvaro.mscatering.application.patient.address.synchronization.SynchronizePatientAddressCommandHandler;
+import com.mcalvaro.mscatering.application.patient.synchronization.PatientReferenceSynchronizationStore;
+import com.mcalvaro.mscatering.application.patient.synchronization.SynchronizePatientReferenceCommandHandler;
 import com.mcalvaro.mscatering.application.subscription.CancelSubscription.CancelSubscriptionCommandHandler;
 import com.mcalvaro.mscatering.application.subscription.CompleteSubscription.CompleteSubscriptionCommandHandler;
 import com.mcalvaro.mscatering.application.subscription.ConfirmDelivery.ConfirmDeliveryCommandHandler;
@@ -17,27 +25,16 @@ import com.mcalvaro.mscatering.application.subscription.PauseSubscription.PauseS
 import com.mcalvaro.mscatering.application.subscription.ReactivateSubscription.ReactivateSubscriptionCommandHandler;
 import com.mcalvaro.mscatering.application.subscription.RegisterFailedDelivery.RegisterFailedDeliveryCommandHandler;
 import com.mcalvaro.mscatering.application.subscription.UpdateDeliveryPreferences.UpdateDeliveryPreferencesCommandHandler;
-import com.mcalvaro.mscatering.application.patient.synchronization.PatientReferenceSynchronizationStore;
-import com.mcalvaro.mscatering.application.patient.synchronization.SynchronizePatientReferenceCommandHandler;
-import com.mcalvaro.mscatering.application.patient.address.DeliveryAddressResolver;
-import com.mcalvaro.mscatering.application.dietplan.DietPlanResolver;
-import com.mcalvaro.mscatering.application.dietplan.synchronization.DietPlanSynchronizationStore;
-import com.mcalvaro.mscatering.application.dietplan.synchronization.SynchronizeDietPlanCommandHandler;
-import com.mcalvaro.mscatering.domain.dietplan.IDietPlanProjectionRepository;
-import com.mcalvaro.mscatering.application.patient.address.synchronization.PatientAddressSynchronizationStore;
-import com.mcalvaro.mscatering.application.patient.address.synchronization.SynchronizePatientAddressCommandHandler;
-
+import com.mcalvaro.mscatering.application.subscription.service.DefaultSubscriptionDuplicationValidator;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.IConsolidatedCalendarRepository;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.service.DailyConsolidator;
-import com.mcalvaro.mscatering.application.consolidatedcalendar.service.DefaultDailyConsolidator;
-import com.mcalvaro.mscatering.domain.patient.IPatientReferenceRepository;
+import com.mcalvaro.mscatering.domain.dietplan.IDietPlanProjectionRepository;
 import com.mcalvaro.mscatering.domain.patient.IPatientAddressReferenceRepository;
+import com.mcalvaro.mscatering.domain.patient.IPatientReferenceRepository;
 import com.mcalvaro.mscatering.domain.subscription.ISubscriptionRepository;
 import com.mcalvaro.mscatering.domain.subscription.service.BiweeklyEvaluationGenerator;
 import com.mcalvaro.mscatering.domain.subscription.service.DefaultBiweeklyEvaluationGenerator;
 import com.mcalvaro.mscatering.domain.subscription.service.SubscriptionDuplicationValidator;
-import com.mcalvaro.mscatering.application.subscription.service.DefaultSubscriptionDuplicationValidator;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -84,7 +81,8 @@ public class ApplicationBeansConfig {
     }
 
     @Bean
-    SynchronizeDietPlanCommandHandler synchronizeDietPlanCommandHandler(DietPlanSynchronizationStore synchronizationStore) {
+    SynchronizeDietPlanCommandHandler synchronizeDietPlanCommandHandler(
+            DietPlanSynchronizationStore synchronizationStore) {
         return new SynchronizeDietPlanCommandHandler(synchronizationStore);
     }
 
@@ -96,15 +94,19 @@ public class ApplicationBeansConfig {
     CreateSubscriptionCommandHandler createSubscriptionCommandHandler(
             ISubscriptionRepository subscriptionRepository,
             SubscriptionDuplicationValidator duplicationValidator,
-            BiweeklyEvaluationGenerator evaluationGenerator, DeliveryAddressResolver deliveryAddressResolver,
+            BiweeklyEvaluationGenerator evaluationGenerator,
+            DeliveryAddressResolver deliveryAddressResolver,
             DietPlanResolver dietPlanResolver) {
         return new CreateSubscriptionCommandHandler(
-                subscriptionRepository, duplicationValidator, evaluationGenerator, deliveryAddressResolver, dietPlanResolver);
+                subscriptionRepository,
+                duplicationValidator,
+                evaluationGenerator,
+                deliveryAddressResolver,
+                dietPlanResolver);
     }
 
     @Bean
-    PauseSubscriptionCommandHandler pauseSubscriptionCommandHandler(
-            ISubscriptionRepository subscriptionRepository) {
+    PauseSubscriptionCommandHandler pauseSubscriptionCommandHandler(ISubscriptionRepository subscriptionRepository) {
         return new PauseSubscriptionCommandHandler(subscriptionRepository);
     }
 
@@ -115,20 +117,17 @@ public class ApplicationBeansConfig {
     }
 
     @Bean
-    ModifyDeliveryDayCommandHandler modifyDeliveryDayCommandHandler(
-            ISubscriptionRepository subscriptionRepository) {
+    ModifyDeliveryDayCommandHandler modifyDeliveryDayCommandHandler(ISubscriptionRepository subscriptionRepository) {
         return new ModifyDeliveryDayCommandHandler(subscriptionRepository);
     }
 
     @Bean
-    MarkNoDeliveryCommandHandler markNoDeliveryCommandHandler(
-            ISubscriptionRepository subscriptionRepository) {
+    MarkNoDeliveryCommandHandler markNoDeliveryCommandHandler(ISubscriptionRepository subscriptionRepository) {
         return new MarkNoDeliveryCommandHandler(subscriptionRepository);
     }
 
     @Bean
-    CancelSubscriptionCommandHandler cancelSubscriptionCommandHandler(
-            ISubscriptionRepository subscriptionRepository) {
+    CancelSubscriptionCommandHandler cancelSubscriptionCommandHandler(ISubscriptionRepository subscriptionRepository) {
         return new CancelSubscriptionCommandHandler(subscriptionRepository);
     }
 
@@ -139,8 +138,7 @@ public class ApplicationBeansConfig {
     }
 
     @Bean
-    ConfirmDeliveryCommandHandler confirmDeliveryCommandHandler(
-            ISubscriptionRepository subscriptionRepository) {
+    ConfirmDeliveryCommandHandler confirmDeliveryCommandHandler(ISubscriptionRepository subscriptionRepository) {
         return new ConfirmDeliveryCommandHandler(subscriptionRepository);
     }
 
@@ -167,8 +165,7 @@ public class ApplicationBeansConfig {
     // ========================================================================
 
     @Bean
-    GetSubscriptionDetailsQueryHandler getSubscriptionDetailsQueryHandler(
-            ISubscriptionQueryService queryService) {
+    GetSubscriptionDetailsQueryHandler getSubscriptionDetailsQueryHandler(ISubscriptionQueryService queryService) {
         return new GetSubscriptionDetailsQueryHandler(queryService);
     }
 
@@ -178,10 +175,8 @@ public class ApplicationBeansConfig {
 
     @Bean
     CloseConsolidatedCalendarCommandHandler closeConsolidatedCalendarCommandHandler(
-            DailyConsolidator dailyConsolidator,
-            IConsolidatedCalendarRepository calendarRepository) {
-        return new CloseConsolidatedCalendarCommandHandler(
-                dailyConsolidator, calendarRepository);
+            DailyConsolidator dailyConsolidator, IConsolidatedCalendarRepository calendarRepository) {
+        return new CloseConsolidatedCalendarCommandHandler(dailyConsolidator, calendarRepository);
     }
 
     // ========================================================================
@@ -205,14 +200,15 @@ public class ApplicationBeansConfig {
 
     @Bean
     SubscriptionDuplicationValidator subscriptionDuplicationValidator(
-            ISubscriptionRepository subscriptionRepository,
-            IPatientReferenceRepository patientRepository) {
+            ISubscriptionRepository subscriptionRepository, IPatientReferenceRepository patientRepository) {
         return new DefaultSubscriptionDuplicationValidator(subscriptionRepository, patientRepository);
     }
 
     @Bean
-    DailyConsolidator dailyConsolidator(ISubscriptionRepository subscriptionRepository,
-            IDietPlanProjectionRepository dietPlanRepository, IPatientReferenceRepository patientRepository) {
+    DailyConsolidator dailyConsolidator(
+            ISubscriptionRepository subscriptionRepository,
+            IDietPlanProjectionRepository dietPlanRepository,
+            IPatientReferenceRepository patientRepository) {
         return new DefaultDailyConsolidator(subscriptionRepository, dietPlanRepository, patientRepository);
     }
 }

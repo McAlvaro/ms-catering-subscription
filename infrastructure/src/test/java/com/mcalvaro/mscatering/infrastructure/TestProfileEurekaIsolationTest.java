@@ -26,8 +26,11 @@ class TestProfileEurekaIsolationTest extends BaseIntegrationTest {
     void testProfileDoesNotCreateEurekaClientsOrRegistration() throws Exception {
         assertEquals("false", environment.getProperty("eureka.client.enabled"));
         assertTrue(applicationContext.getBeansOfType(EurekaClient.class).isEmpty());
-        assertTrue(applicationContext.getBeansOfType(EurekaDiscoveryClient.class).isEmpty());
-        assertTrue(applicationContext.getBeansOfType(EurekaAutoServiceRegistration.class).isEmpty());
+        assertTrue(
+                applicationContext.getBeansOfType(EurekaDiscoveryClient.class).isEmpty());
+        assertTrue(applicationContext
+                .getBeansOfType(EurekaAutoServiceRegistration.class)
+                .isEmpty());
 
         mockMvc.perform(get("/actuator/health"))
                 .andExpect(status().isOk())

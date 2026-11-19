@@ -8,12 +8,11 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.mcalvaro.mscatering.domain.core.DomainException;
 import com.mcalvaro.mscatering.infrastructure.integration.inbound.bc2.dietplan.DietPlanInboundAdapter;
 import com.mcalvaro.mscatering.infrastructure.integration.inbound.bc2.dietplan.DietPlanInboundAdapter.DietPlanCreatedEvent;
+import java.util.Objects;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
-
-import java.util.Objects;
-import java.util.Set;
 
 /**
  * Inbound Kafka listener for BC2 diet plan canonical events.
@@ -40,8 +39,7 @@ public class DietPlanKafkaListener {
 
     @KafkaListener(
             topics = "${app.kafka.topics.diet-plan:bc2.nutricion.eventos}",
-            groupId = "${app.kafka.consumer.diet-plan-group-id:ms-catering-bc2-plan-consumer}"
-    )
+            groupId = "${app.kafka.consumer.diet-plan-group-id:ms-catering-bc2-plan-consumer}")
     public void onMessage(String payload) {
         if (payload == null || payload.isBlank()) {
             log.warn("Received empty or blank Kafka message payload on diet plan events topic");
@@ -51,8 +49,10 @@ public class DietPlanKafkaListener {
         try {
             DietPlanCreatedEvent event = objectMapper.readValue(payload, DietPlanCreatedEvent.class);
             if (event == null || event.eventName() == null || !SUPPORTED_EVENTS.contains(event.eventName())) {
-                log.info("Ignoring event with name '{}'; supported are {}",
-                        event != null ? event.eventName() : null, SUPPORTED_EVENTS);
+                log.info(
+                        "Ignoring event with name '{}'; supported are {}",
+                        event != null ? event.eventName() : null,
+                        SUPPORTED_EVENTS);
                 return;
             }
 
@@ -62,8 +62,11 @@ public class DietPlanKafkaListener {
                 inboundAdapter.receivePersonalized(event);
             }
         } catch (DomainException exception) {
-            log.warn("Domain exception processing diet plan event: code={}, message={}",
-                    exception.getCode(), exception.getMessage(), exception);
+            log.warn(
+                    "Domain exception processing diet plan event: code={}, message={}",
+                    exception.getCode(),
+                    exception.getMessage(),
+                    exception);
         } catch (JsonProcessingException exception) {
             log.error("Failed to parse Kafka message payload as DietPlanCreatedEvent: {}", payload, exception);
         } catch (Exception exception) {

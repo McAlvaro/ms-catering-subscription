@@ -1,15 +1,13 @@
 package com.mcalvaro.mscatering.infrastructure.persistence.patient.mapper;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.mcalvaro.mscatering.domain.core.id.PatientId;
 import com.mcalvaro.mscatering.domain.patient.PatientReference;
 import com.mcalvaro.mscatering.infrastructure.persistence.patient.entity.PatientReferenceJpaEntity;
+import java.time.Instant;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import java.time.Instant;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class PatientReferenceMapperTest {
 
@@ -62,7 +60,10 @@ class PatientReferenceMapperTest {
     }
 
     private PatientReference buildPatientReference() {
-        return new PatientReference(PatientId.of("PAC-1b896fcb-dfac-4798-ae62-f0731b9a051b"), "Ada Lovelace", false,
+        return new PatientReference(
+                PatientId.of("PAC-1b896fcb-dfac-4798-ae62-f0731b9a051b"),
+                "Ada Lovelace",
+                false,
                 Instant.parse("2026-03-10T09:15:30Z"));
     }
 

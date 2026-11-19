@@ -2,7 +2,6 @@ package com.mcalvaro.mscatering.domain.consolidatedcalendar.entity;
 
 import com.mcalvaro.mscatering.domain.core.DomainException;
 import com.mcalvaro.mscatering.domain.core.id.RecipeId;
-
 import java.time.LocalTime;
 
 /** Immutable recipe selected for one operational delivery. */

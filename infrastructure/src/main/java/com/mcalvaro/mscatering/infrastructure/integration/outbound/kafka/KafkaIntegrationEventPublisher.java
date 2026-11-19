@@ -4,15 +4,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mcalvaro.mscatering.application.integration.IntegrationEventPublisher;
 import com.mcalvaro.mscatering.integration.contracts.IntegrationEvent;
-import org.apache.kafka.clients.producer.ProducerRecord;
-import org.springframework.kafka.core.KafkaTemplate;
-
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.springframework.kafka.core.KafkaTemplate;
 
 /** Kafka adapter that returns only after the broker acknowledges the record. */
 public final class KafkaIntegrationEventPublisher implements IntegrationEventPublisher {
@@ -21,8 +20,11 @@ public final class KafkaIntegrationEventPublisher implements IntegrationEventPub
     private final KafkaIntegrationEventRouter router;
     private final Duration acknowledgementTimeout;
 
-    public KafkaIntegrationEventPublisher(KafkaTemplate<String, String> kafkaTemplate, ObjectMapper objectMapper,
-            KafkaIntegrationEventRouter router, Duration acknowledgementTimeout) {
+    public KafkaIntegrationEventPublisher(
+            KafkaTemplate<String, String> kafkaTemplate,
+            ObjectMapper objectMapper,
+            KafkaIntegrationEventRouter router,
+            Duration acknowledgementTimeout) {
         this.kafkaTemplate = Objects.requireNonNull(kafkaTemplate, "Kafka template must not be null");
         this.objectMapper = Objects.requireNonNull(objectMapper, "Object mapper must not be null");
         this.router = Objects.requireNonNull(router, "Kafka event router must not be null");

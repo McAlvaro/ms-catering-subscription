@@ -1,5 +1,8 @@
 package com.mcalvaro.mscatering.domain.subscription.entity;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import com.mcalvaro.mscatering.domain.core.id.DeliveryCalendarId;
 import com.mcalvaro.mscatering.domain.core.id.DeliveryDayId;
 import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
@@ -8,17 +11,13 @@ import com.mcalvaro.mscatering.domain.subscription.vo.DeliveryAddress;
 import com.mcalvaro.mscatering.domain.subscription.vo.PauseRange;
 import com.mcalvaro.mscatering.domain.subscription.vo.TimeWindow;
 import com.mcalvaro.mscatering.domain.subscription.vo.ValidityPeriod;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
-
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class DeliveryCalendarTest {
 
@@ -52,7 +51,8 @@ class DeliveryCalendarTest {
 
         // Assert
         assertThat(calendar.getDeliveryDays()).containsExactly(day);
-        assertThatThrownBy(() -> calendar.getDeliveryDays().add(newDay(DeliveryDayId.generate(), LocalDate.of(2026, 1, 11))))
+        assertThatThrownBy(() ->
+                        calendar.getDeliveryDays().add(newDay(DeliveryDayId.generate(), LocalDate.of(2026, 1, 11))))
                 .isInstanceOf(UnsupportedOperationException.class);
     }
 
@@ -66,14 +66,19 @@ class DeliveryCalendarTest {
         DeliveryDay atStart = newDay(DeliveryDayId.generate(), start);
         DeliveryDay atEnd = newDay(DeliveryDayId.generate(), end);
         DeliveryDay outsideRange = newDay(DeliveryDayId.generate(), end.plusDays(1));
-        DeliveryDay alreadyPaused = newDayWithStatus(DeliveryDayId.generate(), start.plusDays(1), DeliveryDayStatus.PAUSED);
-        DeliveryDay consolidated = newDayWithStatus(DeliveryDayId.generate(), start.plusDays(1), DeliveryDayStatus.CONSOLIDATED);
-        DeliveryDay delivered = newDayWithStatus(DeliveryDayId.generate(), start.plusDays(1), DeliveryDayStatus.DELIVERED);
-        DeliveryDay notDelivered = newDayWithStatus(DeliveryDayId.generate(), start.plusDays(1), DeliveryDayStatus.NOT_DELIVERED);
+        DeliveryDay alreadyPaused =
+                newDayWithStatus(DeliveryDayId.generate(), start.plusDays(1), DeliveryDayStatus.PAUSED);
+        DeliveryDay consolidated =
+                newDayWithStatus(DeliveryDayId.generate(), start.plusDays(1), DeliveryDayStatus.CONSOLIDATED);
+        DeliveryDay delivered =
+                newDayWithStatus(DeliveryDayId.generate(), start.plusDays(1), DeliveryDayStatus.DELIVERED);
+        DeliveryDay notDelivered =
+                newDayWithStatus(DeliveryDayId.generate(), start.plusDays(1), DeliveryDayStatus.NOT_DELIVERED);
         DeliveryDay failed = newDayWithStatus(DeliveryDayId.generate(), start.plusDays(1), DeliveryDayStatus.FAILED);
-        DeliveryDay cancelled = newDayWithStatus(DeliveryDayId.generate(), start.plusDays(1), DeliveryDayStatus.CANCELLED);
-        DeliveryCalendar calendar = calendarWith(atStart, atEnd, outsideRange, alreadyPaused, consolidated, delivered,
-                notDelivered, failed, cancelled);
+        DeliveryDay cancelled =
+                newDayWithStatus(DeliveryDayId.generate(), start.plusDays(1), DeliveryDayStatus.CANCELLED);
+        DeliveryCalendar calendar = calendarWith(
+                atStart, atEnd, outsideRange, alreadyPaused, consolidated, delivered, notDelivered, failed, cancelled);
 
         // Act
         calendar.pauseRange(range);
@@ -99,15 +104,20 @@ class DeliveryCalendarTest {
         PauseRange range = new PauseRange(start, end);
         DeliveryDay atStart = newDayWithStatus(DeliveryDayId.generate(), start, DeliveryDayStatus.PAUSED);
         DeliveryDay atEnd = newDayWithStatus(DeliveryDayId.generate(), end, DeliveryDayStatus.PAUSED);
-        DeliveryDay outsideRange = newDayWithStatus(DeliveryDayId.generate(), end.plusDays(1), DeliveryDayStatus.PAUSED);
+        DeliveryDay outsideRange =
+                newDayWithStatus(DeliveryDayId.generate(), end.plusDays(1), DeliveryDayStatus.PAUSED);
         DeliveryDay scheduled = newDay(DeliveryDayId.generate(), start.plusDays(1));
-        DeliveryDay consolidated = newDayWithStatus(DeliveryDayId.generate(), start.plusDays(1), DeliveryDayStatus.CONSOLIDATED);
-        DeliveryDay delivered = newDayWithStatus(DeliveryDayId.generate(), start.plusDays(1), DeliveryDayStatus.DELIVERED);
-        DeliveryDay notDelivered = newDayWithStatus(DeliveryDayId.generate(), start.plusDays(1), DeliveryDayStatus.NOT_DELIVERED);
+        DeliveryDay consolidated =
+                newDayWithStatus(DeliveryDayId.generate(), start.plusDays(1), DeliveryDayStatus.CONSOLIDATED);
+        DeliveryDay delivered =
+                newDayWithStatus(DeliveryDayId.generate(), start.plusDays(1), DeliveryDayStatus.DELIVERED);
+        DeliveryDay notDelivered =
+                newDayWithStatus(DeliveryDayId.generate(), start.plusDays(1), DeliveryDayStatus.NOT_DELIVERED);
         DeliveryDay failed = newDayWithStatus(DeliveryDayId.generate(), start.plusDays(1), DeliveryDayStatus.FAILED);
-        DeliveryDay cancelled = newDayWithStatus(DeliveryDayId.generate(), start.plusDays(1), DeliveryDayStatus.CANCELLED);
-        DeliveryCalendar calendar = calendarWith(atStart, atEnd, outsideRange, scheduled, consolidated, delivered,
-                notDelivered, failed, cancelled);
+        DeliveryDay cancelled =
+                newDayWithStatus(DeliveryDayId.generate(), start.plusDays(1), DeliveryDayStatus.CANCELLED);
+        DeliveryCalendar calendar = calendarWith(
+                atStart, atEnd, outsideRange, scheduled, consolidated, delivered, notDelivered, failed, cancelled);
 
         // Act
         calendar.reactivateRange(range);
@@ -153,7 +163,9 @@ class DeliveryCalendarTest {
     }
 
     @ParameterizedTest
-    @EnumSource(value = DeliveryDayStatus.class, names = {"SCHEDULED", "PAUSED", "CONSOLIDATED", "DELIVERED"})
+    @EnumSource(
+            value = DeliveryDayStatus.class,
+            names = {"SCHEDULED", "PAUSED", "CONSOLIDATED", "DELIVERED"})
     @DisplayName("Should retain an active day after excluding a different delivery day for every active status")
     void shouldRetainActiveDayWhenDifferentDayIsExcludedForEveryActiveStatus(DeliveryDayStatus status) {
         // Arrange
@@ -168,7 +180,9 @@ class DeliveryCalendarTest {
     }
 
     @ParameterizedTest
-    @EnumSource(value = DeliveryDayStatus.class, names = {"NOT_DELIVERED", "FAILED", "CANCELLED"})
+    @EnumSource(
+            value = DeliveryDayStatus.class,
+            names = {"NOT_DELIVERED", "FAILED", "CANCELLED"})
     @DisplayName("Should not consider negative statuses as active days")
     void shouldNotRetainActiveDayWhenOnlyNegativeStatusExists(DeliveryDayStatus status) {
         // Arrange
@@ -227,7 +241,9 @@ class DeliveryCalendarTest {
     }
 
     private DeliveryCalendar newCalendar() {
-        return new DeliveryCalendar(DeliveryCalendarId.generate(), SubscriptionId.generate(),
+        return new DeliveryCalendar(
+                DeliveryCalendarId.generate(),
+                SubscriptionId.generate(),
                 new ValidityPeriod(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 1, 31)));
     }
 
@@ -240,9 +256,12 @@ class DeliveryCalendarTest {
     }
 
     private DeliveryDay newDay(DeliveryDayId id, LocalDate date) {
-        return new DeliveryDay(id, date,
+        return new DeliveryDay(
+                id,
+                date,
                 new DeliveryAddress("Main Street", "10", "Madrid", "Door A", 40.4168, -3.7038, "600000000"),
-                new TimeWindow(LocalTime.of(9, 0), LocalTime.of(11, 0)), "Leave at reception");
+                new TimeWindow(LocalTime.of(9, 0), LocalTime.of(11, 0)),
+                "Leave at reception");
     }
 
     private DeliveryDay newDayWithStatus(DeliveryDayId id, LocalDate date, DeliveryDayStatus status) {
@@ -254,8 +273,7 @@ class DeliveryCalendarTest {
             case NOT_DELIVERED -> day.markAsNoDelivery();
             case FAILED -> day.markAsFailed("Recipient unavailable");
             case CANCELLED -> day.cancel();
-            case SCHEDULED -> {
-            }
+            case SCHEDULED -> {}
         }
         return day;
     }

@@ -1,12 +1,12 @@
 package com.mcalvaro.mscatering.infrastructure.outbox;
 
+import java.time.Duration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.bind.DefaultValue;
 
-import java.time.Duration;
-
 @ConfigurationProperties("outbox")
-public record OutboxRelayProperties(@DefaultValue("none") String provider,
+public record OutboxRelayProperties(
+        @DefaultValue("none") String provider,
         @DefaultValue("false") boolean relayEnabled,
         @DefaultValue("5s") Duration pollInterval,
         @DefaultValue("20") int batchSize,

@@ -20,5 +20,4 @@ public record ConsolidatedLineDto(
         String phone,
         LocalTime startTime,
         LocalTime endTime,
-        String instructions) {
-}
+        String instructions) {}

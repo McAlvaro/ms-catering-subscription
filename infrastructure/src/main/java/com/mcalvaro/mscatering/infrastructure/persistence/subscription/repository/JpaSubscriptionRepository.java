@@ -8,15 +8,14 @@ import com.mcalvaro.mscatering.domain.subscription.Subscription;
 import com.mcalvaro.mscatering.domain.subscription.enums.SubscriptionStatus;
 import com.mcalvaro.mscatering.infrastructure.persistence.subscription.entity.SubscriptionJpaEntity;
 import com.mcalvaro.mscatering.infrastructure.persistence.subscription.mapper.SubscriptionMapper;
+import java.time.Year;
+import java.util.List;
+import java.util.Optional;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.support.ScopeNotActiveException;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.context.request.RequestContextHolder;
-
-import java.time.Year;
-import java.util.List;
-import java.util.Optional;
 
 @Repository
 public class JpaSubscriptionRepository implements ISubscriptionRepository {
@@ -26,9 +25,10 @@ public class JpaSubscriptionRepository implements ISubscriptionRepository {
     private final ObjectProvider<DomainEventDispatcher> dispatcherProvider;
 
     @Autowired
-    public JpaSubscriptionRepository(SpringDataSubscriptionRepository springRepository,
-                                    SubscriptionMapper mapper,
-                                    ObjectProvider<DomainEventDispatcher> dispatcherProvider) {
+    public JpaSubscriptionRepository(
+            SpringDataSubscriptionRepository springRepository,
+            SubscriptionMapper mapper,
+            ObjectProvider<DomainEventDispatcher> dispatcherProvider) {
         this.springRepository = springRepository;
         this.mapper = mapper;
         this.dispatcherProvider = dispatcherProvider;
@@ -79,9 +79,6 @@ public class JpaSubscriptionRepository implements ISubscriptionRepository {
     @Override
     public boolean hasActiveOrPausedSubscription(PatientId patientId) {
         return springRepository.existsByPatientIdAndStatusIn(
-                patientId.value(),
-                List.of(
-                        SubscriptionStatus.ACTIVE.name(),
-                        SubscriptionStatus.PAUSED.name()));
+                patientId.value(), List.of(SubscriptionStatus.ACTIVE.name(), SubscriptionStatus.PAUSED.name()));
     }
 }

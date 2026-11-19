@@ -1,14 +1,22 @@
 package com.mcalvaro.mscatering.application.consolidatedcalendar.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.ConsolidatedCalendar;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.entity.ConsolidatedLine;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.enums.ConsolidateStatus;
 import com.mcalvaro.mscatering.domain.core.id.*;
-import com.mcalvaro.mscatering.domain.subscription.ISubscriptionRepository;
-import com.mcalvaro.mscatering.domain.dietplan.IDietPlanProjectionRepository;
 import com.mcalvaro.mscatering.domain.dietplan.*;
+import com.mcalvaro.mscatering.domain.dietplan.IDietPlanProjectionRepository;
 import com.mcalvaro.mscatering.domain.patient.IPatientReferenceRepository;
 import com.mcalvaro.mscatering.domain.patient.PatientReference;
+import com.mcalvaro.mscatering.domain.subscription.ISubscriptionRepository;
 import com.mcalvaro.mscatering.domain.subscription.Subscription;
 import com.mcalvaro.mscatering.domain.subscription.entity.DeliveryDay;
 import com.mcalvaro.mscatering.domain.subscription.enums.DeliveryDayStatus;
@@ -18,6 +26,11 @@ import com.mcalvaro.mscatering.domain.subscription.vo.DeliveryPreferences;
 import com.mcalvaro.mscatering.domain.subscription.vo.ServiceContract;
 import com.mcalvaro.mscatering.domain.subscription.vo.TimeWindow;
 import com.mcalvaro.mscatering.domain.subscription.vo.ValidityPeriod;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,28 +38,17 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.List;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.lenient;
-
 @ExtendWith(MockitoExtension.class)
 class DefaultDailyConsolidatorTest {
 
     @Mock
     private ISubscriptionRepository subscriptionRepository;
-    @Mock private IDietPlanProjectionRepository dietPlanRepository;
-    @Mock private IPatientReferenceRepository patientRepository;
+
+    @Mock
+    private IDietPlanProjectionRepository dietPlanRepository;
+
+    @Mock
+    private IPatientReferenceRepository patientRepository;
 
     @InjectMocks
     private DefaultDailyConsolidator consolidator;
@@ -57,7 +59,8 @@ class DefaultDailyConsolidatorTest {
         // Arrange
         LocalDate deliveryDate = LocalDate.of(2026, 9, 7);
         Subscription subscription = buildSubscription(deliveryDate);
-        DeliveryDay deliveryDay = subscription.getDeliveryCalendar().getDaysForDate(deliveryDate).get(0);
+        DeliveryDay deliveryDay =
+                subscription.getDeliveryCalendar().getDaysForDate(deliveryDate).get(0);
         when(subscriptionRepository.findConsolidatableSubscriptions()).thenReturn(List.of(subscription));
 
         // Act
@@ -86,12 +89,14 @@ class DefaultDailyConsolidatorTest {
     }
 
     @Test
-    @DisplayName("Should not add a line, modify the delivery day or save the subscription when the day is not scheduled")
+    @DisplayName(
+            "Should not add a line, modify the delivery day or save the subscription when the day is not scheduled")
     void shouldNotAddLineModifyDeliveryDayOrSaveSubscriptionWhenDayIsNotScheduled() {
         // Arrange
         LocalDate deliveryDate = LocalDate.of(2026, 9, 7);
         Subscription subscription = buildSubscription(deliveryDate);
-        DeliveryDay deliveryDay = subscription.getDeliveryCalendar().getDaysForDate(deliveryDate).get(0);
+        DeliveryDay deliveryDay =
+                subscription.getDeliveryCalendar().getDaysForDate(deliveryDate).get(0);
         deliveryDay.pause();
         when(subscriptionRepository.findConsolidatableSubscriptions()).thenReturn(List.of(subscription));
 
@@ -130,7 +135,8 @@ class DefaultDailyConsolidatorTest {
     }
 
     @Test
-    @DisplayName("Should return an open calendar without lines or saves when active subscriptions have no matching delivery days")
+    @DisplayName(
+            "Should return an open calendar without lines or saves when active subscriptions have no matching delivery days")
     void shouldReturnOpenCalendarWithoutLinesOrSavesWhenActiveSubscriptionsHaveNoMatchingDeliveryDays() {
         // Arrange
         LocalDate deliveryDate = LocalDate.of(2026, 9, 7);
@@ -157,26 +163,41 @@ class DefaultDailyConsolidatorTest {
         LocalDate startDate = LocalDate.now().plusDays(10);
         LocalDate deliveryDate = startDate.plusDays(5);
         Subscription subscription = buildSubscription(startDate);
-        subscription.pause(new com.mcalvaro.mscatering.domain.subscription.vo.PauseRange(
-                startDate.plusDays(2), startDate.plusDays(3)), "Travel", "pause-correlation");
-        DeliveryDay scheduledDay = subscription.getDeliveryCalendar().getDaysForDate(deliveryDate).get(0);
+        subscription.pause(
+                new com.mcalvaro.mscatering.domain.subscription.vo.PauseRange(
+                        startDate.plusDays(2), startDate.plusDays(3)),
+                "Travel",
+                "pause-correlation");
+        DeliveryDay scheduledDay =
+                subscription.getDeliveryCalendar().getDaysForDate(deliveryDate).get(0);
         when(subscriptionRepository.findConsolidatableSubscriptions()).thenReturn(List.of(subscription));
 
         // Act
         ConsolidatedCalendar calendar = consolidator.consolidateForDate(deliveryDate);
 
         // Assert
-        assertThat(subscription.getStatus()).isEqualTo(com.mcalvaro.mscatering.domain.subscription.enums.SubscriptionStatus.PAUSED);
+        assertThat(subscription.getStatus())
+                .isEqualTo(com.mcalvaro.mscatering.domain.subscription.enums.SubscriptionStatus.PAUSED);
         assertThat(scheduledDay.getStatus()).isEqualTo(DeliveryDayStatus.CONSOLIDATED);
-        assertThat(calendar.getLines()).singleElement().extracting(ConsolidatedLine::getSubscriptionId)
+        assertThat(calendar.getLines())
+                .singleElement()
+                .extracting(ConsolidatedLine::getSubscriptionId)
                 .isEqualTo(subscription.getId());
         verify(subscriptionRepository, times(1)).findConsolidatableSubscriptions();
         verify(subscriptionRepository, times(1)).save(subscription);
     }
 
     private Subscription buildSubscription(LocalDate startDate) {
-        DeliveryAddress address = new DeliveryAddress(AddressId.generate(), "Home",
-                "Main Street", "123", "Madrid", "Reception", 40.4168, -3.7038, "+34123456789");
+        DeliveryAddress address = new DeliveryAddress(
+                AddressId.generate(),
+                "Home",
+                "Main Street",
+                "123",
+                "Madrid",
+                "Reception",
+                40.4168,
+                -3.7038,
+                "+34123456789");
         TimeWindow timeWindow = new TimeWindow(LocalTime.of(12, 0), LocalTime.of(14, 0));
         DeliveryPreferences preferences = new DeliveryPreferences(address, timeWindow, "Ring the doorbell");
         DietPlanId planId = DietPlanId.generate();
@@ -191,14 +212,28 @@ class DefaultDailyConsolidatorTest {
 
         PatientId patientId = PatientId.generate();
         lenient().when(dietPlanRepository.findById(planId)).thenReturn(java.util.Optional.of(plan(planId, startDate)));
-        lenient().when(patientRepository.findById(patientId)).thenReturn(java.util.Optional.of(new PatientReference(patientId, "Ada", true, Instant.now())));
+        lenient()
+                .when(patientRepository.findById(patientId))
+                .thenReturn(java.util.Optional.of(new PatientReference(patientId, "Ada", true, Instant.now())));
         return Subscription.create(SubscriptionId.generate(), patientId, planId, contract, preferences, 1);
     }
 
     private DietPlanProjection plan(DietPlanId id, LocalDate start) {
-        return new DietPlanProjection(id, PlanType.BASE, null, true, start, 15,
-                java.util.stream.IntStream.rangeClosed(1, 15).<DietPlanDay>mapToObj(day -> new DietPlanDay(day, 1,
-                        List.of(new DietPlanMeal(MealType.LUNCH, LocalTime.NOON,
-                                List.of(new DietPlanRecipe(RecipeId.generate(), "Lunch", 100)))))).toList());
+        return new DietPlanProjection(
+                id,
+                PlanType.BASE,
+                null,
+                true,
+                start,
+                15,
+                java.util.stream.IntStream.rangeClosed(1, 15)
+                        .<DietPlanDay>mapToObj(day -> new DietPlanDay(
+                                day,
+                                1,
+                                List.of(new DietPlanMeal(
+                                        MealType.LUNCH,
+                                        LocalTime.NOON,
+                                        List.of(new DietPlanRecipe(RecipeId.generate(), "Lunch", 100))))))
+                        .toList());
     }
 }

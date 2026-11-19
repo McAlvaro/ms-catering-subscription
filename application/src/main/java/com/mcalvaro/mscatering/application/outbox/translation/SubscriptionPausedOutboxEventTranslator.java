@@ -11,11 +11,18 @@ public final class SubscriptionPausedOutboxEventTranslator implements OutboxEven
 
     @Override
     public SubscriptionPausedIntegrationEvent translate(SubscriptionPaused source) {
-        if (source == null)
-            throw new IntegrationEventTranslationException("SubscriptionPaused must not be null");
-        return new SubscriptionPausedIntegrationEvent(source.eventId(), source.occurredAt(), source.correlationId(),
-                new SubscriptionPausedIntegrationEvent.Data(source.subscriptionId().value(), source.patientId().value(),
+        if (source == null) throw new IntegrationEventTranslationException("SubscriptionPaused must not be null");
+        return new SubscriptionPausedIntegrationEvent(
+                source.eventId(),
+                source.occurredAt(),
+                source.correlationId(),
+                new SubscriptionPausedIntegrationEvent.Data(
+                        source.subscriptionId().value(),
+                        source.patientId().value(),
                         source.pauseRange().startDate(),
-                        source.pauseRange().endDate(), source.reason(), source.newEndDate(), source.requestedOn()));
+                        source.pauseRange().endDate(),
+                        source.reason(),
+                        source.newEndDate(),
+                        source.requestedOn()));
     }
 }

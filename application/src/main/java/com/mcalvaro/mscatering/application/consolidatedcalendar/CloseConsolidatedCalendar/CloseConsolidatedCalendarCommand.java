@@ -2,7 +2,6 @@ package com.mcalvaro.mscatering.application.consolidatedcalendar.CloseConsolidat
 
 import an.awesome.pipelinr.Command;
 import com.mcalvaro.mscatering.domain.core.id.ConsolidatedCalendarId;
-
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -13,10 +12,8 @@ import java.util.UUID;
  * This is typically triggered by an automated scheduled process at the
  * end of each business day.
  */
-public record CloseConsolidatedCalendarCommand(
-        LocalDate date,
-        String closedBy,
-        String correlationId) implements Command<ConsolidatedCalendarId> {
+public record CloseConsolidatedCalendarCommand(LocalDate date, String closedBy, String correlationId)
+        implements Command<ConsolidatedCalendarId> {
     public CloseConsolidatedCalendarCommand(LocalDate date, String closedBy) {
         this(date, closedBy, UUID.randomUUID().toString());
     }

@@ -4,7 +4,6 @@ import com.mcalvaro.mscatering.domain.core.Entity;
 import com.mcalvaro.mscatering.domain.core.id.EvaluationId;
 import com.mcalvaro.mscatering.domain.core.id.PatientId;
 import com.mcalvaro.mscatering.domain.subscription.enums.EvaluationStatus;
-
 import java.time.LocalDate;
 
 /**
@@ -20,8 +19,7 @@ public class BiweeklyEvaluation extends Entity<EvaluationId> {
     private EvaluationStatus status;
     private LocalDate completedDate;
 
-    public BiweeklyEvaluation(EvaluationId id, PatientId patientId, int evaluationNumber,
-            LocalDate scheduledDate) {
+    public BiweeklyEvaluation(EvaluationId id, PatientId patientId, int evaluationNumber, LocalDate scheduledDate) {
         super(id);
         this.patientId = patientId;
         this.evaluationNumber = evaluationNumber;

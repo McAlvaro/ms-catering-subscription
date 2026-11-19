@@ -1,5 +1,14 @@
 package com.mcalvaro.mscatering.infrastructure.integration.inbound.kafka;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+
 import com.mcalvaro.mscatering.domain.core.DomainException;
 import com.mcalvaro.mscatering.infrastructure.integration.inbound.bc5.delivery.DeliveryConfirmedData;
 import com.mcalvaro.mscatering.infrastructure.integration.inbound.bc5.delivery.DeliveryConfirmedEvent;
@@ -7,6 +16,9 @@ import com.mcalvaro.mscatering.infrastructure.integration.inbound.bc5.delivery.D
 import com.mcalvaro.mscatering.infrastructure.integration.inbound.bc5.delivery.DeliveryFailedData;
 import com.mcalvaro.mscatering.infrastructure.integration.inbound.bc5.delivery.DeliveryFailedEvent;
 import com.mcalvaro.mscatering.infrastructure.integration.inbound.bc5.delivery.DeliveryInboundAdapter;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,19 +29,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.time.Instant;
-import java.time.LocalDate;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 
 @ExtendWith(MockitoExtension.class)
 class DeliveryKafkaListenerTest {
@@ -195,7 +194,8 @@ class DeliveryKafkaListenerTest {
     @DisplayName("Catches DeliveryContractException thrown by adapter receiveConfirmed defensively")
     void catchesDeliveryContractExceptionFromReceiveConfirmedDefensively() {
         doThrow(new DeliveryContractException("DEL-001", "Delivery day not found"))
-                .when(inboundAdapter).receiveConfirmed(any());
+                .when(inboundAdapter)
+                .receiveConfirmed(any());
 
         assertThatCode(() -> listener.onMessage(CONFIRMED_DELIVERY_JSON)).doesNotThrowAnyException();
         verify(inboundAdapter).receiveConfirmed(any());
@@ -205,7 +205,8 @@ class DeliveryKafkaListenerTest {
     @DisplayName("Catches DeliveryContractException thrown by adapter receiveFailed defensively")
     void catchesDeliveryContractExceptionFromReceiveFailedDefensively() {
         doThrow(new DeliveryContractException("DEL-001", "Delivery day not found"))
-                .when(inboundAdapter).receiveFailed(any());
+                .when(inboundAdapter)
+                .receiveFailed(any());
 
         assertThatCode(() -> listener.onMessage(FAILED_DELIVERY_JSON)).doesNotThrowAnyException();
         verify(inboundAdapter).receiveFailed(any());
@@ -215,7 +216,8 @@ class DeliveryKafkaListenerTest {
     @DisplayName("Catches generic DomainException thrown by adapter defensively")
     void catchesDomainExceptionDefensively() {
         doThrow(new DomainException("PROJ-001", "Contract violation"))
-                .when(inboundAdapter).receiveConfirmed(any());
+                .when(inboundAdapter)
+                .receiveConfirmed(any());
 
         assertThatCode(() -> listener.onMessage(CONFIRMED_DELIVERY_JSON)).doesNotThrowAnyException();
         verify(inboundAdapter).receiveConfirmed(any());
@@ -225,7 +227,8 @@ class DeliveryKafkaListenerTest {
     @DisplayName("Catches unexpected Exception thrown by adapter defensively")
     void catchesUnexpectedExceptionDefensively() {
         doThrow(new RuntimeException("Simulated unexpected database failure"))
-                .when(inboundAdapter).receiveConfirmed(any());
+                .when(inboundAdapter)
+                .receiveConfirmed(any());
 
         assertThatCode(() -> listener.onMessage(CONFIRMED_DELIVERY_JSON)).doesNotThrowAnyException();
         verify(inboundAdapter).receiveConfirmed(any());
@@ -234,7 +237,9 @@ class DeliveryKafkaListenerTest {
     @Test
     @DisplayName("Validates constructor parameters fail on null")
     void constructorRejectsNullDependencies() {
-        assertThrows(NullPointerException.class, () -> new DeliveryKafkaListener(null, DeliveryKafkaListener.defaultObjectMapper()));
+        assertThrows(
+                NullPointerException.class,
+                () -> new DeliveryKafkaListener(null, DeliveryKafkaListener.defaultObjectMapper()));
         assertThrows(NullPointerException.class, () -> new DeliveryKafkaListener(inboundAdapter, null));
         assertThrows(NullPointerException.class, () -> new DeliveryKafkaListener(null));
     }
@@ -242,10 +247,8 @@ class DeliveryKafkaListenerTest {
     @Test
     @DisplayName("Works with custom ObjectMapper and ignores unknown properties safely")
     void worksWithCustomObjectMapperAndIgnoresUnknownProperties() {
-        DeliveryKafkaListener customListener = new DeliveryKafkaListener(
-                inboundAdapter,
-                DeliveryKafkaListener.defaultObjectMapper()
-        );
+        DeliveryKafkaListener customListener =
+                new DeliveryKafkaListener(inboundAdapter, DeliveryKafkaListener.defaultObjectMapper());
 
         String jsonWithUnknownFields = """
                 {

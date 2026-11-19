@@ -1,7 +1,6 @@
 package com.mcalvaro.mscatering.domain.consolidatedcalendar.service;
 
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.ConsolidatedCalendar;
-
 import java.time.LocalDate;
 
 /**

@@ -8,11 +8,10 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.mcalvaro.mscatering.infrastructure.integration.inbound.bc1.patient.PatientRegisteredEvent;
 import com.mcalvaro.mscatering.infrastructure.integration.inbound.bc1.patient.PatientRegistrationContractException;
 import com.mcalvaro.mscatering.infrastructure.integration.inbound.bc1.patient.PatientRegistrationInboundAdapter;
+import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
-
-import java.util.Objects;
 
 /**
  * Inbound Kafka listener for BC1 patient registration events.
@@ -25,7 +24,8 @@ public class PatientRegistrationKafkaListener {
     private final PatientRegistrationInboundAdapter inboundAdapter;
     private final ObjectMapper objectMapper;
 
-    public PatientRegistrationKafkaListener(PatientRegistrationInboundAdapter inboundAdapter, ObjectMapper objectMapper) {
+    public PatientRegistrationKafkaListener(
+            PatientRegistrationInboundAdapter inboundAdapter, ObjectMapper objectMapper) {
         this.inboundAdapter = Objects.requireNonNull(inboundAdapter, "inboundAdapter must not be null");
         this.objectMapper = Objects.requireNonNull(objectMapper, "objectMapper must not be null");
     }
@@ -36,8 +36,7 @@ public class PatientRegistrationKafkaListener {
 
     @KafkaListener(
             topics = "${app.kafka.topics.patient-registered:bc1.pacientes.eventos}",
-            groupId = "${app.kafka.consumer.group-id:ms-catering-bc1-patient-consumer}"
-    )
+            groupId = "${app.kafka.consumer.group-id:ms-catering-bc1-patient-consumer}")
     public void onMessage(String payload) {
         if (payload == null || payload.isBlank()) {
             log.warn("Received empty or blank Kafka message payload on patient events topic");
@@ -47,15 +46,20 @@ public class PatientRegistrationKafkaListener {
         try {
             PatientRegisteredEvent event = objectMapper.readValue(payload, PatientRegisteredEvent.class);
             if (event == null || !SUPPORTED_EVENT_NAME.equals(event.eventName())) {
-                log.info("Ignoring event with name '{}'; expected '{}'",
-                        event != null ? event.eventName() : null, SUPPORTED_EVENT_NAME);
+                log.info(
+                        "Ignoring event with name '{}'; expected '{}'",
+                        event != null ? event.eventName() : null,
+                        SUPPORTED_EVENT_NAME);
                 return;
             }
 
             inboundAdapter.receive(event);
         } catch (PatientRegistrationContractException exception) {
-            log.warn("Contract validation failed for patient registration event: code={}, message={}",
-                    exception.getCode(), exception.getMessage(), exception);
+            log.warn(
+                    "Contract validation failed for patient registration event: code={}, message={}",
+                    exception.getCode(),
+                    exception.getMessage(),
+                    exception);
         } catch (JsonProcessingException exception) {
             log.error("Failed to parse Kafka message payload as PatientRegisteredEvent: {}", payload, exception);
         } catch (Exception exception) {

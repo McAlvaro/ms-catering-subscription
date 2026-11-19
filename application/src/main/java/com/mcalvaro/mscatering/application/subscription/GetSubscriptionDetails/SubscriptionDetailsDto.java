@@ -20,5 +20,4 @@ public record SubscriptionDetailsDto(
         String serviceType,
         BigDecimal totalPrice,
         List<DeliveryDayDto> deliveryDays,
-        List<BiweeklyEvaluationDto> evaluations) {
-}
+        List<BiweeklyEvaluationDto> evaluations) {}

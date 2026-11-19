@@ -1,18 +1,17 @@
 package com.mcalvaro.mscatering.application.patient.synchronization;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+
 import com.mcalvaro.mscatering.domain.core.id.PatientId;
+import java.time.Instant;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.time.Instant;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 @ExtendWith(MockitoExtension.class)
 class SynchronizePatientReferenceCommandHandlerTest {
@@ -41,8 +40,16 @@ class SynchronizePatientReferenceCommandHandlerTest {
         assertThat(result).isNull();
         assertThat(SynchronizePatientReferenceCommand.class.getRecordComponents())
                 .extracting(component -> component.getName())
-                .containsExactly("eventId", "eventName", "eventVersion", "occurredOn", "source", "correlationId",
-                         "patientId", "patientName", "payloadFingerprint");
+                .containsExactly(
+                        "eventId",
+                        "eventName",
+                        "eventVersion",
+                        "occurredOn",
+                        "source",
+                        "correlationId",
+                        "patientId",
+                        "patientName",
+                        "payloadFingerprint");
         verify(synchronizationStore).synchronize(command);
         verifyNoMoreInteractions(synchronizationStore);
     }

@@ -1,5 +1,8 @@
 package com.mcalvaro.mscatering.infrastructure.api.subscription;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 import com.mcalvaro.mscatering.application.subscription.UpdateDeliveryPreferences.UpdateDeliveryPreferencesCommand;
 import com.mcalvaro.mscatering.domain.core.id.AddressId;
 import com.mcalvaro.mscatering.domain.core.id.DietPlanId;
@@ -10,19 +13,20 @@ import com.mcalvaro.mscatering.domain.subscription.enums.ServiceType;
 import com.mcalvaro.mscatering.domain.subscription.vo.*;
 import com.mcalvaro.mscatering.infrastructure.BaseIntegrationTest;
 import com.mcalvaro.mscatering.infrastructure.support.PatientAddressRegistrationFixture;
-import org.junit.jupiter.api.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
+import com.mcalvaro.mscatering.infrastructure.support.TestContractSequence;
 import java.math.BigDecimal;
 import java.time.*;
 import java.util.UUID;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import org.junit.jupiter.api.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 
 class UpdateDeliveryPreferencesApiIT extends BaseIntegrationTest {
     private static final String URL = "/api/subscriptions/{id}/preferences";
+
     @Autowired
     private ISubscriptionRepository subscriptionRepository;
+
     private SubscriptionId subscriptionId;
     private PatientId patientId;
     private String deliveryAddressId;
@@ -45,10 +49,12 @@ class UpdateDeliveryPreferencesApiIT extends BaseIntegrationTest {
     class HappyPath {
         @Test
         @DisplayName("Should return 200 OK when delivery preferences are valid")
-        void shouldReturn200WhenPreferencesAreValid() throws Exception {// Arrange
+        void shouldReturn200WhenPreferencesAreValid() throws Exception { // Arrange
             String body = buildValidCommandJson("New Street", LocalTime.of(10, 0), LocalTime.of(12, 0));
             // Act & Assert
-            mockMvc.perform(put(URL, subscriptionId.value()).contentType(MediaType.APPLICATION_JSON).content(body))
+            mockMvc.perform(put(URL, subscriptionId.value())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body))
                     .andExpect(status().isOk());
         }
     }
@@ -58,31 +64,40 @@ class UpdateDeliveryPreferencesApiIT extends BaseIntegrationTest {
     class DomainRuleViolations {
         @Test
         @DisplayName("Should return 400 ADR-001 when the address is unavailable")
-        void shouldReturn400WhenAddressIsMissing() throws Exception {// Arrange
+        void shouldReturn400WhenAddressIsMissing() throws Exception { // Arrange
             String body = buildValidCommandJson(" ", LocalTime.of(10, 0), LocalTime.of(12, 0))
                     .replace(deliveryAddressId, "DIR-00000000-0000-0000-0000-000000000002");
             // Act & Assert
-            mockMvc.perform(put(URL, subscriptionId.value()).contentType(MediaType.APPLICATION_JSON).content(body))
-                    .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("ADR-001"));
+            mockMvc.perform(put(URL, subscriptionId.value())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("ADR-001"));
         }
 
         @Test
         @DisplayName("Should return 400 ADR-001 when the delivery address belongs to another patient")
-        void shouldReturn400WhenAddressIsForeign() throws Exception {// Arrange
+        void shouldReturn400WhenAddressIsForeign() throws Exception { // Arrange
             String body = buildValidCommandJson("New Street", LocalTime.of(10, 0), LocalTime.of(12, 0))
                     .replace(deliveryAddressId, foreignAddressId);
             // Act & Assert
-            mockMvc.perform(put(URL, subscriptionId.value()).contentType(MediaType.APPLICATION_JSON).content(body))
-                    .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("ADR-001"));
+            mockMvc.perform(put(URL, subscriptionId.value())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("ADR-001"));
         }
 
         @Test
         @DisplayName("Should return 400 VO-002 when time window is invalid")
-        void shouldReturn400WhenTimeWindowIsInvalid() throws Exception {// Arrange
+        void shouldReturn400WhenTimeWindowIsInvalid() throws Exception { // Arrange
             String body = buildValidCommandJson("New Street", LocalTime.of(12, 0), LocalTime.of(10, 0));
             // Act & Assert
-            mockMvc.perform(put(URL, subscriptionId.value()).contentType(MediaType.APPLICATION_JSON).content(body))
-                    .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("VO-002"));
+            mockMvc.perform(put(URL, subscriptionId.value())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("VO-002"));
         }
     }
 
@@ -91,28 +106,43 @@ class UpdateDeliveryPreferencesApiIT extends BaseIntegrationTest {
     class MalformedPayload {
         @Test
         @DisplayName("Should return 400 INVALID_PAYLOAD when startTime is malformed")
-        void shouldReturn400WhenStartTimeIsMalformed() throws Exception {// Arrange
+        void shouldReturn400WhenStartTimeIsMalformed() throws Exception { // Arrange
             String body = buildValidCommandJson("New Street", LocalTime.of(10, 0), LocalTime.of(12, 0))
                     .replaceFirst("\"startTime\"\\s*:\\s*\"[^\"]+\"", "\"startTime\":\"invalid\"");
             // Act & Assert
-            mockMvc.perform(put(URL, subscriptionId.value()).contentType(MediaType.APPLICATION_JSON).content(body))
-                    .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("INVALID_PAYLOAD"));
+            mockMvc.perform(put(URL, subscriptionId.value())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("INVALID_PAYLOAD"));
         }
     }
 
     private Subscription buildValidCommand() {
         LocalDate start = LocalDate.now().plusDays(10);
         DietPlanId dietPlanId = DietPlanId.of("PLAN-" + UUID.randomUUID());
-        return Subscription.create(subscriptionId, patientId, dietPlanId,
-                new ServiceContract(dietPlanId, com.mcalvaro.mscatering.domain.dietplan.PlanType.BASE, new ValidityPeriod(start, start.plusDays(14)), ServiceType.FULL,
-                        new BigDecimal("250"), "Terms", Instant.now()),
-                new DeliveryPreferences(new DeliveryAddress(AddressId.of(deliveryAddressId), "Home", "Main", "1", "Lima", null, 0, 0, "1"),
-                        new TimeWindow(LocalTime.NOON, LocalTime.of(14, 0)), null),
-                1);
+        return Subscription.create(
+                subscriptionId,
+                patientId,
+                dietPlanId,
+                new ServiceContract(
+                        dietPlanId,
+                        com.mcalvaro.mscatering.domain.dietplan.PlanType.BASE,
+                        new ValidityPeriod(start, start.plusDays(14)),
+                        ServiceType.FULL,
+                        new BigDecimal("250"),
+                        "Terms",
+                        Instant.now()),
+                new DeliveryPreferences(
+                        new DeliveryAddress(
+                                AddressId.of(deliveryAddressId), "Home", "Main", "1", "Lima", null, 0, 0, "1"),
+                        new TimeWindow(LocalTime.NOON, LocalTime.of(14, 0)),
+                        null),
+                TestContractSequence.next());
     }
 
     private String buildValidCommandJson(String street, LocalTime start, LocalTime end) throws Exception {
-        return objectMapper.writeValueAsString(new UpdateDeliveryPreferencesCommand(subscriptionId.value(), deliveryAddressId,
-                start, end, null));
+        return objectMapper.writeValueAsString(
+                new UpdateDeliveryPreferencesCommand(subscriptionId.value(), deliveryAddressId, start, end, null));
     }
 }

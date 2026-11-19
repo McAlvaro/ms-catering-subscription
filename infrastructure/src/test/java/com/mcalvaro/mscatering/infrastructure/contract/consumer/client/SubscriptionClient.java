@@ -3,7 +3,6 @@ package com.mcalvaro.mscatering.infrastructure.contract.consumer.client;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -28,11 +27,9 @@ public class SubscriptionClient {
 
     public SubscriptionClient(String baseUrl) {
         this.baseUrl = baseUrl;
-        this.httpClient = HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(10))
-                .build();
-        this.objectMapper = new ObjectMapper()
-                .registerModule(new JavaTimeModule());
+        this.httpClient =
+                HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
+        this.objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
     }
 
     /**

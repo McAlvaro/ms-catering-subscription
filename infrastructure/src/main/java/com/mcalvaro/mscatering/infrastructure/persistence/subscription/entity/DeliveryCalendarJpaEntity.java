@@ -1,15 +1,14 @@
 package com.mcalvaro.mscatering.infrastructure.persistence.subscription.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.FetchType;
-
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,8 +34,7 @@ public class DeliveryCalendarJpaEntity {
     @OneToMany(mappedBy = "calendar", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DeliveryDayJpaEntity> deliveryDays = new ArrayList<>();
 
-    public DeliveryCalendarJpaEntity() {
-    }
+    public DeliveryCalendarJpaEntity() {}
 
     public String getId() {
         return id;

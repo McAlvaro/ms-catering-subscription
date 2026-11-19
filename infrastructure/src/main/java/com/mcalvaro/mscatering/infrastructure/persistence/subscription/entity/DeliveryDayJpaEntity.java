@@ -1,13 +1,12 @@
 package com.mcalvaro.mscatering.infrastructure.persistence.subscription.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
 import jakarta.persistence.Column;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import java.time.Instant;
 import java.time.LocalDate;
 
@@ -74,8 +73,7 @@ public class DeliveryDayJpaEntity {
     @Column(name = "failure_reason")
     private String failureReason;
 
-    public DeliveryDayJpaEntity() {
-    }
+    public DeliveryDayJpaEntity() {}
 
     public String getId() {
         return id;

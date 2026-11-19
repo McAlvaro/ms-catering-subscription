@@ -1,13 +1,12 @@
 package com.mcalvaro.mscatering.infrastructure.support;
 
-import com.mcalvaro.mscatering.infrastructure.integration.inbound.bc1.patient.PatientRegisteredEvent;
 import com.mcalvaro.mscatering.infrastructure.integration.inbound.bc1.patient.PatientRegisteredData;
+import com.mcalvaro.mscatering.infrastructure.integration.inbound.bc1.patient.PatientRegisteredEvent;
 import com.mcalvaro.mscatering.infrastructure.integration.inbound.bc1.patient.PatientRegistrationInboundAdapter;
 import com.mcalvaro.mscatering.infrastructure.persistence.patient.repository.SpringDataPatientReferenceRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import java.time.Instant;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /** Test-only patient state setup that exercises the production inbound adapter. */
 public class PatientRegistrationFixture {
@@ -16,7 +15,8 @@ public class PatientRegistrationFixture {
     private final SpringDataPatientReferenceRepository patientReferenceRepository;
 
     @Autowired
-    public PatientRegistrationFixture(PatientRegistrationInboundAdapter adapter,
+    public PatientRegistrationFixture(
+            PatientRegistrationInboundAdapter adapter,
             SpringDataPatientReferenceRepository patientReferenceRepository) {
         this.adapter = adapter;
         this.patientReferenceRepository = patientReferenceRepository;

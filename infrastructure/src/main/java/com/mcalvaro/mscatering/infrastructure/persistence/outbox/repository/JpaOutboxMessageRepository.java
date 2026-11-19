@@ -4,16 +4,15 @@ import com.mcalvaro.mscatering.application.outbox.OutboxMessage;
 import com.mcalvaro.mscatering.application.outbox.OutboxMessageRepository;
 import com.mcalvaro.mscatering.infrastructure.persistence.outbox.mapper.OutboxMessageMapper;
 import jakarta.persistence.EntityManager;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 public class JpaOutboxMessageRepository implements OutboxMessageRepository {
@@ -22,7 +21,8 @@ public class JpaOutboxMessageRepository implements OutboxMessageRepository {
     private final SpringDataOutboxMessageRepository springDataRepository;
     private final OutboxMessageMapper mapper;
 
-    public JpaOutboxMessageRepository(EntityManager entityManager,
+    public JpaOutboxMessageRepository(
+            EntityManager entityManager,
             SpringDataOutboxMessageRepository springDataRepository,
             OutboxMessageMapper mapper) {
         this.entityManager = entityManager;

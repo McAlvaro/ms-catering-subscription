@@ -1,13 +1,12 @@
 package com.mcalvaro.mscatering.infrastructure.config;
 
 import an.awesome.pipelinr.Command;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
+import com.mcalvaro.mscatering.application.abstractions.DomainEventDispatcher;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.support.ScopeNotActiveException;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.request.RequestContextHolder;
-
-import com.mcalvaro.mscatering.application.abstractions.DomainEventDispatcher;
 
 /**
  * Middleware para Pipelinr que intercepta la ejecución de todos los

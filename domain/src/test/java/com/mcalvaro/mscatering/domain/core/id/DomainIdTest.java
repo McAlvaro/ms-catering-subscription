@@ -1,18 +1,17 @@
 package com.mcalvaro.mscatering.domain.core.id;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mcalvaro.mscatering.domain.core.DomainException;
 import com.mcalvaro.mscatering.domain.core.DomainId;
+import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
-
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class DomainIdTest {
 
@@ -38,8 +37,7 @@ class DomainIdTest {
     @ValueSource(strings = {"   ", "1001", "SUB-1001", "SUS-", "PAC-1001"})
     @DisplayName("SubscriptionId rejects null, blank, wrong prefix, or empty payload")
     void subscriptionIdRejectsInvalidValues(String invalidValue) {
-        assertThatThrownBy(() -> SubscriptionId.of(invalidValue))
-                .isInstanceOf(DomainException.class);
+        assertThatThrownBy(() -> SubscriptionId.of(invalidValue)).isInstanceOf(DomainException.class);
     }
 
     @Test
@@ -49,8 +47,7 @@ class DomainIdTest {
         assertThat(id.value()).isEqualTo("CD-70011");
         assertThat(DeliveryDayId.generate().value()).startsWith("CD-");
 
-        assertThatThrownBy(() -> DeliveryDayId.of("DAY-70011"))
-                .isInstanceOf(DomainException.class);
+        assertThatThrownBy(() -> DeliveryDayId.of("DAY-70011")).isInstanceOf(DomainException.class);
     }
 
     @Test
@@ -60,8 +57,7 @@ class DomainIdTest {
         assertThat(id.value()).isEqualTo("CAL-20261030");
         assertThat(ConsolidatedCalendarId.generate().value()).startsWith("CAL-");
 
-        assertThatThrownBy(() -> ConsolidatedCalendarId.of("CC-20261030"))
-                .isInstanceOf(DomainException.class);
+        assertThatThrownBy(() -> ConsolidatedCalendarId.of("CC-20261030")).isInstanceOf(DomainException.class);
     }
 
     @Test
@@ -71,8 +67,7 @@ class DomainIdTest {
         assertThat(id.value()).isEqualTo("PAC-5501");
         assertThat(PatientId.generate().value()).startsWith("PAC-");
 
-        assertThatThrownBy(() -> PatientId.of("PAT-5501"))
-                .isInstanceOf(DomainException.class);
+        assertThatThrownBy(() -> PatientId.of("PAT-5501")).isInstanceOf(DomainException.class);
     }
 
     @Test
@@ -82,8 +77,7 @@ class DomainIdTest {
         assertThat(id.value()).isEqualTo("DIR-9001");
         assertThat(AddressId.generate().value()).startsWith("DIR-");
 
-        assertThatThrownBy(() -> AddressId.of("ADDR-9001"))
-                .isInstanceOf(DomainException.class);
+        assertThatThrownBy(() -> AddressId.of("ADDR-9001")).isInstanceOf(DomainException.class);
     }
 
     @Test
@@ -93,8 +87,7 @@ class DomainIdTest {
         assertThat(id.value()).isEqualTo("PLAN-3001");
         assertThat(DietPlanId.generate().value()).startsWith("PLAN-");
 
-        assertThatThrownBy(() -> DietPlanId.of("DIET-3001"))
-                .isInstanceOf(DomainException.class);
+        assertThatThrownBy(() -> DietPlanId.of("DIET-3001")).isInstanceOf(DomainException.class);
     }
 
     @Test
@@ -104,8 +97,7 @@ class DomainIdTest {
         assertThat(id.value()).isEqualTo("REC-4001");
         assertThat(RecipeId.generate().value()).startsWith("REC-");
 
-        assertThatThrownBy(() -> RecipeId.of("RCP-4001"))
-                .isInstanceOf(DomainException.class);
+        assertThatThrownBy(() -> RecipeId.of("RCP-4001")).isInstanceOf(DomainException.class);
     }
 
     @Test
@@ -115,8 +107,7 @@ class DomainIdTest {
         assertThat(id.value()).isEqualTo("ENT-8001");
         assertThat(DeliveryId.generate().value()).startsWith("ENT-");
 
-        assertThatThrownBy(() -> DeliveryId.of("DEL-8001"))
-                .isInstanceOf(DomainException.class);
+        assertThatThrownBy(() -> DeliveryId.of("DEL-8001")).isInstanceOf(DomainException.class);
     }
 
     @Test
@@ -126,8 +117,7 @@ class DomainIdTest {
         assertThat(id.value()).isEqualTo("PKG-20261030-001");
         assertThat(PackageId.generate().value()).startsWith("PKG-");
 
-        assertThatThrownBy(() -> PackageId.of("PACK-001"))
-                .isInstanceOf(DomainException.class);
+        assertThatThrownBy(() -> PackageId.of("PACK-001")).isInstanceOf(DomainException.class);
     }
 
     @Test
@@ -137,8 +127,7 @@ class DomainIdTest {
         assertThat(id.value()).isEqualTo("EVAL-101");
         assertThat(EvaluationId.generate().value()).startsWith("EVAL-");
 
-        assertThatThrownBy(() -> EvaluationId.of("EV-101"))
-                .isInstanceOf(DomainException.class);
+        assertThatThrownBy(() -> EvaluationId.of("EV-101")).isInstanceOf(DomainException.class);
     }
 
     @Test

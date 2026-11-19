@@ -19,8 +19,9 @@ public class GetConsolidatedCalendarByDateQueryHandler
 
     @Override
     public ConsolidatedCalendarDto handle(GetConsolidatedCalendarByDateQuery query) {
-        return queryService.getByDate(query.date())
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Consolidated calendar not found for date: " + query.date()));
+        return queryService
+                .getByDate(query.date())
+                .orElseThrow(() ->
+                        new IllegalArgumentException("Consolidated calendar not found for date: " + query.date()));
     }
 }

@@ -1,5 +1,13 @@
 package com.mcalvaro.mscatering.application.subscription.RegisterFailedDelivery;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.mcalvaro.mscatering.domain.core.DomainException;
 import com.mcalvaro.mscatering.domain.core.id.AddressId;
 import com.mcalvaro.mscatering.domain.core.id.DeliveryDayId;
@@ -16,26 +24,17 @@ import com.mcalvaro.mscatering.domain.subscription.vo.DeliveryPreferences;
 import com.mcalvaro.mscatering.domain.subscription.vo.ServiceContract;
 import com.mcalvaro.mscatering.domain.subscription.vo.TimeWindow;
 import com.mcalvaro.mscatering.domain.subscription.vo.ValidityPeriod;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class RegisterFailedDeliveryCommandHandlerTest {
@@ -51,8 +50,10 @@ class RegisterFailedDeliveryCommandHandlerTest {
     void shouldMarkDeliveryAsFailedAndSaveSubscriptionWhenDayExists() {
         // Arrange
         Subscription subscription = buildSubscription();
-        DeliveryDay deliveryDay = subscription.getDeliveryCalendar().getDeliveryDays().get(0);
-        RegisterFailedDeliveryCommand command = new RegisterFailedDeliveryCommand(subscription.getId(), deliveryDay.getId(), "Recipient unavailable");
+        DeliveryDay deliveryDay =
+                subscription.getDeliveryCalendar().getDeliveryDays().get(0);
+        RegisterFailedDeliveryCommand command =
+                new RegisterFailedDeliveryCommand(subscription.getId(), deliveryDay.getId(), "Recipient unavailable");
         when(subscriptionRepository.findById(command.subscriptionId())).thenReturn(Optional.of(subscription));
 
         // Act
@@ -69,7 +70,8 @@ class RegisterFailedDeliveryCommandHandlerTest {
     @DisplayName("Should throw an exception and not save when the subscription is absent")
     void shouldThrowExceptionAndNotSaveWhenSubscriptionIsAbsent() {
         // Arrange
-        RegisterFailedDeliveryCommand command = new RegisterFailedDeliveryCommand(SubscriptionId.generate(), DeliveryDayId.generate(), "Recipient unavailable");
+        RegisterFailedDeliveryCommand command = new RegisterFailedDeliveryCommand(
+                SubscriptionId.generate(), DeliveryDayId.generate(), "Recipient unavailable");
         when(subscriptionRepository.findById(command.subscriptionId())).thenReturn(Optional.empty());
 
         // Act & Assert
@@ -83,18 +85,36 @@ class RegisterFailedDeliveryCommandHandlerTest {
     void shouldPropagateAggregateExceptionAndNotSaveWhenDeliveryDayIsUnknown() {
         // Arrange
         Subscription subscription = buildSubscription();
-        RegisterFailedDeliveryCommand command = new RegisterFailedDeliveryCommand(subscription.getId(), DeliveryDayId.generate(), "Recipient unavailable");
+        RegisterFailedDeliveryCommand command = new RegisterFailedDeliveryCommand(
+                subscription.getId(), DeliveryDayId.generate(), "Recipient unavailable");
         when(subscriptionRepository.findById(command.subscriptionId())).thenReturn(Optional.of(subscription));
 
         // Act & Assert
-        assertThatThrownBy(() -> handler.handle(command)).isInstanceOf(DomainException.class).hasFieldOrPropertyWithValue("code", "SUB-009");
+        assertThatThrownBy(() -> handler.handle(command))
+                .isInstanceOf(DomainException.class)
+                .hasFieldOrPropertyWithValue("code", "SUB-009");
         verify(subscriptionRepository, never()).save(any());
     }
 
     private Subscription buildSubscription() {
         LocalDate startDate = LocalDate.of(2099, 1, 1);
-        DeliveryAddress address = new DeliveryAddress(AddressId.generate(), "Main Street", "10", "Madrid", "Door A", 40.4168, -3.7038, "600000000");
+        DeliveryAddress address = new DeliveryAddress(
+                AddressId.generate(), "Main Street", "10", "Madrid", "Door A", 40.4168, -3.7038, "600000000");
         DietPlanId planId = DietPlanId.generate();
-        return Subscription.create(SubscriptionId.generate(), PatientId.generate(), planId, new ServiceContract(planId, com.mcalvaro.mscatering.domain.dietplan.PlanType.BASE, new ValidityPeriod(startDate, startDate.plusDays(14)), ServiceType.FULL, new BigDecimal("250.00"), "Terms accepted", Instant.parse("2025-01-01T10:00:00Z")), new DeliveryPreferences(address, new TimeWindow(LocalTime.of(9, 0), LocalTime.of(11, 0)), "Leave at reception"), 1);
+        return Subscription.create(
+                SubscriptionId.generate(),
+                PatientId.generate(),
+                planId,
+                new ServiceContract(
+                        planId,
+                        com.mcalvaro.mscatering.domain.dietplan.PlanType.BASE,
+                        new ValidityPeriod(startDate, startDate.plusDays(14)),
+                        ServiceType.FULL,
+                        new BigDecimal("250.00"),
+                        "Terms accepted",
+                        Instant.parse("2025-01-01T10:00:00Z")),
+                new DeliveryPreferences(
+                        address, new TimeWindow(LocalTime.of(9, 0), LocalTime.of(11, 0)), "Leave at reception"),
+                1);
     }
 }

@@ -1,5 +1,7 @@
 package com.mcalvaro.mscatering.infrastructure.outbox;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.mcalvaro.mscatering.application.outbox.OutboxMessage;
 import com.mcalvaro.mscatering.application.outbox.OutboxMessageRepository;
 import com.mcalvaro.mscatering.application.outbox.translation.ConsolidatedCalendarClosedOutboxEventTranslator;
@@ -18,13 +20,6 @@ import com.mcalvaro.mscatering.domain.subscription.vo.ContractCode;
 import com.mcalvaro.mscatering.infrastructure.BaseIntegrationTest;
 import com.mcalvaro.mscatering.infrastructure.MsCateringApplication;
 import com.mcalvaro.mscatering.infrastructure.persistence.outbox.codec.JacksonDomainEventCodec;
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.support.TransactionTemplate;
-
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
@@ -34,15 +29,24 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.Executors;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.support.TransactionTemplate;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-@SpringBootTest(classes = MsCateringApplication.class, properties = "spring.datasource.url=jdbc:h2:mem:outbox_processor_concurrency;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE")
+@SpringBootTest(
+        classes = MsCateringApplication.class,
+        properties =
+                "spring.datasource.url=jdbc:h2:mem:outbox_processor_concurrency;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE")
 class OutboxProcessorConcurrencyIT extends BaseIntegrationTest {
     @Autowired
     private OutboxMessageRepository repository;
+
     @Autowired
     private JacksonDomainEventCodec codec;
+
     @Autowired
     private PlatformTransactionManager transactionManager;
 
@@ -50,18 +54,27 @@ class OutboxProcessorConcurrencyIT extends BaseIntegrationTest {
     void concurrentProcessorsPublishOnlyOnceWhileTheWinningLeaseIsValid() throws Exception {
         SubscriptionCreated source = sourceEvent();
         var encoded = codec.encode(source);
-        OutboxMessage message = OutboxMessage.pending(UUID.randomUUID(), encoded.type(), encoded.content(),
+        OutboxMessage message = OutboxMessage.pending(
+                UUID.randomUUID(),
+                encoded.type(),
+                encoded.content(),
                 Instant.now().minusSeconds(1));
         persistCommitted(message);
         RecordingIntegrationEventPublisher publisher = new RecordingIntegrationEventPublisher();
         CyclicBarrier bothCandidatesRead = new CyclicBarrier(2);
         OutboxEventTranslatorRegistry translators = translators();
-        OutboxProcessor first = new OutboxProcessor(new BarrierRepository(repository, bothCandidatesRead), codec,
+        OutboxProcessor first = new OutboxProcessor(
+                new BarrierRepository(repository, bothCandidatesRead),
+                codec,
                 translators,
-                publisher, Clock.systemUTC());
-        OutboxProcessor second = new OutboxProcessor(new BarrierRepository(repository, bothCandidatesRead), codec,
+                publisher,
+                Clock.systemUTC());
+        OutboxProcessor second = new OutboxProcessor(
+                new BarrierRepository(repository, bothCandidatesRead),
+                codec,
                 translators,
-                publisher, Clock.systemUTC());
+                publisher,
+                Clock.systemUTC());
 
         var executor = Executors.newFixedThreadPool(2);
         try {
@@ -87,9 +100,12 @@ class OutboxProcessorConcurrencyIT extends BaseIntegrationTest {
     }
 
     private OutboxEventTranslatorRegistry translators() {
-        return new OutboxEventTranslatorRegistry(List.of(new SubscriptionCreatedOutboxEventTranslator(),
-                new SubscriptionPausedOutboxEventTranslator(), new SubscriptionReactivatedOutboxEventTranslator(),
-                new SubscriptionCancelledOutboxEventTranslator(), new SubscriptionCompletedOutboxEventTranslator(),
+        return new OutboxEventTranslatorRegistry(List.of(
+                new SubscriptionCreatedOutboxEventTranslator(),
+                new SubscriptionPausedOutboxEventTranslator(),
+                new SubscriptionReactivatedOutboxEventTranslator(),
+                new SubscriptionCancelledOutboxEventTranslator(),
+                new SubscriptionCompletedOutboxEventTranslator(),
                 new ConsolidatedCalendarClosedOutboxEventTranslator()));
     }
 
@@ -106,12 +122,20 @@ class OutboxProcessorConcurrencyIT extends BaseIntegrationTest {
     }
 
     private static SubscriptionCreated sourceEvent() {
-        return new SubscriptionCreated(UUID.randomUUID(), Instant.now().minusSeconds(2),
+        return new SubscriptionCreated(
+                UUID.randomUUID(),
+                Instant.now().minusSeconds(2),
                 SubscriptionId.of("SUS-" + UUID.randomUUID()),
                 PatientId.of("PAC-" + UUID.randomUUID()),
                 ContractCode.generate(2026, 1),
-                DietPlanId.of("PLAN-" + UUID.randomUUID()), PlanType.BASE, LocalDate.of(2026, 10, 1),
-                LocalDate.of(2026, 10, 15), 15, List.of(), BigDecimal.TEN, "relay-concurrency");
+                DietPlanId.of("PLAN-" + UUID.randomUUID()),
+                PlanType.BASE,
+                LocalDate.of(2026, 10, 1),
+                LocalDate.of(2026, 10, 15),
+                15,
+                List.of(),
+                BigDecimal.TEN,
+                "relay-concurrency");
     }
 
     private static final class BarrierRepository implements OutboxMessageRepository {

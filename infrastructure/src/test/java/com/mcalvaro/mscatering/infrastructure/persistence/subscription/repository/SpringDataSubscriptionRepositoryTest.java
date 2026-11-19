@@ -1,18 +1,17 @@
 package com.mcalvaro.mscatering.infrastructure.persistence.subscription.repository;
 
-import com.mcalvaro.mscatering.infrastructure.persistence.subscription.entity.SubscriptionJpaEntity;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import static org.assertj.core.api.Assertions.assertThat;
 
+import com.mcalvaro.mscatering.infrastructure.persistence.subscription.entity.SubscriptionJpaEntity;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 
 @DataJpaTest(showSql = false)
 class SpringDataSubscriptionRepositoryTest {
@@ -33,7 +32,8 @@ class SpringDataSubscriptionRepositoryTest {
         List<SubscriptionJpaEntity> result = repository.findByStatusIn(List.of("ACTIVE", "PAUSED"));
 
         // Assert
-        assertThat(result).extracting(SubscriptionJpaEntity::getId)
+        assertThat(result)
+                .extracting(SubscriptionJpaEntity::getId)
                 .containsExactlyInAnyOrder(active.getId(), paused.getId())
                 .doesNotContain(cancelled.getId());
     }

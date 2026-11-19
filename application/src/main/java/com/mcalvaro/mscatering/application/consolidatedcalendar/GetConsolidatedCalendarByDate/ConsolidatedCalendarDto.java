@@ -14,5 +14,4 @@ public record ConsolidatedCalendarDto(
         int totalDeliveries,
         Instant closedAt,
         String closedBy,
-        List<ConsolidatedLineDto> lines
-) {}
+        List<ConsolidatedLineDto> lines) {}

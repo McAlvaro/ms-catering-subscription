@@ -4,11 +4,10 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
-
 import java.io.IOException;
 import java.util.UUID;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 /** Ensures every HTTP response carries the correlation ID used by its command. */
 @Component
@@ -21,7 +20,8 @@ public class CorrelationIdFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         String received = request.getHeader(HEADER_NAME);
-        String correlationId = received == null || received.isBlank() ? UUID.randomUUID().toString() : received;
+        String correlationId =
+                received == null || received.isBlank() ? UUID.randomUUID().toString() : received;
         request.setAttribute(REQUEST_ATTRIBUTE, correlationId);
         response.setHeader(HEADER_NAME, correlationId);
         filterChain.doFilter(request, response);

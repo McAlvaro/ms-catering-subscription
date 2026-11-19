@@ -6,14 +6,13 @@ import com.mcalvaro.mscatering.application.consolidatedcalendar.GetConsolidatedC
 import com.mcalvaro.mscatering.application.consolidatedcalendar.GetConsolidatedCalendarByDate.GetConsolidatedCalendarByDateQuery;
 import com.mcalvaro.mscatering.domain.core.id.ConsolidatedCalendarId;
 import com.mcalvaro.mscatering.infrastructure.api.consolidatedcalendar.dto.CloseConsolidatedCalendarRequest;
+import java.time.LocalDate;
+import java.util.UUID;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDate;
-import java.util.UUID;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/consolidated-calendars")
@@ -27,13 +26,15 @@ public class ConsolidatedCalendarController {
 
     @PostMapping("/close")
     @Transactional
-    public ResponseEntity<ConsolidatedCalendarId> closeCalendar(@RequestBody CloseConsolidatedCalendarRequest request,
+    public ResponseEntity<ConsolidatedCalendarId> closeCalendar(
+            @RequestBody CloseConsolidatedCalendarRequest request,
             @RequestHeader(value = "X-Correlation-Id", required = false) String correlationId) {
         CloseConsolidatedCalendarCommand command = new CloseConsolidatedCalendarCommand(
                 request.date(),
                 request.closedBy(),
-                correlationId == null || correlationId.isBlank() ? UUID.randomUUID().toString() : correlationId
-        );
+                correlationId == null || correlationId.isBlank()
+                        ? UUID.randomUUID().toString()
+                        : correlationId);
         ConsolidatedCalendarId calendarId = pipeline.send(command);
         return ResponseEntity.status(HttpStatus.CREATED).body(calendarId);
     }

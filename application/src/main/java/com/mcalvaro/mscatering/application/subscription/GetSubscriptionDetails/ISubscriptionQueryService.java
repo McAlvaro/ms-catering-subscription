@@ -1,7 +1,6 @@
 package com.mcalvaro.mscatering.application.subscription.GetSubscriptionDetails;
 
 import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
-
 import java.util.Optional;
 
 /**

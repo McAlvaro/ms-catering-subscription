@@ -1,11 +1,5 @@
 package com.mcalvaro.mscatering.infrastructure.persistence.subscription.entity;
 
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -14,6 +8,11 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Entidad JPA para la tabla `subscriptions`.
@@ -105,8 +104,7 @@ public class SubscriptionJpaEntity {
     @OneToMany(mappedBy = "subscription", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BiweeklyEvaluationJpaEntity> evaluations = new ArrayList<>();
 
-    public SubscriptionJpaEntity() {
-    }
+    public SubscriptionJpaEntity() {}
 
     // Getters y Setters
 

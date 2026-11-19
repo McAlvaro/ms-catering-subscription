@@ -8,9 +8,8 @@ import com.mcalvaro.mscatering.domain.core.CorrelatedDomainEvent;
 import com.mcalvaro.mscatering.domain.core.DomainEvent;
 import com.mcalvaro.mscatering.infrastructure.persistence.outbox.codec.EncodedDomainEvent;
 import com.mcalvaro.mscatering.infrastructure.persistence.outbox.codec.JacksonDomainEventCodec;
-import org.springframework.stereotype.Component;
-
 import java.time.Instant;
+import org.springframework.stereotype.Component;
 
 @Component
 public class SaveDomainEventToOutboxHandler implements Notification.Handler<DomainEventNotification> {
@@ -35,7 +34,20 @@ public class SaveDomainEventToOutboxHandler implements Notification.Handler<Doma
 
         EncodedDomainEvent encoded = codec.encode(event);
         Instant capturedAt = Instant.now();
-        repository.save(new OutboxMessage(event.eventId(), encoded.type(), encoded.content(), capturedAt,
-                false, null, 0, null, capturedAt, null, null, correlatedEvent.correlationId(), null, null));
+        repository.save(new OutboxMessage(
+                event.eventId(),
+                encoded.type(),
+                encoded.content(),
+                capturedAt,
+                false,
+                null,
+                0,
+                null,
+                capturedAt,
+                null,
+                null,
+                correlatedEvent.correlationId(),
+                null,
+                null));
     }
 }

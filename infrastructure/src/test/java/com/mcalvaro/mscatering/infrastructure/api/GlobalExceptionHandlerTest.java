@@ -1,19 +1,18 @@
 package com.mcalvaro.mscatering.infrastructure.api;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.mcalvaro.mscatering.infrastructure.api.subscription.dto.ApiErrorResponse;
+import java.time.LocalDate;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.ConversionNotSupportedException;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.ServletRequestBindingException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
-import org.springframework.beans.ConversionNotSupportedException;
-
-import java.time.LocalDate;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class GlobalExceptionHandlerTest {
 
@@ -36,7 +35,8 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    @DisplayName("Should return 400 INVALID_PAYLOAD without echoing the rejected value when a LocalDate parameter is malformed")
+    @DisplayName(
+            "Should return 400 INVALID_PAYLOAD without echoing the rejected value when a LocalDate parameter is malformed")
     void shouldReturn400WithoutEchoingValueWhenDateParameterIsMalformed() throws Exception {
         // Arrange
         String rejectedValue = "secret-rejected-value";
@@ -50,7 +50,9 @@ class GlobalExceptionHandlerTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().code()).isEqualTo("INVALID_PAYLOAD");
-        assertThat(response.getBody().message()).contains("date").contains("yyyy-MM-dd")
+        assertThat(response.getBody().message())
+                .contains("date")
+                .contains("yyyy-MM-dd")
                 .doesNotContain(rejectedValue);
     }
 
@@ -67,7 +69,10 @@ class GlobalExceptionHandlerTest {
         // Assert
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().message()).contains("count").doesNotContain("yyyy-MM-dd").doesNotContain("abc");
+        assertThat(response.getBody().message())
+                .contains("count")
+                .doesNotContain("yyyy-MM-dd")
+                .doesNotContain("abc");
     }
 
     @Test
@@ -105,6 +110,5 @@ class GlobalExceptionHandlerTest {
     }
 
     @SuppressWarnings("unused")
-    private void dummyTarget(String value) {
-    }
+    private void dummyTarget(String value) {}
 }

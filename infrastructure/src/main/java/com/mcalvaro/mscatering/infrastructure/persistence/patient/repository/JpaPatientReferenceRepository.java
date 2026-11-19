@@ -5,9 +5,8 @@ import com.mcalvaro.mscatering.domain.patient.IPatientReferenceRepository;
 import com.mcalvaro.mscatering.domain.patient.PatientReference;
 import com.mcalvaro.mscatering.infrastructure.persistence.patient.entity.PatientReferenceJpaEntity;
 import com.mcalvaro.mscatering.infrastructure.persistence.patient.mapper.PatientReferenceMapper;
-import org.springframework.stereotype.Repository;
-
 import java.util.Optional;
+import org.springframework.stereotype.Repository;
 
 @Repository
 public class JpaPatientReferenceRepository implements IPatientReferenceRepository {
@@ -16,8 +15,7 @@ public class JpaPatientReferenceRepository implements IPatientReferenceRepositor
     private final PatientReferenceMapper mapper;
 
     public JpaPatientReferenceRepository(
-            SpringDataPatientReferenceRepository springDataRepository,
-            PatientReferenceMapper mapper) {
+            SpringDataPatientReferenceRepository springDataRepository, PatientReferenceMapper mapper) {
         this.springDataRepository = springDataRepository;
         this.mapper = mapper;
     }
@@ -30,7 +28,6 @@ public class JpaPatientReferenceRepository implements IPatientReferenceRepositor
 
     @Override
     public Optional<PatientReference> findById(PatientId patientId) {
-        return springDataRepository.findById(patientId.value())
-                .map(mapper::toDomain);
+        return springDataRepository.findById(patientId.value()).map(mapper::toDomain);
     }
 }

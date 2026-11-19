@@ -1,24 +1,23 @@
 package com.mcalvaro.mscatering.domain.subscription.vo;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import com.mcalvaro.mscatering.domain.core.DomainException;
 import com.mcalvaro.mscatering.domain.core.id.DietPlanId;
 import com.mcalvaro.mscatering.domain.dietplan.PlanType;
 import com.mcalvaro.mscatering.domain.subscription.enums.ServiceType;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.UUID;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
-
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.util.UUID;
-import java.util.stream.Stream;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class ServiceContractTest {
 
@@ -34,8 +33,8 @@ class ServiceContractTest {
         Instant signedAt = Instant.parse("2026-01-01T10:00:00Z");
 
         // Act
-        ServiceContract contract = new ServiceContract(
-                dietPlanId, PlanType.BASE, period, serviceType, totalPrice, conditions, signedAt);
+        ServiceContract contract =
+                new ServiceContract(dietPlanId, PlanType.BASE, period, serviceType, totalPrice, conditions, signedAt);
 
         // Assert
         assertThat(contract.dietPlanId()).isEqualTo(dietPlanId);
@@ -44,8 +43,9 @@ class ServiceContractTest {
         assertThat(contract.totalPrice()).isEqualByComparingTo(totalPrice);
         assertThat(contract.acceptedConditions()).isEqualTo(conditions);
         assertThat(contract.signedAt()).isEqualTo(signedAt);
-        assertThat(contract).isEqualTo(new ServiceContract(
-                dietPlanId, PlanType.BASE, period, serviceType, totalPrice, conditions, signedAt));
+        assertThat(contract)
+                .isEqualTo(new ServiceContract(
+                        dietPlanId, PlanType.BASE, period, serviceType, totalPrice, conditions, signedAt));
     }
 
     @Test
@@ -97,7 +97,7 @@ class ServiceContractTest {
 
         // Act & Assert
         assertThatThrownBy(() -> new ServiceContract(
-                dietPlanId, PlanType.BASE, null, ServiceType.FULL, BigDecimal.ONE, "Terms", Instant.now()))
+                        dietPlanId, PlanType.BASE, null, ServiceType.FULL, BigDecimal.ONE, "Terms", Instant.now()))
                 .isInstanceOf(DomainException.class)
                 .hasFieldOrPropertyWithValue("code", "VO-009")
                 .hasMessageContaining("period must not be null");
@@ -112,7 +112,13 @@ class ServiceContractTest {
 
         // Act & Assert
         assertThatThrownBy(() -> new ServiceContract(
-                DietPlanId.generate(), PlanType.BASE, period, ServiceType.FULL, invalidPrice, "Terms", Instant.now()))
+                        DietPlanId.generate(),
+                        PlanType.BASE,
+                        period,
+                        ServiceType.FULL,
+                        invalidPrice,
+                        "Terms",
+                        Instant.now()))
                 .isInstanceOf(DomainException.class)
                 .hasFieldOrPropertyWithValue("code", "SUB-006")
                 .hasMessageContaining("greater than zero");
@@ -120,7 +126,7 @@ class ServiceContractTest {
 
     @ParameterizedTest
     @NullAndEmptySource
-    @ValueSource(strings = { " ", "\t", "\n" })
+    @ValueSource(strings = {" ", "\t", "\n"})
     @DisplayName("Should throw DomainException VO-010 when accepted conditions are null, empty or blank")
     void shouldThrowDomainExceptionWhenAcceptedConditionsAreNullEmptyOrBlank(String invalidConditions) {
         // Arrange
@@ -128,7 +134,13 @@ class ServiceContractTest {
 
         // Act & Assert
         assertThatThrownBy(() -> new ServiceContract(
-                DietPlanId.generate(), PlanType.BASE, period, ServiceType.FULL, BigDecimal.ONE, invalidConditions, Instant.now()))
+                        DietPlanId.generate(),
+                        PlanType.BASE,
+                        period,
+                        ServiceType.FULL,
+                        BigDecimal.ONE,
+                        invalidConditions,
+                        Instant.now()))
                 .isInstanceOf(DomainException.class)
                 .hasFieldOrPropertyWithValue("code", "VO-010")
                 .hasMessageContaining("acceptedConditions must not be blank");
@@ -142,7 +154,7 @@ class ServiceContractTest {
 
         // Act & Assert
         assertThatThrownBy(() -> new ServiceContract(
-                DietPlanId.generate(), PlanType.BASE, period, null, BigDecimal.ONE, "Terms", Instant.now()))
+                        DietPlanId.generate(), PlanType.BASE, period, null, BigDecimal.ONE, "Terms", Instant.now()))
                 .isInstanceOf(DomainException.class)
                 .hasFieldOrPropertyWithValue("code", "VO-011")
                 .hasMessageContaining("serviceType must not be null");
@@ -156,7 +168,7 @@ class ServiceContractTest {
 
         // Act & Assert
         assertThatThrownBy(() -> new ServiceContract(
-                DietPlanId.generate(), PlanType.BASE, period, ServiceType.FULL, BigDecimal.ONE, "Terms", null))
+                        DietPlanId.generate(), PlanType.BASE, period, ServiceType.FULL, BigDecimal.ONE, "Terms", null))
                 .isInstanceOf(DomainException.class)
                 .hasFieldOrPropertyWithValue("code", "VO-012")
                 .hasMessageContaining("signedAt must not be null");

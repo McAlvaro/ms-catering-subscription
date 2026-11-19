@@ -1,33 +1,44 @@
 package com.mcalvaro.mscatering.infrastructure.persistence.patientaddress.synchronization;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import com.mcalvaro.mscatering.application.patient.synchronization.PatientReferenceSynchronizationException;
 import com.mcalvaro.mscatering.infrastructure.BaseIntegrationTest;
 import com.mcalvaro.mscatering.infrastructure.integration.inbound.bc1.address.PatientAddressRegisteredData;
 import com.mcalvaro.mscatering.infrastructure.integration.inbound.bc1.address.PatientAddressRegisteredEvent;
 import com.mcalvaro.mscatering.infrastructure.persistence.inboundevent.repository.SpringDataProcessedInboundEventReceiptRepository;
 import com.mcalvaro.mscatering.infrastructure.persistence.patientaddress.repository.SpringDataPatientAddressReferenceRepository;
+import com.mcalvaro.mscatering.infrastructure.support.DatabaseCleaner;
 import com.mcalvaro.mscatering.infrastructure.support.PatientAddressRegistrationFixture;
+import java.time.Instant;
+import java.util.UUID;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
 class JpaPatientAddressSynchronizationStoreIT extends BaseIntegrationTest {
 
     @Autowired
     private PatientAddressRegistrationFixture fixture;
+
     @Autowired
     private SpringDataPatientAddressReferenceRepository addressRepository;
+
     @Autowired
     private SpringDataProcessedInboundEventReceiptRepository receiptRepository;
+
+    @Autowired
+    private DatabaseCleaner databaseCleaner;
+
+    @AfterEach
+    void cleanCommittedData() {
+        databaseCleaner.clean();
+    }
 
     @Test
     void permitsMultipleAddressesForOnePatientAndRecordsTheirReceipts() {
@@ -72,15 +83,27 @@ class JpaPatientAddressSynchronizationStoreIT extends BaseIntegrationTest {
         assertThatThrownBy(() -> fixture.ingest(event(UUID.randomUUID(), patientId, addressId, "Two")))
                 .isInstanceOf(PatientReferenceSynchronizationException.class)
                 .hasFieldOrPropertyWithValue("code", "PROJ-002");
-        assertThat(addressRepository.findById(addressId).orElseThrow().getStreet()).isEqualTo("One");
+        assertThat(addressRepository.findById(addressId).orElseThrow().getStreet())
+                .isEqualTo("One");
     }
 
     @Test
     void rollsBackAddressWhenReceiptCannotBePersisted() {
         String addressId = "DIR-" + UUID.randomUUID();
-        PatientAddressRegisteredEvent invalid = new PatientAddressRegisteredEvent(UUID.randomUUID(),
-                "bc1.DireccionClienteRegistrada", "1.0", Instant.now(), "MsPatientsConsulCore", "x".repeat(256),
-                new PatientAddressRegisteredData("PAC-" + UUID.randomUUID(), addressId, "Home", "One", "Reference", "City",
+        PatientAddressRegisteredEvent invalid = new PatientAddressRegisteredEvent(
+                UUID.randomUUID(),
+                "bc1.DireccionClienteRegistrada",
+                "1.0",
+                Instant.now(),
+                "MsPatientsConsulCore",
+                "x".repeat(256),
+                new PatientAddressRegisteredData(
+                        "PAC-" + UUID.randomUUID(),
+                        addressId,
+                        "Home",
+                        "One",
+                        "Reference",
+                        "City",
                         new PatientAddressRegisteredData.Geolocation(0d, 0d)));
 
         assertThatThrownBy(() -> fixture.ingest(invalid)).isInstanceOf(DataIntegrityViolationException.class);
@@ -89,9 +112,20 @@ class JpaPatientAddressSynchronizationStoreIT extends BaseIntegrationTest {
     }
 
     private PatientAddressRegisteredEvent event(UUID eventId, String patientId, String addressId, String street) {
-        return new PatientAddressRegisteredEvent(eventId, "bc1.DireccionClienteRegistrada", "1.0",
-                Instant.parse("2026-10-27T12:00:00Z"), "MsPatientsConsulCore", "correlation-" + eventId,
-                new PatientAddressRegisteredData(patientId, addressId, "Home", street, "Reference", "City",
+        return new PatientAddressRegisteredEvent(
+                eventId,
+                "bc1.DireccionClienteRegistrada",
+                "1.0",
+                Instant.parse("2026-10-27T12:00:00Z"),
+                "MsPatientsConsulCore",
+                "correlation-" + eventId,
+                new PatientAddressRegisteredData(
+                        patientId,
+                        addressId,
+                        "Home",
+                        street,
+                        "Reference",
+                        "City",
                         new PatientAddressRegisteredData.Geolocation(-17.39, -66.15)));
     }
 }

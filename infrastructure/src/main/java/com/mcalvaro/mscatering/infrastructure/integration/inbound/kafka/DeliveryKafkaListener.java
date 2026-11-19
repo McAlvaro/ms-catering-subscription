@@ -11,12 +11,11 @@ import com.mcalvaro.mscatering.infrastructure.integration.inbound.bc5.delivery.D
 import com.mcalvaro.mscatering.infrastructure.integration.inbound.bc5.delivery.DeliveryContractException;
 import com.mcalvaro.mscatering.infrastructure.integration.inbound.bc5.delivery.DeliveryFailedEvent;
 import com.mcalvaro.mscatering.infrastructure.integration.inbound.bc5.delivery.DeliveryInboundAdapter;
+import java.util.Objects;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
-
-import java.util.Objects;
-import java.util.Set;
 
 /**
  * Inbound Kafka listener for BC5 Logistics delivery integration events.
@@ -43,8 +42,7 @@ public class DeliveryKafkaListener {
 
     @KafkaListener(
             topics = "${app.kafka.topics.delivery:bc5.logistica.eventos}",
-            groupId = "${app.kafka.consumer.delivery-group-id:ms-catering-bc5-delivery-consumer}"
-    )
+            groupId = "${app.kafka.consumer.delivery-group-id:ms-catering-bc5-delivery-consumer}")
     public void onMessage(String payload) {
         if (payload == null || payload.isBlank()) {
             log.warn("Received empty or blank Kafka message payload on delivery events topic");
@@ -72,11 +70,17 @@ public class DeliveryKafkaListener {
                 inboundAdapter.receiveFailed(event);
             }
         } catch (DeliveryContractException exception) {
-            log.warn("DeliveryContractException processing delivery event: code={}, message={}",
-                    exception.getCode(), exception.getMessage(), exception);
+            log.warn(
+                    "DeliveryContractException processing delivery event: code={}, message={}",
+                    exception.getCode(),
+                    exception.getMessage(),
+                    exception);
         } catch (DomainException exception) {
-            log.warn("DomainException processing delivery event: code={}, message={}",
-                    exception.getCode(), exception.getMessage(), exception);
+            log.warn(
+                    "DomainException processing delivery event: code={}, message={}",
+                    exception.getCode(),
+                    exception.getMessage(),
+                    exception);
         } catch (JsonProcessingException exception) {
             log.error("Failed to parse Kafka message payload as delivery event: {}", payload, exception);
         } catch (Exception exception) {

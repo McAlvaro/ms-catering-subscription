@@ -2,7 +2,6 @@ package com.mcalvaro.mscatering.domain.subscription;
 
 import com.mcalvaro.mscatering.domain.core.id.PatientId;
 import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
-
 import java.util.Optional;
 
 /**

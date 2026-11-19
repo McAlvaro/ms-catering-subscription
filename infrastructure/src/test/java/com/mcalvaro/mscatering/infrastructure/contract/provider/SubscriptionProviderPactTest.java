@@ -20,34 +20,33 @@ import com.mcalvaro.mscatering.domain.subscription.vo.ServiceContract;
 import com.mcalvaro.mscatering.domain.subscription.vo.TimeWindow;
 import com.mcalvaro.mscatering.domain.subscription.vo.ValidityPeriod;
 import com.mcalvaro.mscatering.infrastructure.MsCateringApplication;
-import com.mcalvaro.mscatering.infrastructure.persistence.subscription.entity.SubscriptionJpaEntity;
-import com.mcalvaro.mscatering.infrastructure.persistence.subscription.mapper.SubscriptionMapper;
-import com.mcalvaro.mscatering.infrastructure.persistence.subscription.repository.SpringDataSubscriptionRepository;
+import com.mcalvaro.mscatering.infrastructure.integration.inbound.bc2.dietplan.DietPlanInboundAdapter;
 import com.mcalvaro.mscatering.infrastructure.persistence.patient.entity.PatientReferenceJpaEntity;
 import com.mcalvaro.mscatering.infrastructure.persistence.patient.repository.SpringDataPatientReferenceRepository;
 import com.mcalvaro.mscatering.infrastructure.persistence.patientaddress.entity.PatientAddressReferenceJpaEntity;
 import com.mcalvaro.mscatering.infrastructure.persistence.patientaddress.repository.SpringDataPatientAddressReferenceRepository;
-import com.mcalvaro.mscatering.infrastructure.integration.inbound.bc2.dietplan.DietPlanInboundAdapter;
+import com.mcalvaro.mscatering.infrastructure.persistence.subscription.entity.SubscriptionJpaEntity;
+import com.mcalvaro.mscatering.infrastructure.persistence.subscription.mapper.SubscriptionMapper;
+import com.mcalvaro.mscatering.infrastructure.persistence.subscription.repository.SpringDataSubscriptionRepository;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestTemplate;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-import org.springframework.mock.web.MockHttpServletRequest;
-
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.UUID;
-import java.util.List;
 
 /**
  * Prueba de Contrato — Lado del PROVEEDOR.
@@ -118,7 +117,8 @@ class SubscriptionProviderPactTest {
      * Estado requerido para Interacción 1 (POST /api/subscriptions).
      * Asegura que el paciente con UUID fijo del contrato exista y esté activo.
      */
-    @State("a patient with ID PAC-550e8400-e29b-41d4-a716-446655440000 exists and owns address DIR-770e8400-e29b-41d4-a716-446655440010")
+    @State(
+            "a patient with ID PAC-550e8400-e29b-41d4-a716-446655440000 exists and owns address DIR-770e8400-e29b-41d4-a716-446655440010")
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Rollback(false)
     void patientExistsAndIsEligible() {
@@ -155,13 +155,19 @@ class SubscriptionProviderPactTest {
             DeliveryPreferences preferences = new DeliveryPreferences(
                     new DeliveryAddress(
                             AddressId.of("DIR-770e8400-e29b-41d4-a716-446655440010"),
-                            "Home", "Av. Siempre Viva", "742", "Lima",
-                            "Frente al parque", -12.046374, -77.042793, "+51 999 888 777"),
+                            "Home",
+                            "Av. Siempre Viva",
+                            "742",
+                            "Lima",
+                            "Frente al parque",
+                            -12.046374,
+                            -77.042793,
+                            "+51 999 888 777"),
                     new TimeWindow(LocalTime.of(12, 0), LocalTime.of(14, 0)),
                     "Sin picante");
 
-            Subscription subscription = Subscription.create(
-                    subscriptionId, patientId, dietPlanId, contract, preferences, 99);
+            Subscription subscription =
+                    Subscription.create(subscriptionId, patientId, dietPlanId, contract, preferences, 99);
 
             BiweeklyEvaluation evaluation = new BiweeklyEvaluation(
                     EvaluationId.of("EVAL-" + UUID.randomUUID()), patientId, 1, startDate.plusDays(14));
@@ -182,22 +188,49 @@ class SubscriptionProviderPactTest {
             patientReferenceRepository.saveAndFlush(patient);
         }
         if (!addressReferenceRepository.existsById(addressId)) {
-            addressReferenceRepository.saveAndFlush(new PatientAddressReferenceJpaEntity(addressId, patientId, "Home",
-                    "Av. Siempre Viva", "Frente al parque", "Lima", -12.046374, -77.042793));
+            addressReferenceRepository.saveAndFlush(new PatientAddressReferenceJpaEntity(
+                    addressId,
+                    patientId,
+                    "Home",
+                    "Av. Siempre Viva",
+                    "Frente al parque",
+                    "Lima",
+                    -12.046374,
+                    -77.042793));
         }
     }
 
     private void ingestPactPlan(String planId, LocalDate start) {
         RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(new MockHttpServletRequest()));
         try {
-            dietPlanInboundAdapter.receiveBase(new DietPlanInboundAdapter.DietPlanCreatedEvent(UUID.randomUUID(),
-                    "bc2.PlanBaseCreado", "1.0", Instant.now(), "MSNutritionPlanner", "pact-plan-" + UUID.randomUUID(),
-                    new DietPlanInboundAdapter.DietPlanData(planId, "ACTIVO", start, 15, true,
-                            java.util.stream.IntStream.rangeClosed(1, 15).mapToObj(day ->
-                                    new DietPlanInboundAdapter.DietPlanDayData(UUID.randomUUID().toString(), day, 1,
-                                            List.of(new DietPlanInboundAdapter.DietPlanMealData(UUID.randomUUID().toString(), com.mcalvaro.mscatering.domain.dietplan.MealType.LUNCH, "12:00",
-                                                    List.of(new DietPlanInboundAdapter.DietPlanRecipeData("REC-" + UUID.randomUUID(), "Pact recipe", 100)))))).toList(),
-                            null, null, null)));
+            dietPlanInboundAdapter.receiveBase(new DietPlanInboundAdapter.DietPlanCreatedEvent(
+                    UUID.randomUUID(),
+                    "bc2.PlanBaseCreado",
+                    "1.0",
+                    Instant.now(),
+                    "MSNutritionPlanner",
+                    "pact-plan-" + UUID.randomUUID(),
+                    new DietPlanInboundAdapter.DietPlanData(
+                            planId,
+                            "ACTIVO",
+                            start,
+                            15,
+                            true,
+                            java.util.stream.IntStream.rangeClosed(1, 15)
+                                    .mapToObj(day -> new DietPlanInboundAdapter.DietPlanDayData(
+                                            UUID.randomUUID().toString(),
+                                            day,
+                                            1,
+                                            List.of(new DietPlanInboundAdapter.DietPlanMealData(
+                                                    UUID.randomUUID().toString(),
+                                                    com.mcalvaro.mscatering.domain.dietplan.MealType.LUNCH,
+                                                    "12:00",
+                                                    List.of(new DietPlanInboundAdapter.DietPlanRecipeData(
+                                                            "REC-" + UUID.randomUUID(), "Pact recipe", 100))))))
+                                    .toList(),
+                            null,
+                            null,
+                            null)));
         } finally {
             RequestContextHolder.resetRequestAttributes();
         }

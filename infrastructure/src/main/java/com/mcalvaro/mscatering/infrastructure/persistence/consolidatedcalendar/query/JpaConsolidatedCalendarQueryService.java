@@ -5,14 +5,13 @@ import com.mcalvaro.mscatering.application.consolidatedcalendar.GetConsolidatedC
 import com.mcalvaro.mscatering.application.consolidatedcalendar.GetConsolidatedCalendarByDate.IConsolidatedCalendarQueryService;
 import com.mcalvaro.mscatering.infrastructure.persistence.consolidatedcalendar.entity.ConsolidatedCalendarJpaEntity;
 import com.mcalvaro.mscatering.infrastructure.persistence.consolidatedcalendar.repository.SpringDataConsolidatedCalendarRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class JpaConsolidatedCalendarQueryService implements IConsolidatedCalendarQueryService {
@@ -46,8 +45,7 @@ public class JpaConsolidatedCalendarQueryService implements IConsolidatedCalenda
                         line.getAddressPhone(),
                         LocalTime.parse(line.getTimeStart()),
                         LocalTime.parse(line.getTimeEnd()),
-                        line.getInstructions()
-                ))
+                        line.getInstructions()))
                 .collect(Collectors.toList());
 
         return new ConsolidatedCalendarDto(
@@ -57,7 +55,6 @@ public class JpaConsolidatedCalendarQueryService implements IConsolidatedCalenda
                 entity.getTotalDeliveries(),
                 entity.getClosedAt(),
                 entity.getClosedBy(),
-                lines
-        );
+                lines);
     }
 }

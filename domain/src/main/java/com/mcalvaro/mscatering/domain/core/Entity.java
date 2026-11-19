@@ -42,10 +42,8 @@ public abstract class Entity<ID extends DomainId> {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (!(o instanceof Entity<?> other))
-            return false;
+        if (this == o) return true;
+        if (!(o instanceof Entity<?> other)) return false;
         return id.equals(other.id);
     }
 

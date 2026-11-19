@@ -5,7 +5,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-
 @Entity
 @Table(name = "patient_address_references")
 public class PatientAddressReferenceJpaEntity {
@@ -13,26 +12,39 @@ public class PatientAddressReferenceJpaEntity {
     @Id
     @Column(name = "address_id", nullable = false, updatable = false, length = 64)
     private String addressId;
+
     @Column(name = "patient_id", nullable = false, updatable = false, length = 64)
     private String patientId;
+
     @Column(name = "alias", nullable = false)
     private String alias;
+
     @Column(name = "street", nullable = false)
     private String street;
+
     @Column(name = "reference", nullable = false)
     private String reference;
+
     @Column(name = "city", nullable = false)
     private String city;
+
     @Column(name = "latitude", nullable = false)
     private Double latitude;
+
     @Column(name = "longitude", nullable = false)
     private Double longitude;
 
-    public PatientAddressReferenceJpaEntity() {
-    }
+    public PatientAddressReferenceJpaEntity() {}
 
-    public PatientAddressReferenceJpaEntity(String addressId, String patientId, String alias, String street, String reference,
-            String city, double latitude, double longitude) {
+    public PatientAddressReferenceJpaEntity(
+            String addressId,
+            String patientId,
+            String alias,
+            String street,
+            String reference,
+            String city,
+            double latitude,
+            double longitude) {
         this.addressId = addressId;
         this.patientId = patientId;
         this.alias = alias;
@@ -51,7 +63,9 @@ public class PatientAddressReferenceJpaEntity {
         return patientId;
     }
 
-    public String getAlias() { return alias; }
+    public String getAlias() {
+        return alias;
+    }
 
     public String getStreet() {
         return street;

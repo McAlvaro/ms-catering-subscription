@@ -1,5 +1,8 @@
 package com.mcalvaro.mscatering.domain.consolidatedcalendar;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.entity.ConsolidatedLine;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.entity.ConsolidatedRecipeSnapshot;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.enums.ConsolidateStatus;
@@ -16,16 +19,12 @@ import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
 import com.mcalvaro.mscatering.domain.subscription.enums.ServiceType;
 import com.mcalvaro.mscatering.domain.subscription.vo.DeliveryAddress;
 import com.mcalvaro.mscatering.domain.subscription.vo.TimeWindow;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 class ConsolidatedCalendarTest {
 
@@ -45,7 +44,8 @@ class ConsolidatedCalendarTest {
         assertThat(calendar.getStatus()).isEqualTo(ConsolidateStatus.OPEN);
         assertThat(calendar.getTotalDeliveries()).isZero();
         assertThat(calendar.getLines()).isEmpty();
-        assertThat(calendar.getDomainEvents()).singleElement()
+        assertThat(calendar.getDomainEvents())
+                .singleElement()
                 .isInstanceOfSatisfying(ConsolidatedCalendarCreated.class, event -> {
                     assertThat(event.calendarId()).isEqualTo(calendarId);
                     assertThat(event.date()).isEqualTo(date);
@@ -184,9 +184,27 @@ class ConsolidatedCalendarTest {
 
     private ConsolidatedLine newLine(ConsolidatedCalendarId calendarId) {
         TimeWindow timeWindow = new TimeWindow(LocalTime.of(12, 0), LocalTime.of(14, 0));
-        return new ConsolidatedLine(ConsolidatedLineId.generate(), calendarId, SubscriptionId.generate(), PatientId.generate(),
-                "Ada", DietPlanId.generate(), 1, ServiceType.LUNCH,
-                new DeliveryAddress(AddressId.generate(), "Home", "Main Street", "10", "Madrid", "Door A", 40.4168, -3.7038, "600000000"),
-                timeWindow, "Leave at reception", List.of(new ConsolidatedRecipeSnapshot(RecipeId.generate(), "Lunch", timeWindow.startTime(), 250)));
+        return new ConsolidatedLine(
+                ConsolidatedLineId.generate(),
+                calendarId,
+                SubscriptionId.generate(),
+                PatientId.generate(),
+                "Ada",
+                DietPlanId.generate(),
+                1,
+                ServiceType.LUNCH,
+                new DeliveryAddress(
+                        AddressId.generate(),
+                        "Home",
+                        "Main Street",
+                        "10",
+                        "Madrid",
+                        "Door A",
+                        40.4168,
+                        -3.7038,
+                        "600000000"),
+                timeWindow,
+                "Leave at reception",
+                List.of(new ConsolidatedRecipeSnapshot(RecipeId.generate(), "Lunch", timeWindow.startTime(), 250)));
     }
 }

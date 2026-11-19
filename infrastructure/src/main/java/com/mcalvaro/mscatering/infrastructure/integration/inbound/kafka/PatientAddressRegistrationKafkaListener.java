@@ -8,11 +8,10 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.mcalvaro.mscatering.infrastructure.integration.inbound.bc1.address.PatientAddressRegisteredEvent;
 import com.mcalvaro.mscatering.infrastructure.integration.inbound.bc1.address.PatientAddressRegistrationContractException;
 import com.mcalvaro.mscatering.infrastructure.integration.inbound.bc1.address.PatientAddressRegistrationInboundAdapter;
+import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
-
-import java.util.Objects;
 
 /**
  * Inbound Kafka listener for BC1 patient address registration events.
@@ -27,8 +26,7 @@ public class PatientAddressRegistrationKafkaListener {
     private final ObjectMapper objectMapper;
 
     public PatientAddressRegistrationKafkaListener(
-            PatientAddressRegistrationInboundAdapter inboundAdapter,
-            ObjectMapper objectMapper) {
+            PatientAddressRegistrationInboundAdapter inboundAdapter, ObjectMapper objectMapper) {
         this.inboundAdapter = Objects.requireNonNull(inboundAdapter, "inboundAdapter must not be null");
         this.objectMapper = Objects.requireNonNull(objectMapper, "objectMapper must not be null");
     }
@@ -39,8 +37,7 @@ public class PatientAddressRegistrationKafkaListener {
 
     @KafkaListener(
             topics = "${app.kafka.topics.address-registered:bc1.pacientes.eventos}",
-            groupId = "${app.kafka.consumer.address-group-id:ms-catering-bc1-address-consumer}"
-    )
+            groupId = "${app.kafka.consumer.address-group-id:ms-catering-bc1-address-consumer}")
     public void onMessage(String payload) {
         if (payload == null || payload.isBlank()) {
             log.warn("Received empty or blank Kafka message payload on address events topic");
@@ -50,15 +47,20 @@ public class PatientAddressRegistrationKafkaListener {
         try {
             PatientAddressRegisteredEvent event = objectMapper.readValue(payload, PatientAddressRegisteredEvent.class);
             if (event == null || !SUPPORTED_EVENT_NAME.equals(event.eventName())) {
-                log.info("Ignoring event with name '{}'; expected '{}'",
-                        event != null ? event.eventName() : null, SUPPORTED_EVENT_NAME);
+                log.info(
+                        "Ignoring event with name '{}'; expected '{}'",
+                        event != null ? event.eventName() : null,
+                        SUPPORTED_EVENT_NAME);
                 return;
             }
 
             inboundAdapter.receive(event);
         } catch (PatientAddressRegistrationContractException exception) {
-            log.warn("Contract validation failed for patient address registration event: code={}, message={}",
-                    exception.getCode(), exception.getMessage(), exception);
+            log.warn(
+                    "Contract validation failed for patient address registration event: code={}, message={}",
+                    exception.getCode(),
+                    exception.getMessage(),
+                    exception);
         } catch (JsonProcessingException exception) {
             log.error("Failed to parse Kafka message payload as PatientAddressRegisteredEvent: {}", payload, exception);
         } catch (Exception exception) {

@@ -16,3 +16,10 @@ Dockerfile
 README.md
 docs/
 AGENTS.md
+
+node_modules/
+.husky/
+package.json
+package-lock.json
+lint-staged.config.mjs
+commitlint.config.mjs

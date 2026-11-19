@@ -3,6 +3,10 @@ package com.mcalvaro.mscatering.infrastructure;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.mcalvaro.mscatering.infrastructure.support.DatabaseCleaner;
+import com.mcalvaro.mscatering.infrastructure.support.DietPlanProjectionFixture;
+import com.mcalvaro.mscatering.infrastructure.support.PatientAddressRegistrationFixture;
+import com.mcalvaro.mscatering.infrastructure.support.PatientRegistrationFixture;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -11,9 +15,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
-import com.mcalvaro.mscatering.infrastructure.support.PatientRegistrationFixture;
-import com.mcalvaro.mscatering.infrastructure.support.PatientAddressRegistrationFixture;
-import com.mcalvaro.mscatering.infrastructure.support.DietPlanProjectionFixture;
 
 /**
  * Clase base para pruebas de integración del microservicio.
@@ -27,7 +28,12 @@ import com.mcalvaro.mscatering.infrastructure.support.DietPlanProjectionFixture;
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
-@Import({ PatientRegistrationFixture.class, PatientAddressRegistrationFixture.class, DietPlanProjectionFixture.class })
+@Import({
+    PatientRegistrationFixture.class,
+    PatientAddressRegistrationFixture.class,
+    DietPlanProjectionFixture.class,
+    DatabaseCleaner.class
+})
 public abstract class BaseIntegrationTest {
 
     @Autowired

@@ -1,15 +1,14 @@
 package com.mcalvaro.mscatering.domain.subscription.entity;
 
-import com.mcalvaro.mscatering.domain.core.id.PauseRequestId;
-import com.mcalvaro.mscatering.domain.subscription.vo.PauseRange;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-
-import java.time.Instant;
-import java.time.LocalDate;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import com.mcalvaro.mscatering.domain.core.id.PauseRequestId;
+import com.mcalvaro.mscatering.domain.subscription.vo.PauseRange;
+import java.time.Instant;
+import java.time.LocalDate;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 class PauseRequestTest {
 

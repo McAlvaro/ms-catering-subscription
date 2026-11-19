@@ -1,8 +1,7 @@
 package com.mcalvaro.mscatering.domain.subscription.enums;
 
-import java.util.Arrays;
-
 import com.mcalvaro.mscatering.domain.core.DomainException;
+import java.util.Arrays;
 
 /**
  * Enum representing the allowed subscription plan durations.
@@ -17,7 +16,6 @@ import com.mcalvaro.mscatering.domain.core.DomainException;
  * and makes the domain rule explicit and self-documenting.
  */
 public enum PlanDuration {
-
     BIWEEKLY(15),
     MONTHLY(30);
 

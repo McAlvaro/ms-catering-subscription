@@ -2,7 +2,6 @@ package com.mcalvaro.mscatering.application.outbox.translation;
 
 import com.mcalvaro.mscatering.domain.core.DomainEvent;
 import com.mcalvaro.mscatering.integration.contracts.IntegrationEvent;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,8 +20,8 @@ public final class OutboxEventTranslatorRegistry {
                 throw new IntegrationEventTranslationException("Translator and source type must not be null");
             }
             if (mutable.putIfAbsent(translator.sourceType(), translator) != null) {
-                throw new IntegrationEventTranslationException(
-                        "Duplicate translator source type: " + translator.sourceType().getName());
+                throw new IntegrationEventTranslationException("Duplicate translator source type: "
+                        + translator.sourceType().getName());
             }
         }
         this.translators = Map.copyOf(mutable);
@@ -41,8 +40,8 @@ public final class OutboxEventTranslatorRegistry {
     }
 
     @SuppressWarnings("unchecked")
-    private static <E extends DomainEvent> IntegrationEvent translateExact(OutboxEventTranslator<E> translator,
-            DomainEvent event) {
+    private static <E extends DomainEvent> IntegrationEvent translateExact(
+            OutboxEventTranslator<E> translator, DomainEvent event) {
         return translator.translate((E) event);
     }
 }

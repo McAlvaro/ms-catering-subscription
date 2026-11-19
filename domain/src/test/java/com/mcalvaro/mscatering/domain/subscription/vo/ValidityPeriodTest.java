@@ -1,17 +1,16 @@
 package com.mcalvaro.mscatering.domain.subscription.vo;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import com.mcalvaro.mscatering.domain.core.DomainException;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-
-import java.time.LocalDate;
-import java.util.List;
-import java.util.stream.Stream;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class ValidityPeriodTest {
 
@@ -93,9 +92,6 @@ class ValidityPeriodTest {
 
     private static Stream<LocalDate[]> periodsWithNullDate() {
         LocalDate date = LocalDate.of(2026, 1, 1);
-        return Stream.of(
-                new LocalDate[] { null, date },
-                new LocalDate[] { date, null },
-                new LocalDate[] { null, null });
+        return Stream.of(new LocalDate[] {null, date}, new LocalDate[] {date, null}, new LocalDate[] {null, null});
     }
 }

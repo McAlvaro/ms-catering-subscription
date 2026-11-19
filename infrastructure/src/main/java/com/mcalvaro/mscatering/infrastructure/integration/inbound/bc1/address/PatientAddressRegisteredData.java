@@ -14,11 +14,10 @@ public record PatientAddressRegisteredData(
         @JsonProperty("direccion") String street,
         @JsonProperty("referencia") String reference,
         @JsonProperty("ciudad") String city,
-             @JsonProperty("geolocalizacion") Geolocation geolocation) {
+        @JsonProperty("geolocalizacion") Geolocation geolocation) {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Geolocation(
             @JsonProperty("latitud") Double latitude,
-            @JsonProperty("longitud") Double longitude) {
-    }
+            @JsonProperty("longitud") Double longitude) {}
 }

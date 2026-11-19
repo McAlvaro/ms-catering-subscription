@@ -8,12 +8,11 @@ import com.mcalvaro.mscatering.infrastructure.persistence.inboundevent.entity.Re
 import com.mcalvaro.mscatering.infrastructure.persistence.inboundevent.repository.SpringDataProcessedInboundEventReceiptRepository;
 import com.mcalvaro.mscatering.infrastructure.persistence.patient.entity.PatientReferenceJpaEntity;
 import com.mcalvaro.mscatering.infrastructure.persistence.patient.repository.SpringDataPatientReferenceRepository;
-import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 /** JPA adapter implementing atomic receipt and patient-reference semantics. */
 @Repository
@@ -22,7 +21,8 @@ public class JpaPatientReferenceSynchronizationStore implements PatientReference
     private final SpringDataPatientReferenceRepository patientReferenceRepository;
     private final SpringDataProcessedInboundEventReceiptRepository receiptRepository;
 
-    public JpaPatientReferenceSynchronizationStore(SpringDataPatientReferenceRepository patientReferenceRepository,
+    public JpaPatientReferenceSynchronizationStore(
+            SpringDataPatientReferenceRepository patientReferenceRepository,
             SpringDataProcessedInboundEventReceiptRepository receiptRepository) {
         this.patientReferenceRepository = patientReferenceRepository;
         this.receiptRepository = receiptRepository;
@@ -42,7 +42,8 @@ public class JpaPatientReferenceSynchronizationStore implements PatientReference
             throw conflict("Inbound eventId was reused with different canonical content");
         }
 
-        if (receiptRepository.existsBySubjectKindAndSubjectIdAndPayloadFingerprint(ReceiptSubjectKind.PATIENT.name(), command.patientId().value(), payloadFingerprint)) {
+        if (receiptRepository.existsBySubjectKindAndSubjectIdAndPayloadFingerprint(
+                ReceiptSubjectKind.PATIENT.name(), command.patientId().value(), payloadFingerprint)) {
             receiptRepository.saveAndFlush(receipt(command, eventFingerprint, payloadFingerprint));
             return;
         }
@@ -63,11 +64,18 @@ public class JpaPatientReferenceSynchronizationStore implements PatientReference
         return reference;
     }
 
-    private ProcessedInboundEventReceiptJpaEntity receipt(SynchronizePatientReferenceCommand command,
-            String eventFingerprint, String payloadFingerprint) {
-        return new ProcessedInboundEventReceiptJpaEntity(command.eventId(), command.eventName(),
-                command.eventVersion(), command.occurredOn(), command.source(), command.correlationId(),
-                command.patientId().value(), eventFingerprint, payloadFingerprint);
+    private ProcessedInboundEventReceiptJpaEntity receipt(
+            SynchronizePatientReferenceCommand command, String eventFingerprint, String payloadFingerprint) {
+        return new ProcessedInboundEventReceiptJpaEntity(
+                command.eventId(),
+                command.eventName(),
+                command.eventVersion(),
+                command.occurredOn(),
+                command.source(),
+                command.correlationId(),
+                command.patientId().value(),
+                eventFingerprint,
+                payloadFingerprint);
     }
 
     private PatientReferenceSynchronizationException conflict(String message) {
@@ -75,8 +83,13 @@ public class JpaPatientReferenceSynchronizationStore implements PatientReference
     }
 
     private String eventFingerprint(SynchronizePatientReferenceCommand command, String payloadFingerprint) {
-        return sha256(command.eventName(), command.eventVersion(), command.occurredOn().toString(),
-                command.source(), command.correlationId(), payloadFingerprint);
+        return sha256(
+                command.eventName(),
+                command.eventVersion(),
+                command.occurredOn().toString(),
+                command.source(),
+                command.correlationId(),
+                payloadFingerprint);
     }
 
     private String sha256(String... values) {

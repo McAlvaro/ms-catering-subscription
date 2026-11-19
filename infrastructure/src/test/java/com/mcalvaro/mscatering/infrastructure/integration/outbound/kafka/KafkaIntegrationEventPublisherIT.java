@@ -1,11 +1,19 @@
 package com.mcalvaro.mscatering.infrastructure.integration.outbound.kafka;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.mcalvaro.mscatering.application.integration.IntegrationEventPublisher;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -24,22 +32,14 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.kafka.KafkaContainer;
 import org.testcontainers.utility.DockerImageName;
 
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 @Testcontainers(disabledWithoutDocker = true)
-@SpringBootTest(properties = {
-        "app.kafka.enabled=true",
-        "outbox.relay-enabled=false",
-        "outbox.provider=none",
-        "spring.datasource.url=jdbc:h2:mem:kafka_integration_event_publisher;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE"
-})
+@SpringBootTest(
+        properties = {
+            "app.kafka.enabled=true",
+            "outbox.relay-enabled=false",
+            "outbox.provider=none",
+            "spring.datasource.url=jdbc:h2:mem:kafka_integration_event_publisher;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE"
+        })
 @ActiveProfiles("test")
 class KafkaIntegrationEventPublisherIT {
     private static final String TOPIC = "bc3.catering.eventos";
@@ -50,8 +50,10 @@ class KafkaIntegrationEventPublisherIT {
     @Autowired
     private IntegrationEventPublisher publisher;
 
-    private final ObjectMapper objectMapper = JsonMapper.builder().addModule(new JavaTimeModule())
-            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS).build();
+    private final ObjectMapper objectMapper = JsonMapper.builder()
+            .addModule(new JavaTimeModule())
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+            .build();
 
     @DynamicPropertySource
     static void kafkaProperties(DynamicPropertyRegistry registry) {
@@ -69,17 +71,24 @@ class KafkaIntegrationEventPublisherIT {
             publisher.publish(KafkaIntegrationEventFixtures.calendarClosed());
 
             List<ConsumerRecord<String, String>> records = records(consumer, 3);
-            assertThat(records).hasSize(3).allSatisfy(record -> assertThat(record.topic()).isEqualTo(TOPIC));
+            assertThat(records)
+                    .hasSize(3)
+                    .allSatisfy(record -> assertThat(record.topic()).isEqualTo(TOPIC));
 
             List<ConsumerRecord<String, String>> subscriptionRecords = records.stream()
-                    .filter(record -> record.key().equals(KafkaIntegrationEventFixtures.SUBSCRIPTION_ID.toString())).toList();
-            assertThat(subscriptionRecords).extracting(ConsumerRecord::key)
+                    .filter(record -> record.key().equals(KafkaIntegrationEventFixtures.SUBSCRIPTION_ID.toString()))
+                    .toList();
+            assertThat(subscriptionRecords)
+                    .extracting(ConsumerRecord::key)
                     .containsOnly(KafkaIntegrationEventFixtures.SUBSCRIPTION_ID.toString());
-            assertThat(subscriptionRecords).extracting(record -> eventName(record.value()))
+            assertThat(subscriptionRecords)
+                    .extracting(record -> eventName(record.value()))
                     .containsExactly("bc3.SuscripcionCreada", "bc3.SuscripcionPausada");
 
             ConsumerRecord<String, String> calendarRecord = records.stream()
-                    .filter(record -> record.key().equals(KafkaIntegrationEventFixtures.CALENDAR_ID.toString())).findFirst().orElseThrow();
+                    .filter(record -> record.key().equals(KafkaIntegrationEventFixtures.CALENDAR_ID.toString()))
+                    .findFirst()
+                    .orElseThrow();
             assertThat(calendarRecord.key()).isEqualTo(KafkaIntegrationEventFixtures.CALENDAR_ID.toString());
             assertThat(eventName(calendarRecord.value())).isEqualTo("bc3.CalendarioConsolidadoCerrado");
             assertThat(records).allSatisfy(record -> {
@@ -90,7 +99,8 @@ class KafkaIntegrationEventPublisherIT {
             });
         }
 
-        try (AdminClient admin = AdminClient.create(Map.of(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA.getBootstrapServers()))) {
+        try (AdminClient admin =
+                AdminClient.create(Map.of(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA.getBootstrapServers()))) {
             // Inbound listeners auto-create their own topics, so only BC3's outbound topic is checked.
             assertThat(admin.listTopics().names().get())
                     .contains(TOPIC)
@@ -101,11 +111,16 @@ class KafkaIntegrationEventPublisherIT {
 
     private KafkaConsumer<String, String> consumer() {
         return new KafkaConsumer<>(Map.of(
-                ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA.getBootstrapServers(),
-                ConsumerConfig.GROUP_ID_CONFIG, "kafka-integration-event-publisher-it-" + UUID.randomUUID(),
-                ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest",
-                ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class,
-                ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class));
+                ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
+                KAFKA.getBootstrapServers(),
+                ConsumerConfig.GROUP_ID_CONFIG,
+                "kafka-integration-event-publisher-it-" + UUID.randomUUID(),
+                ConsumerConfig.AUTO_OFFSET_RESET_CONFIG,
+                "earliest",
+                ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
+                StringDeserializer.class,
+                ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
+                StringDeserializer.class));
     }
 
     private static List<ConsumerRecord<String, String>> records(KafkaConsumer<String, String> consumer, int expected) {

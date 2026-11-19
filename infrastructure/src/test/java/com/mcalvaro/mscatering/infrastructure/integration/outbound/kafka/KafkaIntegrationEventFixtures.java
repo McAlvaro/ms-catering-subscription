@@ -6,7 +6,6 @@ import com.mcalvaro.mscatering.integration.contracts.SubscriptionCancelledIntegr
 import com.mcalvaro.mscatering.integration.contracts.SubscriptionCreatedIntegrationEvent;
 import com.mcalvaro.mscatering.integration.contracts.SubscriptionPausedIntegrationEvent;
 import com.mcalvaro.mscatering.integration.contracts.SubscriptionReactivatedIntegrationEvent;
-
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -21,49 +20,92 @@ final class KafkaIntegrationEventFixtures {
     static final String CALENDAR_ID = "CAL-00000000-0000-0000-0000-000000000005";
     static final Instant OCCURRED_ON = Instant.parse("2026-10-29T12:00:00Z");
 
-    private KafkaIntegrationEventFixtures() {
-    }
+    private KafkaIntegrationEventFixtures() {}
 
     static List<IntegrationEvent> allEvents() {
         return List.of(created(), paused(), reactivated(), cancelled(), calendarClosed());
     }
 
     static SubscriptionCreatedIntegrationEvent created() {
-        return new SubscriptionCreatedIntegrationEvent(EVENT_ID, OCCURRED_ON, "correlation",
-                new SubscriptionCreatedIntegrationEvent.Data(SUBSCRIPTION_ID, PATIENT_ID, PLAN_ID, "PERSONALIZADO",
-                        30, LocalDate.of(2026, 10, 1), LocalDate.of(2026, 10, 30), 2,
-                        new BigDecimal("250.50"), null));
+        return new SubscriptionCreatedIntegrationEvent(
+                EVENT_ID,
+                OCCURRED_ON,
+                "correlation",
+                new SubscriptionCreatedIntegrationEvent.Data(
+                        SUBSCRIPTION_ID,
+                        PATIENT_ID,
+                        PLAN_ID,
+                        "PERSONALIZADO",
+                        30,
+                        LocalDate.of(2026, 10, 1),
+                        LocalDate.of(2026, 10, 30),
+                        2,
+                        new BigDecimal("250.50"),
+                        null));
     }
 
     static SubscriptionPausedIntegrationEvent paused() {
-        return new SubscriptionPausedIntegrationEvent(EVENT_ID, OCCURRED_ON, "correlation",
-                new SubscriptionPausedIntegrationEvent.Data(SUBSCRIPTION_ID, PATIENT_ID, LocalDate.of(2026, 10, 5),
-                        LocalDate.of(2026, 10, 8), "Viaje", LocalDate.of(2026, 11, 2), LocalDate.of(2026, 10, 1)));
+        return new SubscriptionPausedIntegrationEvent(
+                EVENT_ID,
+                OCCURRED_ON,
+                "correlation",
+                new SubscriptionPausedIntegrationEvent.Data(
+                        SUBSCRIPTION_ID,
+                        PATIENT_ID,
+                        LocalDate.of(2026, 10, 5),
+                        LocalDate.of(2026, 10, 8),
+                        "Viaje",
+                        LocalDate.of(2026, 11, 2),
+                        LocalDate.of(2026, 10, 1)));
     }
 
     static SubscriptionReactivatedIntegrationEvent reactivated() {
-        return new SubscriptionReactivatedIntegrationEvent(EVENT_ID, OCCURRED_ON, "correlation",
-                new SubscriptionReactivatedIntegrationEvent.Data(SUBSCRIPTION_ID, PATIENT_ID, LocalDate.of(2026, 10, 8),
-                        LocalDate.of(2026, 11, 2)));
+        return new SubscriptionReactivatedIntegrationEvent(
+                EVENT_ID,
+                OCCURRED_ON,
+                "correlation",
+                new SubscriptionReactivatedIntegrationEvent.Data(
+                        SUBSCRIPTION_ID, PATIENT_ID, LocalDate.of(2026, 10, 8), LocalDate.of(2026, 11, 2)));
     }
 
     static SubscriptionCancelledIntegrationEvent cancelled() {
-        return new SubscriptionCancelledIntegrationEvent(EVENT_ID, OCCURRED_ON, "correlation",
-                new SubscriptionCancelledIntegrationEvent.Data(SUBSCRIPTION_ID, PATIENT_ID, PLAN_ID, "MANUAL", "Solicitud",
-                        LocalDate.of(2026, 10, 8), 1));
+        return new SubscriptionCancelledIntegrationEvent(
+                EVENT_ID,
+                OCCURRED_ON,
+                "correlation",
+                new SubscriptionCancelledIntegrationEvent.Data(
+                        SUBSCRIPTION_ID, PATIENT_ID, PLAN_ID, "MANUAL", "Solicitud", LocalDate.of(2026, 10, 8), 1));
     }
 
     static ConsolidatedCalendarClosedIntegrationEvent calendarClosed() {
-        return new ConsolidatedCalendarClosedIntegrationEvent(EVENT_ID, OCCURRED_ON, "correlation",
-                new ConsolidatedCalendarClosedIntegrationEvent.Data(CALENDAR_ID, LocalDate.of(2026, 10, 29), OCCURRED_ON, 1,
+        return new ConsolidatedCalendarClosedIntegrationEvent(
+                EVENT_ID,
+                OCCURRED_ON,
+                "correlation",
+                new ConsolidatedCalendarClosedIntegrationEvent.Data(
+                        CALENDAR_ID,
+                        LocalDate.of(2026, 10, 29),
+                        OCCURRED_ON,
+                        1,
                         List.of(new ConsolidatedCalendarClosedIntegrationEvent.Delivery(
-                                "LINE-00000000-0000-0000-0000-000000000006", SUBSCRIPTION_ID, PATIENT_ID,
-                                "Ana", PLAN_ID, 1,
+                                "LINE-00000000-0000-0000-0000-000000000006",
+                                SUBSCRIPTION_ID,
+                                PATIENT_ID,
+                                "Ana",
+                                PLAN_ID,
+                                1,
                                 new ConsolidatedCalendarClosedIntegrationEvent.Address(
-                                        "DIR-00000000-0000-0000-0000-000000000007", "Casa", "Calle 1",
-                                        "Referencia", "Santa Cruz", -17.78, -63.18),
+                                        "DIR-00000000-0000-0000-0000-000000000007",
+                                        "Casa",
+                                        "Calle 1",
+                                        "Referencia",
+                                        "Santa Cruz",
+                                        -17.78,
+                                        -63.18),
                                 List.of(new ConsolidatedCalendarClosedIntegrationEvent.Recipe(
-                                        "REC-00000000-0000-0000-0000-000000000008", "Sopa", "08:30",
+                                        "REC-00000000-0000-0000-0000-000000000008",
+                                        "Sopa",
+                                        "08:30",
                                         new BigDecimal("250")))))));
     }
 }

@@ -1,17 +1,16 @@
 package com.mcalvaro.mscatering.infrastructure.persistence.consolidatedcalendar.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.persistence.Column;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
-
 
 @Entity
 @Table(name = "consolidated_lines")
@@ -30,18 +29,22 @@ public class ConsolidatedLineJpaEntity {
 
     @Column(name = "patient_id", nullable = false, length = 64)
     private String patientId;
+
     @Column(name = "patient_name", nullable = false)
     private String patientName;
 
     @Column(name = "diet_plan_id", nullable = false, length = 64)
     private String dietPlanId;
+
     @Column(name = "plan_day_number", nullable = false)
     private int planDayNumber;
 
     @Column(name = "service_type", nullable = false, length = 50)
     private String serviceType;
+
     @Column(name = "address_id", nullable = false, length = 64)
     private String addressId;
+
     @Column(name = "address_alias", nullable = false)
     private String addressAlias;
 
@@ -80,8 +83,7 @@ public class ConsolidatedLineJpaEntity {
     @OneToMany(mappedBy = "line", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ConsolidatedLineRecipeJpaEntity> recipes = new ArrayList<>();
 
-    public ConsolidatedLineJpaEntity() {
-    }
+    public ConsolidatedLineJpaEntity() {}
 
     public String getId() {
         return id;
@@ -114,8 +116,14 @@ public class ConsolidatedLineJpaEntity {
     public void setPatientId(String patientId) {
         this.patientId = patientId;
     }
-    public String getPatientName() { return patientName; }
-    public void setPatientName(String value) { patientName = value; }
+
+    public String getPatientName() {
+        return patientName;
+    }
+
+    public void setPatientName(String value) {
+        patientName = value;
+    }
 
     public String getDietPlanId() {
         return dietPlanId;
@@ -124,8 +132,14 @@ public class ConsolidatedLineJpaEntity {
     public void setDietPlanId(String dietPlanId) {
         this.dietPlanId = dietPlanId;
     }
-    public int getPlanDayNumber() { return planDayNumber; }
-    public void setPlanDayNumber(int value) { planDayNumber = value; }
+
+    public int getPlanDayNumber() {
+        return planDayNumber;
+    }
+
+    public void setPlanDayNumber(int value) {
+        planDayNumber = value;
+    }
 
     public String getServiceType() {
         return serviceType;
@@ -134,10 +148,22 @@ public class ConsolidatedLineJpaEntity {
     public void setServiceType(String serviceType) {
         this.serviceType = serviceType;
     }
-    public String getAddressId() { return addressId; }
-    public void setAddressId(String value) { addressId = value; }
-    public String getAddressAlias() { return addressAlias; }
-    public void setAddressAlias(String value) { addressAlias = value; }
+
+    public String getAddressId() {
+        return addressId;
+    }
+
+    public void setAddressId(String value) {
+        addressId = value;
+    }
+
+    public String getAddressAlias() {
+        return addressAlias;
+    }
+
+    public void setAddressAlias(String value) {
+        addressAlias = value;
+    }
 
     public String getAddressStreet() {
         return addressStreet;
@@ -218,9 +244,16 @@ public class ConsolidatedLineJpaEntity {
     public void setInstructions(String instructions) {
         this.instructions = instructions;
     }
-    public List<ConsolidatedLineRecipeJpaEntity> getRecipes() { return recipes; }
+
+    public List<ConsolidatedLineRecipeJpaEntity> getRecipes() {
+        return recipes;
+    }
+
     public void setRecipes(List<ConsolidatedLineRecipeJpaEntity> value) {
         recipes.clear();
-        value.forEach(recipe -> { recipe.setLine(this); recipes.add(recipe); });
+        value.forEach(recipe -> {
+            recipe.setLine(this);
+            recipes.add(recipe);
+        });
     }
 }

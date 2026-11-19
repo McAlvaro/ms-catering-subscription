@@ -2,11 +2,10 @@ package com.mcalvaro.mscatering.infrastructure.integration.inbound.bc1.patient;
 
 import an.awesome.pipelinr.Pipeline;
 import com.mcalvaro.mscatering.application.patient.synchronization.SynchronizePatientReferenceCommand;
-import org.springframework.stereotype.Component;
-
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import org.springframework.stereotype.Component;
 
 /**
  * Infrastructure anti-corruption layer and future broker entry point for BC1
@@ -29,8 +28,15 @@ public class PatientRegistrationInboundAdapter {
         validate(event);
         PatientRegisteredData data = event.data();
         pipeline.send(new SynchronizePatientReferenceCommand(
-                event.eventId(), event.eventName(), event.eventVersion(), event.occurredOn(), event.source(),
-                event.correlationId(), data.patientId(), data.patientName(), payloadFingerprint(data)));
+                event.eventId(),
+                event.eventName(),
+                event.eventVersion(),
+                event.occurredOn(),
+                event.source(),
+                event.correlationId(),
+                data.patientId(),
+                data.patientName(),
+                payloadFingerprint(data)));
     }
 
     private void validate(PatientRegisteredEvent event) {
@@ -76,7 +82,6 @@ public class PatientRegistrationInboundAdapter {
     }
 
     private void invalidContract() {
-        throw new PatientRegistrationContractException("PROJ-001",
-                "Invalid bc1.PacienteRegistrado canonical contract");
+        throw new PatientRegistrationContractException("PROJ-001", "Invalid bc1.PacienteRegistrado canonical contract");
     }
 }

@@ -5,9 +5,4 @@ import java.time.LocalDate;
 /**
  * DTO for a biweekly nutritional evaluation appointment.
  */
-public record BiweeklyEvaluationDto(
-        String id,
-        LocalDate scheduledDate,
-        String status,
-        LocalDate completedAt) {
-}
+public record BiweeklyEvaluationDto(String id, LocalDate scheduledDate, String status, LocalDate completedAt) {}

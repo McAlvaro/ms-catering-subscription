@@ -1,14 +1,13 @@
 package com.mcalvaro.mscatering.application.outbox;
 
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.assertj.core.api.Assertions.assertThatNullPointerException;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
-import static org.assertj.core.api.Assertions.assertThatNullPointerException;
+import org.junit.jupiter.api.Test;
 
 class OutboxMessageTest {
 
@@ -45,61 +44,136 @@ class OutboxMessageTest {
 
     @Test
     void rejectsRequiredAndBlankFields() {
-        assertThatNullPointerException().isThrownBy(() -> new OutboxMessage(null, "type", "{}", CREATED, false,
-                null, 0, null, CREATED, null, null, null, null, null));
-        assertThatNullPointerException().isThrownBy(() -> new OutboxMessage(ID, "type", "{}", null, false,
-                null, 0, null, CREATED, null, null, null, null, null));
-        assertThatNullPointerException().isThrownBy(() -> new OutboxMessage(ID, "type", "{}", CREATED, false,
-                null, 0, null, null, null, null, null, null, null));
-        assertThatIllegalArgumentException().isThrownBy(() -> valid(" ", "{}", 0, false, null, null, null, null,
-                null, null, null, CREATED));
-        assertThatIllegalArgumentException().isThrownBy(() -> valid("type", "\t", 0, false, null, null, null,
-                null, null, null, null, CREATED));
+        assertThatNullPointerException()
+                .isThrownBy(() -> new OutboxMessage(
+                        null, "type", "{}", CREATED, false, null, 0, null, CREATED, null, null, null, null, null));
+        assertThatNullPointerException()
+                .isThrownBy(() -> new OutboxMessage(
+                        ID, "type", "{}", null, false, null, 0, null, CREATED, null, null, null, null, null));
+        assertThatNullPointerException()
+                .isThrownBy(() -> new OutboxMessage(
+                        ID, "type", "{}", CREATED, false, null, 0, null, null, null, null, null, null, null));
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> valid(" ", "{}", 0, false, null, null, null, null, null, null, null, CREATED));
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> valid("type", "\t", 0, false, null, null, null, null, null, null, null, CREATED));
     }
 
     @Test
     void rejectsInvalidProcessingAndLockState() {
-        assertThatIllegalArgumentException().isThrownBy(() -> valid("type", "{}", -1, false, null, null, null,
-                null, null, null, null, CREATED));
-        assertThatIllegalArgumentException().isThrownBy(() -> valid("type", "{}", 0, true, null, null, null,
-                null, null, null, null, CREATED));
-        assertThatIllegalArgumentException().isThrownBy(() -> valid("type", "{}", 0, false, CREATED, null, null,
-                null, null, null, null, CREATED));
-        assertThatIllegalArgumentException().isThrownBy(() -> valid("type", "{}", 0, false, null,
-                CREATED.plusSeconds(1), null, null, null, null, null, CREATED));
-        assertThatIllegalArgumentException().isThrownBy(() -> valid("type", "{}", 0, false, null, null, "worker",
-                null, null, null, null, CREATED));
-        assertThatIllegalArgumentException().isThrownBy(() -> valid("type", "{}", 0, true, CREATED,
-                CREATED.plusSeconds(1), "worker", null, null, null, null, CREATED));
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> valid("type", "{}", -1, false, null, null, null, null, null, null, null, CREATED));
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> valid("type", "{}", 0, true, null, null, null, null, null, null, null, CREATED));
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> valid("type", "{}", 0, false, CREATED, null, null, null, null, null, null, CREATED));
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> valid(
+                        "type", "{}", 0, false, null, CREATED.plusSeconds(1), null, null, null, null, null, CREATED));
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> valid("type", "{}", 0, false, null, null, "worker", null, null, null, null, CREATED));
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> valid(
+                        "type",
+                        "{}",
+                        0,
+                        true,
+                        CREATED,
+                        CREATED.plusSeconds(1),
+                        "worker",
+                        null,
+                        null,
+                        null,
+                        null,
+                        CREATED));
     }
 
     @Test
     void rejectsTemporalOrderAndBlankOptionalStrings() {
-        assertThatIllegalArgumentException().isThrownBy(() -> valid("type", "{}", 0, false, null, null, null,
-                null, null, null, null, CREATED.minus(1, ChronoUnit.MICROS)));
         assertThatIllegalArgumentException()
-                .isThrownBy(() -> valid("type", "{}", 0, true, CREATED.minus(1, ChronoUnit.MICROS),
-                        null, null, null, null, null, null, CREATED));
-        assertThatIllegalArgumentException().isThrownBy(() -> valid("type", "{}", 0, false, null, null, null, " ",
-                null, null, null, CREATED));
-        assertThatIllegalArgumentException().isThrownBy(() -> valid("type", "{}", 0, false, null, null, null, null,
-                " ", null, null, CREATED));
-        assertThatIllegalArgumentException().isThrownBy(() -> valid("type", "{}", 0, false, null, null, null, null,
-                null, " ", null, CREATED));
-        assertThatIllegalArgumentException().isThrownBy(() -> valid("type", "{}", 0, false, null, null, null, null,
-                null, null, " ", CREATED));
+                .isThrownBy(() -> valid(
+                        "type",
+                        "{}",
+                        0,
+                        false,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        CREATED.minus(1, ChronoUnit.MICROS)));
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> valid(
+                        "type",
+                        "{}",
+                        0,
+                        true,
+                        CREATED.minus(1, ChronoUnit.MICROS),
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        CREATED));
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> valid("type", "{}", 0, false, null, null, null, " ", null, null, null, CREATED));
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> valid("type", "{}", 0, false, null, null, null, null, " ", null, null, CREATED));
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> valid("type", "{}", 0, false, null, null, null, null, null, " ", null, CREATED));
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> valid("type", "{}", 0, false, null, null, null, null, null, null, " ", CREATED));
     }
 
-    private OutboxMessage message(Instant created, boolean processed, Instant processedOn, Instant availableAt,
-            Instant lockedUntil) {
-        return new OutboxMessage(ID, "type", "{}", created, processed, processedOn, 2, "failure", availableAt,
-                lockedUntil, lockedUntil == null ? null : "worker", "correlation", "trace", "span");
+    private OutboxMessage message(
+            Instant created, boolean processed, Instant processedOn, Instant availableAt, Instant lockedUntil) {
+        return new OutboxMessage(
+                ID,
+                "type",
+                "{}",
+                created,
+                processed,
+                processedOn,
+                2,
+                "failure",
+                availableAt,
+                lockedUntil,
+                lockedUntil == null ? null : "worker",
+                "correlation",
+                "trace",
+                "span");
     }
 
-    private OutboxMessage valid(String type, String content, int attempts, boolean processed, Instant processedOn,
-            Instant lockedUntil, String lockedBy, String lastError, String correlationId, String traceId, String spanId,
+    private OutboxMessage valid(
+            String type,
+            String content,
+            int attempts,
+            boolean processed,
+            Instant processedOn,
+            Instant lockedUntil,
+            String lockedBy,
+            String lastError,
+            String correlationId,
+            String traceId,
+            String spanId,
             Instant availableAt) {
-        return new OutboxMessage(ID, type, content, CREATED, processed, processedOn, attempts, lastError, availableAt,
-                lockedUntil, lockedBy, correlationId, traceId, spanId);
+        return new OutboxMessage(
+                ID,
+                type,
+                content,
+                CREATED,
+                processed,
+                processedOn,
+                attempts,
+                lastError,
+                availableAt,
+                lockedUntil,
+                lockedBy,
+                correlationId,
+                traceId,
+                spanId);
     }
 }

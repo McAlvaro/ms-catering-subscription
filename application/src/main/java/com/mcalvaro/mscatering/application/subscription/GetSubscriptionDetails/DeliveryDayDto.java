@@ -19,5 +19,4 @@ public record DeliveryDayDto(
         String phone,
         LocalTime startTime,
         LocalTime endTime,
-        String specialInstructions) {
-}
+        String specialInstructions) {}

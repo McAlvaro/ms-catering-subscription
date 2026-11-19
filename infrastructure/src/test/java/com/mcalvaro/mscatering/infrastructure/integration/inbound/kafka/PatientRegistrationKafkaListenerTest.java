@@ -1,24 +1,23 @@
 package com.mcalvaro.mscatering.infrastructure.integration.inbound.kafka;
 
-import com.mcalvaro.mscatering.infrastructure.integration.inbound.bc1.patient.PatientRegisteredEvent;
-import com.mcalvaro.mscatering.infrastructure.integration.inbound.bc1.patient.PatientRegistrationContractException;
-import com.mcalvaro.mscatering.infrastructure.integration.inbound.bc1.patient.PatientRegistrationInboundAdapter;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.time.Instant;
-import java.util.UUID;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+
+import com.mcalvaro.mscatering.infrastructure.integration.inbound.bc1.patient.PatientRegisteredEvent;
+import com.mcalvaro.mscatering.infrastructure.integration.inbound.bc1.patient.PatientRegistrationContractException;
+import com.mcalvaro.mscatering.infrastructure.integration.inbound.bc1.patient.PatientRegistrationInboundAdapter;
+import java.time.Instant;
+import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class PatientRegistrationKafkaListenerTest {
@@ -118,7 +117,8 @@ class PatientRegistrationKafkaListenerTest {
                 """;
 
         doThrow(new PatientRegistrationContractException("PROJ-001", "Contract violation"))
-                .when(inboundAdapter).receive(any());
+                .when(inboundAdapter)
+                .receive(any());
 
         assertThatCode(() -> listener.onMessage(validJson)).doesNotThrowAnyException();
 

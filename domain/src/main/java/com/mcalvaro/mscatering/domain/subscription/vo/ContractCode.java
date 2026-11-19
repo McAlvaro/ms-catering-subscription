@@ -1,7 +1,6 @@
 package com.mcalvaro.mscatering.domain.subscription.vo;
 
 import com.mcalvaro.mscatering.domain.core.DomainException;
-
 import java.util.regex.Pattern;
 
 /**
@@ -14,8 +13,8 @@ public record ContractCode(String value) {
 
     public ContractCode {
         if (value == null || !FORMAT.matcher(value).matches()) {
-            throw new DomainException("SUB-007",
-                    "Invalid contract code format: " + value + ". Expected NTC-YYYY-NNNN.");
+            throw new DomainException(
+                    "SUB-007", "Invalid contract code format: " + value + ". Expected NTC-YYYY-NNNN.");
         }
     }
 

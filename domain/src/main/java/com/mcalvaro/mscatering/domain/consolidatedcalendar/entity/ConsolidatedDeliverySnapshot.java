@@ -5,7 +5,6 @@ import com.mcalvaro.mscatering.domain.core.id.DietPlanId;
 import com.mcalvaro.mscatering.domain.core.id.PatientId;
 import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
 import com.mcalvaro.mscatering.domain.subscription.vo.DeliveryAddress;
-
 import java.util.List;
 
 /** Deep immutable copy of a closed delivery used by the close event. */

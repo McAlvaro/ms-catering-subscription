@@ -7,14 +7,13 @@ import com.mcalvaro.mscatering.application.subscription.GetSubscriptionDetails.S
 import com.mcalvaro.mscatering.domain.core.id.SubscriptionId;
 import com.mcalvaro.mscatering.infrastructure.persistence.subscription.entity.SubscriptionJpaEntity;
 import com.mcalvaro.mscatering.infrastructure.persistence.subscription.repository.SpringDataSubscriptionRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class JpaSubscriptionQueryService implements ISubscriptionQueryService {
@@ -53,10 +52,7 @@ public class JpaSubscriptionQueryService implements ISubscriptionQueryService {
 
         List<BiweeklyEvaluationDto> evaluations = entity.getEvaluations().stream()
                 .map(eval -> new BiweeklyEvaluationDto(
-                        eval.getId(),
-                        eval.getScheduledDate(),
-                        eval.getStatus(),
-                        eval.getCompletedDate()))
+                        eval.getId(), eval.getScheduledDate(), eval.getStatus(), eval.getCompletedDate()))
                 .collect(Collectors.toList());
 
         return new SubscriptionDetailsDto(

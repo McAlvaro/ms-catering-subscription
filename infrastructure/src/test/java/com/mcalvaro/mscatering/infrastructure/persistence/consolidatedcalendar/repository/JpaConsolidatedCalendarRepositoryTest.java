@@ -1,10 +1,17 @@
 package com.mcalvaro.mscatering.infrastructure.persistence.consolidatedcalendar.repository;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.mockito.Mockito.*;
+
 import com.mcalvaro.mscatering.application.abstractions.DomainEventDispatcher;
 import com.mcalvaro.mscatering.domain.consolidatedcalendar.ConsolidatedCalendar;
 import com.mcalvaro.mscatering.domain.core.id.ConsolidatedCalendarId;
 import com.mcalvaro.mscatering.infrastructure.persistence.consolidatedcalendar.entity.ConsolidatedCalendarJpaEntity;
 import com.mcalvaro.mscatering.infrastructure.persistence.consolidatedcalendar.mapper.ConsolidatedCalendarMapper;
+import java.time.LocalDate;
+import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -14,14 +21,6 @@ import org.springframework.beans.factory.support.ScopeNotActiveException;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-
-import java.time.LocalDate;
-import java.util.Optional;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.mockito.Mockito.*;
 
 class JpaConsolidatedCalendarRepositoryTest {
 
@@ -83,8 +82,9 @@ class JpaConsolidatedCalendarRepositoryTest {
     @DisplayName("save catches ScopeNotActiveException silently if thrown during getIfAvailable")
     void saveCatchesScopeNotActiveExceptionSilently() {
         RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(new MockHttpServletRequest()));
-        when(dispatcherProvider.getIfAvailable()).thenThrow(
-                new ScopeNotActiveException("domainEventDispatcher", "request", new IllegalStateException("No request active")));
+        when(dispatcherProvider.getIfAvailable())
+                .thenThrow(new ScopeNotActiveException(
+                        "domainEventDispatcher", "request", new IllegalStateException("No request active")));
 
         ConsolidatedCalendar calendar = mock(ConsolidatedCalendar.class);
         ConsolidatedCalendarJpaEntity jpaEntity = mock(ConsolidatedCalendarJpaEntity.class);
