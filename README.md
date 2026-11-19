@@ -493,6 +493,10 @@ Definido en [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
 - La cobertura proviene de los XML de JaCoCo de cada módulo.
 - El quality gate es solo informativo (no bloquea el pipeline).
 
+Estado del análisis en SonarCloud tras integrar el escaneo en CI (Quality Gate *Passed*, cobertura 88.3%):
+
+![Dashboard de SonarCloud: Quality Gate Passed y cobertura 88.3%](docs/images/sonarcloud-overview.png)
+
 ### 4.6 Ejecutar lo mismo que CI localmente
 
 ```bash
